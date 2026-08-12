@@ -1,67 +1,798 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PROMT WORKS | Services Made Simple</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#f5f7fa;color:#17202a;line-height:1.6}header{background:#111827;color:white;padding:20px 7%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}.logo{font-size:25px;font-weight:bold;letter-spacing:1px}nav a{color:white;text-decoration:none;margin-left:22px;font-weight:500}nav a:hover{color:#38bdf8}.hero{background:linear-gradient(135deg,#111827,#1e3a5f);color:white;text-align:center;padding:90px 20px}.hero h1{font-size:48px;margin-bottom:15px}.hero p{max-width:650px;margin:0 auto 30px;font-size:19px;color:#dbeafe}.button{display:inline-block;background:#38bdf8;color:#082f49;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;border:none;cursor:pointer}.button:hover{background:#7dd3fc}section{padding:70px 7%}.section-title{text-align:center;margin-bottom:40px}.section-title h2{font-size:34px;margin-bottom:10px}.section-title p{color:#64748b}.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:25px}.service{background:white;padding:30px;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,.08);text-align:center;transition:.2s}.service:hover{transform:translateY(-5px)}.service .icon{font-size:42px;margin-bottom:15px}.service h3{margin-bottom:10px}.service p{color:#64748b;margin-bottom:20px}.booking{background:#e0f2fe}form{max-width:750px;margin:auto;background:white;padding:35px;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,.08)}label{display:block;margin-top:15px;margin-bottom:5px;font-weight:bold}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:7px;font-size:16px}textarea{min-height:100px}form button{width:100%;margin-top:25px}.about{max-width:800px;margin:auto;text-align:center}.about p{color:#64748b;font-size:18px}footer{background:#111827;color:white;text-align:center;padding:30px}footer p{color:#cbd5e1}.auto{background:#fff}.auto-box{max-width:900px;margin:auto;background:#f8fafc;border:1px solid #dbe3ec;border-radius:16px;padding:30px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.price-card{margin-top:25px;background:white;border-radius:12px;padding:24px;border:1px solid #dbe3ec}.price-line{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:9px 0}.total{font-size:24px;font-weight:bold;margin-top:15px}.notice{margin-top:15px;padding:12px;border-radius:8px;background:#eff6ff;color:#1e3a8a}.hidden{display:none}.photo-box{margin-top:20px;padding:16px;background:#f8fafc;border-radius:10px}.checkbox{width:auto;margin-right:8px}.small{font-size:13px;color:#64748b}.error{color:#b91c1c;font-weight:bold;margin-top:10px}@media(max-width:700px){header{flex-direction:column;gap:12px}nav a{margin:0 7px;font-size:14px}.hero h1{font-size:36px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DASH | Professional Services</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f7fa;
+      color: #17202a;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 25px;
+      font-size: 15px;
+    }
+
+    nav a:hover {
+      opacity: .75;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #111827, #26364a);
+      color: white;
+      padding: 100px 7%;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      letter-spacing: 4px;
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: auto;
+      color: #d9e1ea;
+      font-size: 19px;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 30px;
+      background: #ffffff;
+      color: #111827;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+
+    .button.dark {
+      background: #111827;
+      color: white;
+    }
+
+    section {
+      padding: 70px 7%;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 34px;
+      margin-bottom: 40px;
+    }
+
+    .services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 22px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .service-card {
+      background: white;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+    }
+
+    .service-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .booking-section {
+      background: white;
+    }
+
+    .booking-container {
+      max-width: 850px;
+      margin: auto;
+      background: #f8fafc;
+      padding: 35px;
+      border-radius: 16px;
+      border: 1px solid #e1e6ec;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 15px;
+      background: white;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .info-box {
+      background: #eef2f7;
+      padding: 18px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .warning-box {
+      background: #fff7ed;
+      border-left: 5px solid #f97316;
+      padding: 18px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .payment-box {
+      background: #111827;
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-top: 25px;
+    }
+
+    .payment-box h3 {
+      margin-bottom: 10px;
+    }
+
+    .payment-placeholder {
+      background: white;
+      color: #111827;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .policy-section {
+      background: #f1f5f9;
+    }
+
+    .policy-container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    details {
+      background: white;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 18px 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    .policy-content {
+      margin-top: 15px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    footer {
+      background: #111827;
+      color: white;
+      padding: 45px 7%;
+      text-align: center;
+    }
+
+    footer p {
+      color: #b9c2ce;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    @media(max-width: 700px) {
+      header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      nav a {
+        margin: 0 7px;
+      }
+
+      .hero {
+        padding: 75px 6%;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-container {
+        padding: 22px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header><div class="logo">PROMT WORKS</div><nav><a href="#home">Home</a><a href="#services">Services</a><a href="#automotive">Automotive</a><a href="#booking">Book</a><a href="#about">About</a></nav></header>
-<section class="hero" id="home"><h1>Services Made Simple.</h1><p>From professional resumes to mobile automotive services, PROMT WORKS makes it easy to book the help you need.</p><a class="button" href="#services">Explore Services</a></section>
-<section id="services"><div class="section-title"><h2>What Can We Help With?</h2><p>Choose a service and book an appointment.</p></div><div class="services">
-<div class="service"><div class="icon">📄</div><h3>Resume Services</h3><p>Professional resume creation, editing and formatting.</p><a class="button" href="#booking">Book Resume Help</a></div>
-<div class="service"><div class="icon">🚗</div><h3>Mobile Automotive</h3><p>Basic mobile maintenance and convenience services.</p><a class="button" href="#automotive">View Automotive</a></div>
-<div class="service"><div class="icon">🧹</div><h3>Cleaning Services</h3><p>Convenient cleaning services for homes and businesses.</p><a class="button" href="#booking">Book Cleaning</a></div>
-<div class="service"><div class="icon">💻</div><h3>Computer Help</h3><p>Basic computer setup, troubleshooting and assistance.</p><a class="button" href="#booking">Book Computer Help</a></div>
-<div class="service"><div class="icon">🔧</div><h3>Other Services</h3><p>Need something else? Tell us what you need.</p><a class="button" href="#booking">Request Service</a></div>
-</div></section>
 
-<section class="auto" id="automotive"><div class="section-title"><h2>Mobile Automotive Services</h2><p>Select your vehicle and service to see an estimated price breakdown.</p></div><div class="auto-box">
-<div class="grid">
-<div><label for="year">1. Year</label><select id="year"><option value="">Select year</option></select></div>
-<div><label for="make">2. Make</label><select id="make" disabled><option value="">Select make</option></select></div>
-<div><label for="model">3. Model</label><select id="model" disabled><option value="">Select model</option></select></div>
-<div><label for="engine">4. Engine</label><select id="engine" disabled><option value="">Select engine</option></select></div>
-</div>
-<div class="grid" style="margin-top:16px">
-<div><label for="autoService">5. Service</label><select id="autoService"><option value="">Select service</option><option value="oil">Oil Change</option><option value="wipers">Wiper Blade Replacement</option><option value="air">Engine Air Filter Replacement</option><option value="cabin">Cabin Air Filter Replacement</option><option value="battery">Battery Replacement</option><option value="bulb">Basic Light Bulb Replacement</option><option value="fluid">Basic Fluid Top-Off</option><option value="tire">Tire Air Check & Inflation</option><option value="jump">Basic Battery Jump-Start</option></select></div>
-<div><label for="carColor">Vehicle Color</label><input id="carColor" placeholder="Example: White"></div>
-</div>
-<div id="engineSwapBox" class="photo-box"><label><input class="checkbox" type="checkbox" id="engineSwap"> My vehicle has an engine swap or custom engine</label><div id="customEngineWrap" class="hidden"><label for="customEngine">Current engine information</label><input id="customEngine" placeholder="Example: 5.3L V8"></div></div>
-<div id="autoResult" class="price-card hidden"></div>
-<div class="photo-box"><strong>Vehicle Photos Required</strong><p>Photos of the vehicle are required before and after service for the protection of both the customer and PROMT WORKS.</p><label><input class="checkbox" type="checkbox" id="photoAgree"> I understand that before/after service photos are required.</label></div>
-<button class="button" style="margin-top:20px;width:100%" onclick="continueAutoBooking()">Continue to Booking</button><div id="autoError" class="error"></div>
-<p class="small" style="margin-top:15px">Parts/material prices shown are estimated retail averages and may change. Custom/engine-swapped vehicles require review before service confirmation. Pricing is not a quote for repairs beyond the selected basic service.</p>
-</div></section>
+<header>
+  <div class="logo">DASH</div>
 
-<section class="booking" id="booking"><div class="section-title"><h2>Book a Service</h2><p>Tell us what you need and we'll get in touch.</p></div><form onsubmit="submitBooking(event)">
-<label for="name">Name</label><input type="text" id="name" required><label for="phone">Phone Number</label><input type="tel" id="phone" required><label for="email">Email</label><input type="email" id="email" required><label for="service">Service</label><select id="service" required><option value="">Select a service</option><option>Resume Services</option><option>Mobile Automotive</option><option>Cleaning Services</option><option>Computer Help</option><option>Other Service</option></select><label for="date">Preferred Date</label><input type="date" id="date" required><label for="time">Preferred Time</label><input type="time" id="time" required><label for="address">Service Address</label><input type="text" id="address" required><label for="details">Tell Us What You Need</label><textarea id="details" placeholder="Describe the service you need..."></textarea><button class="button" type="submit">Request Booking</button></form></section>
-<section id="about"><div class="about"><div class="section-title"><h2>About PROMT WORKS</h2></div><p>PROMT WORKS is built around one simple idea: making everyday services easier to access. Choose what you need, request a time, and we'll take care of the rest.</p></div></section>
-<footer><p>© 2026 PROMT WORKS. All rights reserved.</p></footer>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#booking">Book</a>
+    <a href="#policies">Policies</a>
+  </nav>
+</header>
+
+
+<section class="hero">
+  <h1>DASH</h1>
+
+  <p>
+    Professional services. Clear booking. Straightforward policies.
+    Book your service directly through DASH.
+  </p>
+
+  <a href="#booking" class="button">Book a Service</a>
+</section>
+
+
+<section id="services">
+  <h2 class="section-title">Our Services</h2>
+
+  <div class="services">
+
+    <div class="service-card">
+      <h3>House Cleaning</h3>
+      <p>
+        Professional cleaning services based on the selected booking and
+        agreed service scope.
+      </p>
+    </div>
+
+    <div class="service-card">
+      <h3>Vehicle Services</h3>
+      <p>
+        Select the vehicle service you need and receive the applicable
+        booking estimate.
+      </p>
+    </div>
+
+    <div class="service-card">
+      <h3>Property Services</h3>
+      <p>
+        Service options for qualifying residential and property needs.
+      </p>
+    </div>
+
+    <div class="service-card">
+      <h3>More Services</h3>
+      <p>
+        Additional DASH services will be added as they become available.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+<section id="booking" class="booking-section">
+
+  <h2 class="section-title">Book Your Service</h2>
+
+  <div class="booking-container">
+
+    <div class="info-box">
+      <strong>Important:</strong>
+      Your booking estimate is the final quoted price for the selected
+      booking. Review your service, address, date, and booking information
+      carefully before submitting.
+    </div>
+
+    <form onsubmit="submitBooking(event)">
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label for="name">Customer Name</label>
+          <input id="name" type="text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" required>
+        </div>
+
+      </div>
+
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input id="phone" type="tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="service">Select Service</label>
+
+          <select id="service" required>
+            <option value="">Choose a service</option>
+            <option>House Cleaning</option>
+            <option>Vehicle Service</option>
+            <option>Property Service</option>
+            <option>Other DASH Service</option>
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label for="date">Requested Service Date</label>
+          <input id="date" type="date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="time">Requested Time</label>
+          <input id="time" type="time" required>
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+        <label for="address">Service Address</label>
+        <input id="address" type="text" required>
+      </div>
+
+
+      <div class="form-group">
+        <label for="permission">
+          Does the property allow DASH to perform this service?
+        </label>
+
+        <select id="permission" required>
+          <option value="">Select one</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>Unsure</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="notes">
+          Property Notes
+        </label>
+
+        <textarea
+          id="notes"
+          placeholder="Gate codes, building information, unit number, parking instructions, access information, HOA information, or other relevant property details."
+        ></textarea>
+      </div>
+
+
+      <div class="warning-box">
+
+        <strong>Property Access Requirement</strong>
+
+        <p>
+          The service address must be accessible when DASH personnel arrive.
+          DASH will not wait for a locked property, gate, building, or other
+          access point to be opened after arrival. If the required access is
+          not available when DASH arrives, the address may not be serviced
+          and a refund is not guaranteed.
+        </p>
+
+      </div>
+
+
+      <div class="payment-box">
+
+        <h3>Payment</h3>
+
+        <p>
+          Official DASH payment methods may include Cash App and Venmo.
+          Customers must use the exact official payment information provided
+          by DASH.
+        </p>
+
+        <div class="payment-placeholder">
+          <strong>Cash App</strong>
+          <br>
+          CASH APP INFORMATION WILL APPEAR HERE
+          <br><br>
+
+          <strong>Venmo</strong>
+          <br>
+          VENMO INFORMATION WILL APPEAR HERE
+        </div>
+
+        <p style="margin-top:15px;font-size:13px;">
+          When paying, customers must include:
+          <br>
+          <strong>For [Customer Name] — Booking #[Booking Number]</strong>
+        </p>
+
+      </div>
+
+
+      <div class="info-box">
+
+        <strong>Payment Pending:</strong>
+
+        <p>
+          If payment has not been received at least two days before the
+          scheduled service date or by the scheduled service date, the
+          booking may be placed into Payment Pending status. If payment is
+          later received after the original service date, the customer will
+          automatically be placed on the DASH Wait List.
+        </p>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+          <input type="checkbox" required style="width:auto;">
+          I have reviewed the DASH policies and understand that submitting
+          this booking does not automatically guarantee that the booking has
+          been confirmed.
+        </label>
+
+      </div>
+
+
+      <button class="button dark" type="submit">
+        Submit Booking Request
+      </button>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+<section id="policies" class="policy-section">
+
+  <h2 class="section-title">DASH Policies</h2>
+
+  <div class="policy-container">
+
+    <details>
+      <summary>Payment, Pricing & Booking</summary>
+
+      <div class="policy-content">
+
+        <p>
+          DASH's official payment methods may include Cash App and Venmo,
+          as designated by DASH. Customers are responsible for ensuring
+          payment is sent to the correct official DASH payment account.
+        </p>
+
+        <br>
+
+        <p>
+          Customers are responsible for verifying that the Cash App or
+          Venmo account receiving their payment exactly matches the official
+          DASH payment information displayed on the DASH website.
+        </p>
+
+        <br>
+
+        <p>
+          Payment sent to an incorrect, unauthorized, or unofficial account
+          is not considered payment to DASH. The customer remains responsible
+          for the full final booking amount until payment is successfully
+          received by DASH.
+        </p>
+
+        <br>
+
+        <p>
+          If payment is not received by the applicable deadline, the booking
+          may enter Payment Pending status. If payment is received after the
+          original service date, the customer will be placed on the DASH
+          Wait List.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Service Quality, Complaints & Re-Service</summary>
+
+      <div class="policy-content">
+
+        <p>
+          Customers may submit a complaint regarding a completed DASH service
+          and may be required to provide photographic evidence, documentation,
+          or other relevant proof supporting the complaint.
+        </p>
+
+        <br>
+
+        <p>
+          DASH Admin may consider photographs, videos, booking information,
+          service notes, employee reports, customer-provided documentation,
+          and other relevant information when reviewing a service complaint.
+        </p>
+
+        <br>
+
+        <p>
+          A complaint based solely on a customer's preference or disagreement
+          with how DASH performed a service does not automatically qualify for
+          a refund or complimentary re-service.
+        </p>
+
+        <br>
+
+        <p>
+          DASH's review may take up to fourteen (14) calendar days.
+        </p>
+
+        <br>
+
+        <p>
+          When a complimentary re-service is approved, DASH will determine
+          the re-service date within five (5) to ten (10) days, subject to
+          availability.
+        </p>
+
+        <br>
+
+        <p>
+          Any approved refund will be processed within five (5) to ten (10)
+          days.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Service Address & Property Access</summary>
+
+      <div class="policy-content">
+
+        <p>
+          Customers must provide the complete and accurate service address.
+        </p>
+
+        <br>
+
+        <p>
+          The service address must be accessible when DASH personnel arrive.
+        </p>
+
+        <br>
+
+        <p>
+          DASH will not wait for a locked property, building, gate, door,
+          or other access point to be opened after DASH personnel arrive.
+        </p>
+
+        <br>
+
+        <p>
+          If a gated community, HOA, apartment community, or other property
+          requires a gate code or access information, customers must provide
+          that information in the Property Notes section during booking.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Customer Conduct & Service Interaction</summary>
+
+      <div class="policy-content">
+
+        <p>
+          Customers may communicate reasonable requests or preferences;
+          however, customers may not continuously direct, supervise, interfere
+          with, or otherwise control how DASH personnel perform the service.
+        </p>
+
+        <br>
+
+        <p>
+          DASH personnel must be permitted to perform services according to
+          DASH's established standards, procedures, safety requirements, and
+          professional judgment.
+        </p>
+
+        <br>
+
+        <p>
+          DASH may end service when conditions become unsafe, threatening,
+          abusive, or otherwise inappropriate.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Employee Safety & Workplace Conditions</summary>
+
+      <div class="policy-content">
+
+        <p>
+          DASH personnel must be provided with a reasonably safe environment
+          in which to perform the booked service.
+        </p>
+
+        <br>
+
+        <p>
+          DASH may refuse to enter, pause, modify, or discontinue a service
+          when conditions present a safety concern or hazardous condition.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Weather & Emergency Conditions</summary>
+
+      <div class="policy-content">
+
+        <p>
+          DASH may delay, reschedule, modify, or discontinue a service when
+          weather or emergency conditions make the service unsafe, impractical,
+          or unable to be properly completed.
+        </p>
+
+        <br>
+
+        <p>
+          DASH will determine the appropriate scheduling arrangement based
+          on circumstances, available resources, and future availability.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Employee Representation & Communication</summary>
+
+      <div class="policy-content">
+
+        <p>
+          DASH personnel are not automatically authorized to make binding
+          decisions regarding refunds, cancellations, discounts, complimentary
+          services, changes to company policies, or other administrative
+          matters unless expressly authorized by DASH.
+        </p>
+
+        <br>
+
+        <p>
+          Customers should rely on official DASH communications for decisions
+          regarding cancellations, refunds, re-services, scheduling changes,
+          payment matters, and other administrative decisions.
+        </p>
+
+      </div>
+    </details>
+
+
+    <details>
+      <summary>Promotions, Discounts & Coupons</summary>
+
+      <div class="policy-content">
+
+        <p>
+          DASH may offer promotional pricing, discounts, coupons, or other
+          special offers at its discretion. Promotional offers are subject
+          to the terms and conditions established by DASH for each promotion.
+        </p>
+
+      </div>
+    </details>
+
+  </div>
+
+</section>
+
+
+<footer>
+
+  <div class="logo">DASH</div>
+
+  <p>
+    Professional services with clear booking and service policies.
+  </p>
+
+  <p>
+    © 2026 DASH. All rights reserved.
+  </p>
+
+</footer>
+
+
 <script>
-const VEHICLES={
- Subaru:{Outback:{"2.5L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.1,"oilCost":34,"filter":9},"3.6L 6-Cylinder":{"oil":"5W-30 Full Synthetic","quarts":6.9,"oilCost":48,"filter":10}},Forester:{"2.5L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.1,"oilCost":34,"filter":9}},Crosstrek:{"2.0L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.7,"oilCost":32,"filter":9},"2.5L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.1,"oilCost":34,"filter":9}}},
- Toyota:{Camry:{"2.5L 4-Cylinder":{"oil":"0W-16 Full Synthetic","quarts":4.8,"oilCost":34,"filter":9},"3.5L V6":{"oil":"0W-20 Full Synthetic","quarts":5.8,"oilCost":40,"filter":10}},Corolla:{"1.8L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.4,"oilCost":31,"filter":8},"2.0L 4-Cylinder":{"oil":"0W-16 Full Synthetic","quarts":4.4,"oilCost":31,"filter":8}},RAV4:{"2.5L 4-Cylinder":{"oil":"0W-16 Full Synthetic","quarts":4.8,"oilCost":34,"filter":9}}},
- Honda:{Civic:{"2.0L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.4,"oilCost":31,"filter":8},"1.5L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":3.7,"oilCost":28,"filter":8}},Accord:{"1.5L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":3.7,"oilCost":28,"filter":8},"2.0L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.6,"oilCost":33,"filter":8},"2.0L Hybrid":{"oil":"0W-20 Full Synthetic","quarts":4.4,"oilCost":31,"filter":8}},CR-V:{"1.5L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":3.7,"oilCost":28,"filter":8},"2.4L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.6,"oilCost":33,"filter":8}}},
- Ford:{Escape:{"1.5L Turbo 4-Cylinder":{"oil":"5W-20 Full Synthetic","quarts":5.7,"oilCost":38,"filter":9},"2.5L Hybrid":{"oil":"0W-20 Full Synthetic","quarts":5.3,"oilCost":36,"filter":9}},F150:{"2.7L EcoBoost V6":{"oil":"5W-30 Full Synthetic","quarts":6.0,"oilCost":42,"filter":10},"3.5L EcoBoost V6":{"oil":"5W-30 Full Synthetic","quarts":6.2,"oilCost":44,"filter":10},"5.0L V8":{"oil":"5W-30 Full Synthetic","quarts":8.8,"oilCost":58,"filter":12}}},
- Chevrolet:{Malibu:{"1.5L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":4.2,"oilCost":30,"filter":8},"2.0L Turbo 4-Cylinder":{"oil":"0W-30 Full Synthetic","quarts":5.3,"oilCost":38,"filter":9}},Equinox:{"1.5L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.3,"oilCost":36,"filter":9},"2.0L Turbo 4-Cylinder":{"oil":"0W-30 Full Synthetic","quarts":5.3,"oilCost":38,"filter":9}}},
- Nissan:{Altima:{"2.5L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.0,"oilCost":33,"filter":8},"2.0L Turbo 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.3,"oilCost":36,"filter":9}},Rogue:{"1.5L Turbo 3-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.0,"oilCost":33,"filter":8},"2.5L 4-Cylinder":{"oil":"0W-20 Full Synthetic","quarts":5.0,"oilCost":33,"filter":8}}}
-};
-const YEARS=Array.from({length:27},(_,i)=>2026-i);const $=id=>document.getElementById(id);YEARS.forEach(y=>$("year").add(new Option(y,y)));
-function resetSelect(id,label){$(id).innerHTML='';$(id).add(new Option(label,''));$(id).disabled=true}
-$("make").addEventListener('change',()=>{resetSelect('model','Select model');resetSelect('engine','Select engine');const data=VEHICLES[$('make').value];if(!data)return;Object.keys(data).forEach(x=>$('model').add(new Option(x,x)));$('model').disabled=false;updatePrice()});
-$("year").addEventListener('change',()=>{resetSelect('make','Select make');resetSelect('model','Select model');resetSelect('engine','Select engine');Object.keys(VEHICLES).forEach(x=>$('make').add(new Option(x,x)));$('make').disabled=false;updatePrice()});
-$("model").addEventListener('change',()=>{resetSelect('engine','Select engine');const data=VEHICLES[$('make').value]?.[$('model').value];if(!data)return;Object.keys(data).forEach(x=>$('engine').add(new Option(x,x)));$('engine').disabled=false;updatePrice()});
-['engine','autoService','carColor'].forEach(id=>$(id).addEventListener('change',updatePrice));
-$('engineSwap').addEventListener('change',()=>{$('customEngineWrap').classList.toggle('hidden',!$('engineSwap').checked);updatePrice()});
-function calcTravel(){return 0;}
-function updatePrice(){const service=$('autoService').value,make=$('make').value,model=$('model').value,engine=$('engine').value;const vehicle=VEHICLES[make]?.[model]?.[engine];const box=$('autoResult');if(!service||!vehicle){box.classList.add('hidden');return}let parts=0,labor=14,travel=0,serviceCost=0,details='';if(service==='oil'){parts=vehicle.oilCost+vehicle.filter+5;details=`${vehicle.oil} • approximately ${vehicle.quarts} quarts`;serviceCost=15}else if(service==='wipers'){parts=42;labor=14;serviceCost=15;details='Estimated pair of quality replacement wiper blades'}else if(service==='air'){parts=28;labor=14;serviceCost=15;details='Estimated engine air filter'}else if(service==='cabin'){parts=25;labor=14;serviceCost=15;details='Estimated cabin air filter'}else if(service==='battery'){parts=145;labor=14;serviceCost=20;details='Estimated standard replacement battery; vehicle fitment may change price'}else if(service==='bulb'){parts=20;labor=14;serviceCost=10;details='Estimated basic replacement bulb; specialty bulbs may cost more'}else if(service==='fluid'){parts=12;labor=14;serviceCost=10;details='Basic fluid top-off materials'}else if(service==='tire'){parts=0;labor=14;serviceCost=10;details='Basic tire air check and inflation'}else if(service==='jump'){parts=0;labor=14;serviceCost=15;details='Basic battery jump-start'}const total=parts+labor+travel+serviceCost;box.innerHTML=`<h3>Estimated Price</h3><p>${details}</p><div class="price-line"><span>Parts/materials</span><strong>$${parts.toFixed(2)}</strong></div><div class="price-line"><span>Labor</span><strong>$${labor.toFixed(2)}</strong></div><div class="price-line"><span>Travel</span><strong>$${travel.toFixed(2)}</strong></div><div class="price-line"><span>Service & business margin</span><strong>$${serviceCost.toFixed(2)}</strong></div><div class="total">Estimated total: $${total.toFixed(2)}</div>`;box.classList.remove('hidden')}
-function continueAutoBooking(){const err=$('autoError');err.textContent='';if(!$('year').value||!$('make').value||!$('model').value||!$('engine').value||!$('autoService').value){err.textContent='Please select the year, make, model, engine, and service.';return}if(!$('carColor').value.trim()){err.textContent='Please enter the vehicle color.';return}if(!$('photoAgree').checked){err.textContent='Please acknowledge the required before/after vehicle photos.';return}if($('engineSwap').checked&&!$('customEngine').value.trim()){err.textContent='Please enter the current engine information for the engine swap.';return}updatePrice();$('service').value='Mobile Automotive';$('details').value=`Automotive service: ${$('autoService').options[$('autoService').selectedIndex].text}\nVehicle: ${$('year').value} ${$('make').value} ${$('model').value}\nEngine: ${$('engineSwap').checked?$('customEngine').value:$('engine').value}\nColor: ${$('carColor').value}`;location.hash='booking'}
-function submitBooking(event){event.preventDefault();alert('Thank you! Your service request has been received. PROMT WORKS will contact you to confirm your appointment. Online payment and final booking confirmation will be added before accepting paid appointments.');}
+
+  function submitBooking(event) {
+
+    event.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const service = document.getElementById("service").value;
+
+    alert(
+      "Prototype booking submitted!\n\n" +
+      "Customer: " + name +
+      "\nService: " + service +
+      "\n\nThe full booking and payment system will be connected later."
+    );
+
+  }
+
 </script>
-<script src="vehicle-database.js"></script>
+
 </body>
-</html> 
+</html>
