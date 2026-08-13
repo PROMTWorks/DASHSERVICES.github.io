@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH Services | Customer History</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0}.brand{font-size:22px;font-weight:800;letter-spacing:2px}.brand span{font-size:13px;font-weight:500;letter-spacing:0;color:#b8c2cf;margin-left:8px}.role{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}.wrap{max-width:1400px;margin:auto;padding:30px}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.title h1{margin:0;font-size:30px}.title p{margin:5px 0 0;color:#64748b;font-size:14px}.btn{border:0;border-radius:8px;padding:10px 15px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.btn.light{background:#fff;color:#17202a;border:1px solid #d7dde5}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;margin-bottom:20px;overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center}.head h2{margin:0;font-size:18px}.body{padding:20px}.empty{padding:55px 25px;text-align:center;color:#64748b}.empty strong{display:block;color:#334155;font-size:17px;margin-bottom:7px}.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:#fff;border:1px solid #e2e7ed;border-radius:12px;padding:18px}.label{font-size:11px;color:#64748b;font-weight:800;letter-spacing:.5px}.value{font-size:27px;font-weight:800;margin:5px 0}.muted{color:#64748b;font-size:13px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.search{display:flex;gap:8px}.search input{flex:1;padding:11px;border:1px solid #ccd4de;border-radius:8px}.row{border:1px solid #e2e7ed;border-radius:9px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:15px}.pill{font-size:11px;padding:5px 9px;border-radius:20px;background:#f1f5f9;color:#475569;font-weight:700}.back{margin-bottom:18px;text-decoration:none;color:#334155;font-size:13px;display:inline-block}@media(max-width:800px){.cards,.grid2{grid-template-columns:1fr 1fr}}@media(max-width:560px){.cards{grid-template-columns:1fr}.wrap{padding:18px}}
+</style>
+</head>
+<body>
+<header><div class="brand">DASH <span>Services · Customer History</span></div><div class="role">ADMIN PORTAL</div></header>
+<div class="wrap">
+<a class="back" href="admin-production.html">← Back to Admin Portal</a>
+<div class="title"><div><h1>Customer History</h1><p>Central customer record and complete DASH Services service history.</p></div><button class="btn" onclick="alert('Customer creation will be connected to the real customer database later.')">+ New Customer</button></div>
+<div class="notice"><b>Ready for real data.</b> No customers, bookings, payments, services, complaints, or notes have been entered. This section contains only the management structure.</div>
+<div class="cards"><div class="card"><div class="label">CUSTOMERS</div><div class="value">0</div><div class="muted">No customer records</div></div><div class="card"><div class="label">ACTIVE BOOKINGS</div><div class="value">0</div><div class="muted">No active bookings</div></div><div class="card"><div class="label">COMPLETED SERVICES</div><div class="value">0</div><div class="muted">No completed services</div></div><div class="card"><div class="label">OPEN COMPLAINTS</div><div class="value">0</div><div class="muted">No complaints</div></div></div>
+<div class="panel"><div class="head"><h2>Customer Directory</h2><div class="search"><input type="search" placeholder="Search customers when records exist" disabled><button class="btn light" disabled>Search</button></div></div><div class="body empty"><strong>No customers yet</strong>Real customer records will appear here after DASH Services begins receiving bookings.</div></div>
+<div class="grid2">
+<div class="panel"><div class="head"><h2>Customer Profile</h2></div><div class="body empty"><strong>No customer selected</strong>Selecting a real customer will open their profile and history.</div></div>
+<div class="panel"><div class="head"><h2>Booking History</h2></div><div class="body empty"><strong>No booking history</strong>Every real booking connected to a customer will appear here.</div></div>
+</div>
+<div class="grid2">
+<div class="panel"><div class="head"><h2>Service History</h2></div><div class="body empty"><strong>No service history</strong>Completed DASH Services will be recorded here.</div></div>
+<div class="panel"><div class="head"><h2>Payment History</h2></div><div class="body empty"><strong>No payment history</strong>Real payment records will appear here when payment processing is connected.</div></div>
+</div>
+<div class="grid2">
+<div class="panel"><div class="head"><h2>Complaints & Evidence</h2></div><div class="body empty"><strong>No complaint records</strong>Customer complaints and submitted evidence will appear here.</div></div>
+<div class="panel"><div class="head"><h2>Internal DASH Notes</h2></div><div class="body empty"><strong>No internal notes</strong>Private operational notes will appear here and will not be customer-facing.</div></div>
+</div>
+<div class="panel"><div class="head"><h2>Customer Activity History</h2><span class="pill">Audit-ready structure</span></div><div class="body empty"><strong>No activity recorded</strong>Future authentication will record important customer-record actions with the user and timestamp.</div></div>
+</div>
+</body>
+</html>
