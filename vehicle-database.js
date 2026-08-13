@@ -8,7 +8,7 @@
   const nav=document.querySelector('header nav');
   if(nav && !nav.querySelector('[data-dash-admin-link]')){
     const link=document.createElement('a');
-    link.href='admin.html';
+    link.href='admin-v2.html';
     link.textContent='ADMIN';
     link.setAttribute('data-dash-admin-link','true');
     link.setAttribute('aria-label','DASH Services Admin Portal');
