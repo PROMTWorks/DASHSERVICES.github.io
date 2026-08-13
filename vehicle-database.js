@@ -67,3 +67,16 @@
   };
   ['autoService','carColor'].forEach(id=>$(id)?.addEventListener('change',window.PROMT_UPDATE_PRICE));
 })();
+
+/* DASH Services ADMIN header link.
+   Prototype only: authentication will be added before the site accepts real customers. */
+(function(){
+  const nav=document.querySelector('header nav');
+  if(!nav || nav.querySelector('[data-dash-admin-link]')) return;
+  const link=document.createElement('a');
+  link.href='admin.html';
+  link.textContent='ADMIN';
+  link.setAttribute('data-dash-admin-link','true');
+  link.setAttribute('aria-label','DASH Services Admin Portal');
+  nav.appendChild(link);
+})();
