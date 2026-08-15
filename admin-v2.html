@@ -21,21 +21,24 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const PORTAL_URL=SUPABASE_URL+'/functions/v1/dash-admin-portal';
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const status=document.getElementById('status');
 const errorBox=document.getElementById('error');
 const spinner=document.getElementById('spinner');
 const login=document.getElementById('login');
 function fail(message){spinner.style.display='none';status.textContent='Authentication required.';errorBox.textContent=message;errorBox.style.display='block';login.style.display='inline-block'}
 (async()=>{
-  try{
-    const {data,error}=await client.auth.getSession();
-    if(error||!data.session){window.location.replace('admin-login.html');return}
-    const response=await fetch(PORTAL_URL,{headers:{Authorization:'Bearer '+data.session.access_token}});
-    if(!response.ok){if(response.status===401||response.status===403){window.location.replace('admin-login.html');return}throw new Error('Secure admin portal could not be loaded ('+response.status+').')}
-    const html=await response.text();
-    document.open();document.write(html);document.close();
-  }catch(e){fail(e.message||'Unable to authenticate. Please sign in again.');}
+ try{
+   let {data:{session},error}=await client.auth.getSession();
+   if(error) throw error;
+   if(!session){window.location.replace('admin-login.html');return}
+   const {data:{user},error:userError}=await client.auth.getUser();
+   if(userError||!user){window.location.replace('admin-login.html');return}
+   const response=await fetch(PORTAL_URL,{method:'GET',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});
+   if(!response.ok){if(response.status===401||response.status===403){window.location.replace('admin-login.html');return}throw new Error('Secure admin portal could not be loaded ('+response.status+').')}
+   const html=await response.text();
+   document.open();document.write(html);document.close();
+ }catch(e){fail(e.message||'Unable to authenticate. Please sign in again.');}
 })();
 </script>
 </body>
