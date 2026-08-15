@@ -24,7 +24,7 @@ jobs:
           import re
           p=Path('admin-v2.html')
           s=p.read_text(encoding='utf-8')
-          s=re.sub(r'\n<style>\n\.policy-folder-grid.*?</style>\n', '\n', s, flags=re.S)
+          s=re.sub(r'\n<style>\n(\.policy-folder-grid.*?)(?:\n</style>)\n', r'\n\1\n', s, flags=re.S)
           p.write_text(s,encoding='utf-8')
           PY
       - name: Commit fix
