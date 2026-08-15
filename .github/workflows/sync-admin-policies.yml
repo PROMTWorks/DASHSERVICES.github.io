@@ -1,0 +1,139 @@
+name: Sync Admin Policy Folder
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'policies/customer-policies/**'
+      - 'policies/employee-policies/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Policies section
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import html, json, re, subprocess
+
+          def parse_policies(path):
+              text = Path(path).read_text(encoding='utf-8')
+              policies=[]
+              current=None
+              sub=None
+              for raw in text.splitlines():
+                  line=raw.strip()
+                  if not line:
+                      continue
+                  if line.startswith('# '):
+                      continue
+                  if line.startswith('## '):
+                      if current:
+                          policies.append(current)
+                      current={'title':line[3:].strip(),'parts':[]}
+                      sub=None
+                  elif line.startswith('### '):
+                      if current is None:
+                          continue
+                      sub={'title':line[4:].strip(),'body':[]}
+                      current['parts'].append(sub)
+                  elif line.startswith('- '):
+                      if current is None:
+                          continue
+                      if sub is None:
+                          sub={'title':'Procedure','body':[]}
+                          current['parts'].append(sub)
+                      sub['body'].append(('li',line[2:].strip()))
+                  elif current is not None:
+                      if sub is None:
+                          sub={'title':'Policy','body':[]}
+                          current['parts'].append(sub)
+                      sub['body'].append(('p',line))
+              if current:
+                  policies.append(current)
+              return policies
+
+          customer=parse_policies('policies/customer-policies/customer-policies.md')
+          employee=parse_policies('policies/employee-policies/employee-policies.md')
+
+          def esc(v): return html.escape(v, quote=True)
+
+          def policy_cards(items, prefix):
+              out=[]
+              for i,p in enumerate(items):
+                  pid=f'{prefix}-{i}'
+                  body=[]
+                  for part in p['parts']:
+                      body.append(f'<div class="policy-part"><h4>{esc(part["title"])}</h4>')
+                      lis=[x[1] for x in part['body'] if x[0]=='li']
+                      if lis:
+                          body.append('<ul>'+''.join(f'<li>{esc(x)}</li>' for x in lis)+'</ul>')
+                      for kind,val in part['body']:
+                          if kind=='p': body.append(f'<p>{esc(val)}</p>')
+                      body.append('</div>')
+                  searchable=esc((p['title']+' '+' '.join(x['title']+' '+' '.join(y[1] for y in x['body']) for x in p['parts'])).lower())
+                  out.append(f'''<article class="policy-card" data-policy="{searchable}" data-category="{esc(p['title'])}">
+                    <button class="policy-card-head" type="button" onclick="togglePolicy('{pid}')"><span><b>{esc(p['title'])}</b><small>Policy</small></span><span class="policy-chevron" id="chev-{pid}">+</span></button>
+                    <div class="policy-card-body" id="{pid}">{''.join(body)}</div>
+                  </article>''')
+              return ''.join(out)
+
+          section='''<section id="policies" class="section">
+          <div class="title"><div><h1>Policies</h1><p>One policy library with separate customer-facing and internal employee policies.</p></div><div class="toolbar" id="policyAdminActions"></div></div>
+          <div class="notice"><b>Policy authority:</b> Official policies are controlled by Super Admin. Managers, employees, and HR may review applicable policies and submit change requests, but they cannot directly edit or publish policy language.</div>
+          <div class="policy-folder-grid">
+            <button class="policy-folder active" type="button" onclick="openPolicyFolder('customer',this)"><span class="folder-icon">📁</span><span><b>Customer Policies</b><small>Policies customers see on the website</small></span></button>
+            <button class="policy-folder" type="button" onclick="openPolicyFolder('employee',this)"><span class="folder-icon">📁</span><span><b>Employee Policies</b><small>Internal procedures for handling customer-policy issues</small></span></button>
+          </div>
+          <div class="panel policy-library" id="customerPolicyFolder">
+            <div class="head"><div><h2>Customer Policies</h2><span class="mini">The same official customer policy language used on the public website.</span></div></div>
+            <div class="body"><div class="policy-toolbar"><input id="customerPolicySearch" placeholder="Search customer policies..." oninput="filterPolicies('customer')"><select id="customerPolicyCategory" onchange="filterPolicies('customer')"><option value="">All policies</option>''' + ''.join(f'<option value="{esc(p["title"])}">{esc(p["title"])}</option>' for p in customer) + '''</select></div><div id="customerPolicyList">''' + policy_cards(customer,'customer') + '''</div></div>
+          </div>
+          <div class="panel policy-library hidden" id="employeePolicyFolder">
+            <div class="head"><div><h2>Employee Policies</h2><span class="mini">Internal procedures aligned with the customer policies.</span></div></div>
+            <div class="body"><div class="policy-toolbar"><input id="employeePolicySearch" placeholder="Search employee policies..." oninput="filterPolicies('employee')"><select id="employeePolicyCategory" onchange="filterPolicies('employee')"><option value="">All policies</option>''' + ''.join(f'<option value="{esc(p["title"])}">{esc(p["title"])}</option>' for p in employee) + '''</select></div><div id="employeePolicyList">''' + policy_cards(employee,'employee') + '''</div></div>
+          </div>
+          <div class="panel" id="policyRequestPanel">
+            <div class="head"><h2>Policy Change Requests</h2><span class="pill orange">Requires Super Admin review</span></div>
+            <div class="body"><p class="muted">HR and Managers can submit a request when a policy needs clarification, correction, or proposed revision. Submitting a request does not change the official policy.</p>
+              <div class="form"><div class="field"><label>Policy name</label><input id="policyRequestName" placeholder="Example: Payment, Pricing & Booking"></div><div class="field"><label>Category</label><select id="policyRequestCategory"><option>Customer Policy</option><option>Employee Policy</option><option>Manager Policy</option><option>Company Policy</option><option>Administrative / Legal</option></select></div><div class="field full"><label>Requested change</label><textarea id="policyRequestText" placeholder="Describe what should be changed and why."></textarea></div></div>
+              <div class="booking-actions"><button class="btn" onclick="submitPolicyRequest()">Submit Change Request</button></div><div id="policyRequestStatus" class="success hidden" style="margin-top:15px"></div>
+            </div>
+          </div>
+          <div class="panel hidden" id="policyEditPanel"><div class="head"><h2>Super Admin Policy Controls</h2><span class="pill green">Super Admin only</span></div><div class="body"><div class="security"><b>Editing authority:</b> Only Super Admin can change official policy language. This prototype provides the control point; future database publishing will save approved revisions to the policy source of truth.</div><div class="toolbar"><button class="btn light" onclick="alert('Policy editor placeholder: official policy text editing will be connected to the policy database before production.')">Open Policy Editor</button></div></div></div>
+          </section>'''
+
+          script='''\n<script>\nfunction policyRole(){return new URLSearchParams(window.location.search).get('role')||'superadmin'}\nfunction togglePolicy(id){const e=document.getElementById(id),c=document.getElementById('chev-'+id);if(!e)return;e.classList.toggle('open');if(c)c.textContent=e.classList.contains('open')?'−':'+'}\nfunction openPolicyFolder(kind,btn){document.querySelectorAll('.policy-folder').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('customerPolicyFolder').classList.toggle('hidden',kind!=='customer');document.getElementById('employeePolicyFolder').classList.toggle('hidden',kind!=='employee')}\nfunction filterPolicies(kind){const q=(document.getElementById(kind+'PolicySearch').value||'').toLowerCase().trim();const cat=document.getElementById(kind+'PolicyCategory').value;document.querySelectorAll('#'+kind+'PolicyList .policy-card').forEach(card=>{const text=(card.dataset.policy||'').toLowerCase();const category=card.dataset.category||'';card.style.display=(!q||text.includes(q))&&(!cat||category===cat)?'':'none'})}\nfunction submitPolicyRequest(){const name=document.getElementById('policyRequestName').value.trim(),text=document.getElementById('policyRequestText').value.trim();if(!name||!text){alert('Enter a policy name and describe the requested change.');return}document.getElementById('policyRequestStatus').textContent='Request recorded in this prototype for Super Admin review. The official policy has not been changed.';document.getElementById('policyRequestStatus').classList.remove('hidden');document.getElementById('policyRequestName').value='';document.getElementById('policyRequestText').value=''}\n(function(){const role=policyRole(),actions=document.getElementById('policyAdminActions'),edit=document.getElementById('policyEditPanel');if(role==='superadmin'){actions.innerHTML='<button class="btn" onclick="document.getElementById(\\'policyEditPanel\\').classList.toggle(\\'hidden\\')">Edit Policies</button>';edit.classList.remove('hidden')}else if(role==='hr'){actions.innerHTML='<button class="btn" onclick="document.getElementById(\\'policyRequestPanel\\').scrollIntoView({behavior:\\'smooth\\'})">Request Policy Change</button>'}else{actions.innerHTML='<span class="pill">View only</span>'}})();\n</script>\n'''
+
+          css='''\n<style>\n.policy-folder-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px}.policy-folder{border:1px solid #e2e7ed;background:#fff;border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;text-align:left;cursor:pointer}.policy-folder.active{border-color:#94a3b8;background:#f8fafc}.folder-icon{font-size:27px}.policy-folder b{display:block;font-size:16px;color:#17202a}.policy-folder small{display:block;color:#64748b;margin-top:4px}.policy-toolbar{display:grid;grid-template-columns:1.5fr 1fr;gap:10px;margin-bottom:15px}.policy-toolbar input,.policy-toolbar select{padding:11px;border:1px solid #ccd4de;border-radius:7px;background:#fff}.policy-card{border:1px solid #e2e7ed;border-radius:9px;margin-bottom:9px;overflow:hidden;background:#fff}.policy-card-head{width:100%;border:0;background:#fff;padding:15px 16px;display:flex;justify-content:space-between;align-items:center;text-align:left;cursor:pointer}.policy-card-head:hover{background:#f8fafc}.policy-card-head b{display:block;color:#17202a;font-size:14px}.policy-card-head small{display:block;color:#64748b;font-size:11px;margin-top:3px}.policy-chevron{font-size:20px;color:#64748b}.policy-card-body{display:none;padding:18px;border-top:1px solid #e2e7ed;background:#fbfcfe;color:#334155;font-size:13px;line-height:1.55}.policy-card-body.open{display:block}.policy-card-body h4{margin:0 0 7px;font-size:13px;color:#17202a}.policy-card-body p{margin:0 0 12px}.policy-card-body ul{margin:0 0 14px 20px;padding:0}.policy-card-body li{margin-bottom:6px}.policy-part{margin-bottom:16px}.policy-part:last-child{margin-bottom:0}@media(max-width:700px){.policy-folder-grid,.policy-toolbar{grid-template-columns:1fr}}\n</style>\n'''
+
+          html_path=Path('admin-v2.html')
+          html=html_path.read_text(encoding='utf-8')
+          pattern=r'<section id="policies" class="section">.*?</section>\n<section id="access"'
+          replacement=section+'\n<section id="access"'
+          new_html,n=re.subn(pattern,replacement,html,count=1,flags=re.S)
+          if n!=1:
+              raise SystemExit('Could not locate the existing Policies section in admin-v2.html')
+          new_html=new_html.replace('</style>\n</head>',css+'</style>\n</head>',1)
+          new_html=new_html.replace('</body>',script+'</body>',1)
+          html_path.write_text(new_html,encoding='utf-8')
+          PY
+
+      - name: Commit generated admin portal
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-v2.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Integrate customer and employee policy folders into admin v2"
+          git push
