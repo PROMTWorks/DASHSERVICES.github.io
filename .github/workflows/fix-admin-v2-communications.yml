@@ -1,0 +1,35 @@
+name: One-time Admin V2 Communications Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/admin-v2-fix-trigger.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace communications section
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('admin-v2.html')
+          s = p.read_text()
+          start = s.index('<section id="communications"')
+          end = s.index('<section id="policies"', start)
+          replacement = '''<section id="communications" class="section"><div class="title"><div><h1>Communications</h1><p>Manage DASH Services automated customer-email settings and test delivery.</p></div></div><div class="notice"><b>Secure email connection required:</b> The controls below are ready for the future Gmail/email backend. No Gmail password or authentication credential is stored in GitHub.</div><div class="grid2"><div class="panel"><div class="head"><h2>Automated Email Settings</h2><span class="pill orange">Not Connected</span></div><div class="body"><div class="form"><div class="field"><label>Sending Email</label><input value="davidroyemployment@gmail.com" readonly></div><div class="field"><label>Test Destination</label><input value="djroy20.2004@gmail.com" readonly></div><div class="field"><label>Test Subject</label><input value="DASH Services — Automated Email Test" readonly></div><div class="field"><label>Connection Status</label><input value="Secure email backend not connected" readonly></div><div class="field full"><label>Test Message</label><textarea readonly>This is a test email from DASH Services to ensure the automated email system is working correctly leading up to launch day.</textarea></div></div><button class="btn disabled" disabled style="margin-top:16px">Send Test Automated Email</button><p class="muted" style="margin-top:10px">The button will be enabled after the secure email provider is connected.</p></div></div><div class="panel"><div class="head"><h2>Automated Workflows</h2></div><div class="body"><div class="rows"><div class="row"><div><strong>Booking Confirmation</strong><span class="muted">Future: automatically send booking information and payment instructions.</span></div></div><div class="row"><div><strong>Payment Reversal</strong><span class="muted">Future: notify customers if a Cash App/Venmo payment is reversed.</span></div></div><div class="row"><div><strong>Complaint Decision</strong><span class="muted">Future: send the administrative decision, refund, or complimentary re-service notice.</span></div></div><div class="row"><div><strong>Scheduling / Wait List</strong><span class="muted">Future: notify customers when DASH assigns or changes a service date.</span></div></div></div></div></div></div><div class="panel"><div class="head"><h2>Test History</h2></div><div class="body empty"><strong>No live email tests have been sent yet</strong>The test history will appear here after the secure email connection is enabled and a test is sent.</div></div></section>'''
+          p.write_text(s[:start] + replacement + s[end:])
+          PY
+      - name: Commit corrected Admin V2 and remove one-time workflow
+        run: |
+          git config user.name "DASH Services Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add admin-v2.html
+          git rm .github/workflows/fix-admin-v2-communications.yml .github/workflows/admin-v2-fix-trigger.txt 2>/dev/null || true
+          git commit -m "Fix Admin V2 Communications section" || exit 0
+          git push origin main
