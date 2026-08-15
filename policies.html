@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH Services | Policies & Terms</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f7fa;color:#17202a;min-height:100vh}
+.notice{max-width:900px;margin:80px auto;padding:30px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 8px 30px rgba(15,23,42,.08);text-align:center}
+.notice h1{margin:0 0 12px}.notice p{color:#64748b}.back{display:inline-block;margin-top:18px;padding:12px 20px;border-radius:8px;background:#111827;color:#fff;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<div class="notice" id="loading"><h1>DASH Services</h1><p>Loading Policies & Terms...</p></div>
+<script>
+(async()=>{
+try{
+const source='https://raw.githubusercontent.com/PROMTWorks/DASHSERVICES.github.io/4857a010f1bbe2c7fe99829680a8b2cb35628620/index.html';
+const response=await fetch(source,{cache:'no-store'});
+if(!response.ok) throw new Error('Unable to load policies');
+const html=await response.text();
+document.open();
+document.write(html);
+document.close();
+}catch(error){document.getElementById('loading').innerHTML='<h1>Policies & Terms</h1><p>We were unable to load the policy page. Please try again.</p><a class="back" href="index.html">Return to DASH Services</a>';}
+})();
+</script>
+</body>
+</html>
