@@ -23,19 +23,21 @@
 <script>
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const form=document.getElementById('loginForm');
 const btn=document.getElementById('loginBtn');
 const status=document.getElementById('status');
 function showStatus(message,type){status.textContent=message;status.className='status show '+type}
 form.addEventListener('submit',async(e)=>{
-e.preventDefault();btn.disabled=true;showStatus('Signing in…','success');
-const email=document.getElementById('email').value.trim();
-const password=document.getElementById('password').value;
-const {error}=await supabaseClient.auth.signInWithPassword({email,password});
-if(error){showStatus(error.message,'error');btn.disabled=false;return}
-showStatus('Login successful. Opening Admin Portal…','success');
-window.location.href='admin-v2.html';
+ e.preventDefault();btn.disabled=true;showStatus('Signing in…','success');
+ const email=document.getElementById('email').value.trim();
+ const password=document.getElementById('password').value;
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error){showStatus(error.message,'error');btn.disabled=false;return}
+ if(!data.session){showStatus('Login succeeded, but no Supabase session was created. Please try again.','error');btn.disabled=false;return}
+ showStatus('Login successful. Opening Admin Portal…','success');
+ await new Promise(r=>setTimeout(r,300));
+ window.location.replace('admin-v2.html');
 });
 </script>
 </body>
