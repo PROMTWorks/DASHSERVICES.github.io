@@ -1,0 +1,75 @@
+name: Connect Admin Communications
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'admin.html'
+
+permissions:
+  contents: write
+
+jobs:
+  update-admin-communications:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Communications section
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('admin.html')
+          s = p.read_text(encoding='utf-8')
+          start = s.find('<section id="communications"')
+          if start == -1:
+              raise SystemExit('Communications section not found in admin.html')
+          end = s.find('</section>', start)
+          if end == -1:
+              raise SystemExit('Communications section closing tag not found')
+          end += len('</section>')
+          new = '''<section id="communications" class="section">
+          <div class="page-title"><div><h1>Communications</h1><p>DASH Services customer communications and automated email controls.</p></div></div>
+          <div class="notice"><strong>Prototype mode:</strong> The email interface is ready, but no live Gmail connection is active yet. Your Gmail password must never be stored in this website or GitHub.</div>
+          <div class="grid2">
+            <div class="panel">
+              <div class="panel-head"><h2>Automated Email Test</h2></div>
+              <div class="panel-body">
+                <div class="form-grid">
+                  <div class="field"><label>From</label><input value="davidroyemployment@gmail.com" readonly></div>
+                  <div class="field"><label>Test To</label><input value="djroy20.2004@gmail.com" readonly></div>
+                </div>
+                <div class="field" style="margin-top:16px"><label>Subject</label><input value="DASH Services — Automated Email Test" readonly></div>
+                <div class="field" style="margin-top:16px"><label>Test Message</label><textarea readonly>This is a test email from DASH Services to ensure the automated email system is working correctly leading up to launch day.</textarea></div>
+                <button class="btn" style="margin-top:16px" disabled title="Enable after secure email authorization is connected">Send Test Automated Email</button>
+                <p class="muted" style="margin-top:10px">Status: <strong>Not connected</strong> — live sending will be enabled after secure email authorization is configured.</p>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Email System Status</h2></div>
+              <div class="panel-body">
+                <div class="detail"><h3>Sending Account</h3><p>davidroyemployment@gmail.com</p></div>
+                <div class="detail"><h3>Test Destination</h3><p>djroy20.2004@gmail.com</p></div>
+                <div class="detail"><h3>Connection</h3><p><span class="status pending">Not Connected</span></p></div>
+                <div class="detail"><h3>Last Test</h3><p>No live automated email test has been sent yet.</p></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Planned Automated Emails</h2></div>
+            <div class="panel-body"><div class="grid3">
+              <div class="detail"><h3>Booking Confirmation</h3><p>Sent after DASH verifies payment and officially confirms a booking.</p></div>
+              <div class="detail"><h3>Payment / Booking Updates</h3><p>Used for payment-pending, payment-reversal, late-payment, and scheduling updates.</p></div>
+              <div class="detail"><h3>Complaint Decisions</h3><p>Used for official complaint, refund, and complimentary re-service decisions.</p></div>
+            </div></div>
+          </div>
+          <div class="security"><strong>Security:</strong> Gmail credentials and other email secrets will be stored outside the GitHub source code and connected through a secure backend when live email sending is enabled.</div>
+        </section>'''
+          p.write_text(s[:start] + new + s[end:], encoding='utf-8')
+      - name: Commit updated admin portal
+        run: |
+          git config user.name "DASH Services Automation"
+          git config user.email "actions@github.com"
+          git add admin.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix Admin Portal Communications section"
+          git push
