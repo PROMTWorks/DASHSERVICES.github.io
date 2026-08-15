@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH Services | Secure Admin</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#111827}
+#loading{height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;text-align:center;padding:20px}
+iframe{display:none;width:100%;height:100%;border:0;background:#f3f5f8}
+</style>
+</head>
+<body>
+<div id="loading">Checking DASH Services administrator access…</div>
+<iframe id="adminFrame" title="DASH Services Admin Portal" src="admin-v2.html"></iframe>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
+const SUPABASE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const loading=document.getElementById('loading');
+const frame=document.getElementById('adminFrame');
+(async()=>{
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){
+    window.location.replace('admin-login.html');
+    return;
+  }
+  loading.style.display='none';
+  frame.style.display='block';
+})();
+supabase.auth.onAuthStateChange((_event,session)=>{
+  if(!session) window.location.replace('admin-login.html');
+});
+</script>
+</body>
+</html>
