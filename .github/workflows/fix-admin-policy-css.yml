@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'policies/customer-policies/.sync-trigger'
+      - 'policies/customer-policies/**'
+      - 'policies/employee-policies/**'
   workflow_dispatch:
 
 permissions:
