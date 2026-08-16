@@ -1548,73 +1548,99 @@ c=>({
 </script>
 
 
-<script id="DASH_EMPLOYEE_ADMIN_V3">
-const EMP_SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
-const EMP_SUPABASE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-const EMP_API=EMP_SUPABASE_URL+'/functions/v1/employee-management';
-let adminEmployees=[], editingAdminEmployee=null, employeeClient=null;
-async function ensureEmployeeClient(){
-  if(window.supabase?.createClient){
-    if(!employeeClient) employeeClient=window.supabase.createClient(EMP_SUPABASE_URL,EMP_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    return employeeClient;
+
+<script id="DASH_EMPLOYEE_ADMIN_V4">
+(()=>{
+  const URL='https://roywoofgypiyoobdcrwx.supabase.co';
+  const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+  const API=URL+'/functions/v1/employee-management';
+  let rows=[];
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function tokenFromStorage(){
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i)||'';
+      if(!k.includes('auth-token')) continue;
+      try{
+        const v=JSON.parse(localStorage.getItem(k)||'null');
+        const t=v?.access_token||v?.currentSession?.access_token||v?.session?.access_token;
+        if(t) return t;
+      }catch{}
+    }
+    return null;
   }
-  await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';sc.onload=resolve;sc.onerror=()=>reject(new Error('Unable to load Supabase client'));document.head.appendChild(sc)});
-  employeeClient=window.supabase.createClient(EMP_SUPABASE_URL,EMP_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  return employeeClient;
-}
-async function employeeApi(action,payload={}){
-  const c=await ensureEmployeeClient();
-  const {data,error}=await c.auth.getSession();
-  const token=data?.session?.access_token;
-  if(error||!token) throw new Error('Your admin session has expired. Please sign in again.');
-  const r=await fetch(EMP_API,{method:'POST',headers:{Authorization:'Bearer '+token,apikey:EMP_SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action,...payload}),cache:'no-store'});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok||j.error) throw new Error(j.error||'Employee request failed');
-  return j.data||[];
-}
-function loadAdminEmployees(){
-  const h=document.getElementById('adminEmployeeRecords');
-  if(!h)return;
-  h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';
-  employeeApi('list').then(rows=>{
-    adminEmployees=Array.isArray(rows)?rows:[];
-    h.innerHTML=adminEmployees.length?adminEmployees.map(e=>{
-      const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';
+  async function getToken(){
+    const t=tokenFromStorage();
+    if(t) return t;
+    if(window.supabase?.createClient){
+      const c=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      const {data,error}=await c.auth.getSession();
+      if(error) throw error;
+      if(data?.session?.access_token) return data.session.access_token;
+    }
+    await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.min.js';s.onload=resolve;s.onerror=()=>reject(new Error('Supabase client could not be loaded.'));document.head.appendChild(s)});
+    const c=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data,error}=await c.auth.getSession();
+    if(error) throw error;
+    if(!data?.session?.access_token) throw new Error('No active Supabase login session was found. Sign in again.');
+    return data.session.access_token;
+  }
+  async function api(action,p={}){
+    const token=await getToken();
+    const r=await fetch(API,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({action,...p}),cache:'no-store'});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||j.error) throw new Error(j.error||('Request failed ('+r.status+')'));
+    return j.data;
+  }
+  function render(){
+    const h=document.getElementById('adminEmployeeRecords');
+    const active=rows.filter(e=>String(e.employment_status||'active').toLowerCase()==='active');
+    const inactive=rows.filter(e=>String(e.employment_status||'').toLowerCase()!=='active');
+    const list=(a,removed)=>a.length?a.map(e=>{
+      const id=encodeURIComponent(String(e.employee_id));
+      const name=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';
       const pay=e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr';
-      const id=String(e.employee_id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return `<div class="row"><div><strong>${esc(n)}</strong><span class="mini">ID: ${esc(e.employee_id||'—')} · ${esc(e.position||'—')} · ${esc(e.role||'—')}</span><span class="mini">Phone: ${esc(e.phone||'—')} · Email: ${esc(e.email||'—')} · Pay: ${esc(pay)}</span></div><div class="toolbar"><button class="btn light" onclick="editAdminEmployee('${id}')">Edit</button><button class="btn light" onclick="editAdminPay('${id}')">Edit Pay</button><button class="btn light" onclick="removeAdminEmployee('${id}')">Remove</button><span class="pill">${esc(e.employment_status||'active')}</span></div></div>`;
-    }).join(''):'<div class="empty"><strong>No employee records</strong>Add your first employee.</div>';
-  }).catch(e=>h.innerHTML='<div class="empty"><strong>Unable to load employees</strong><p>'+esc(e.message)+'</p><button class="btn" onclick="loadAdminEmployees()">Try Again</button></div>');
-}
-function openAdminEmployeeForm(e=null){
-  editingAdminEmployee=e;
-  document.getElementById('adminEmployeeModalTitle').textContent=e?'Edit Employee':'Add Employee';
-  const m=e||{};
-  [['ae_id','employee_id'],['ae_first','first_name'],['ae_last','last_name'],['ae_email','email'],['ae_phone','phone'],['ae_position','position'],['ae_pay','hourly_pay_rate'],['ae_hire','hire_date'],['ae_notes','notes']].forEach(([a,b])=>{const el=document.getElementById(a);if(el)el.value=m[b]??''});
-  const role=document.getElementById('ae_role');if(role)role.value=m.role||'employee';
-  const status=document.getElementById('ae_status');if(status)status.value=m.employment_status||'active';
-  document.getElementById('adminEmployeeModal').classList.add('show');
-}
-function closeAdminEmployeeForm(){document.getElementById('adminEmployeeModal').classList.remove('show')}
-function editAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(e)openAdminEmployeeForm(e)}
-async function editAdminPay(id){
-  const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;
-  const v=prompt('Enter new hourly pay rate for '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'employee'),e.hourly_pay_rate??'');
-  if(v===null)return;const n=Number(v);if(!Number.isFinite(n)||n<0){alert('Enter a valid non-negative hourly rate.');return}
-  try{await employeeApi('pay',{employee_id:e.employee_id,hourly_pay_rate:n});await loadAdminEmployees();alert('Pay updated successfully.')}catch(x){alert(x.message)}
-}
-async function saveAdminEmployee(){
-  const id=document.getElementById('ae_id').value.trim();
-  const payload={employee_id:id,first_name:document.getElementById('ae_first').value.trim(),last_name:document.getElementById('ae_last').value.trim(),email:document.getElementById('ae_email').value.trim()||null,phone:document.getElementById('ae_phone').value.trim()||null,position:document.getElementById('ae_position').value.trim()||null,role:document.getElementById('ae_role').value,employment_status:document.getElementById('ae_status').value,hourly_pay_rate:document.getElementById('ae_pay').value===''?null:Number(document.getElementById('ae_pay').value),hire_date:document.getElementById('ae_hire').value||null,notes:document.getElementById('ae_notes').value.trim()||null};
-  if(!id||!payload.first_name||!payload.last_name){alert('Employee ID, first name, and last name are required.');return}
-  try{if(editingAdminEmployee)await employeeApi('update',{...payload,old_employee_id:editingAdminEmployee.employee_id});else await employeeApi('add',payload);closeAdminEmployeeForm();await loadAdminEmployees();alert(editingAdminEmployee?'Employee updated successfully.':'Employee added successfully.')}catch(e){alert(e.message)}
-}
-async function removeAdminEmployee(id){
-  const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;
-  if(!confirm('Remove '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'this employee')+'?'))return;
-  try{await employeeApi('remove',{employee_id:e.employee_id});await loadAdminEmployees();alert('Employee removed successfully.')}catch(e){alert(e.message)}
-}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+      return '<div class="row"><div><strong>'+esc(name)+'</strong><span class="mini">ID: '+esc(e.employee_id)+' · '+esc(e.position||'—')+' · '+esc(e.role||'—')+'</span><span class="mini">Phone: '+esc(e.phone||'—')+' · Email: '+esc(e.email||'—')+' · Pay: '+esc(pay)+'</span></div><div class="toolbar">'+(removed?'<button class="btn light" data-restore="'+id+'">Restore</button>':'<button class="btn light" data-edit="'+id+'">Edit</button><button class="btn light" data-pay="'+id+'">Edit Pay</button><button class="btn light" data-remove="'+id+'">Remove</button>')+'<span class="pill">'+esc(e.employment_status||'active')+'</span></div></div>';
+    }).join(''):'<div class="empty"><strong>No '+(removed?'inactive':'active')+' employees</strong></div>';
+    h.innerHTML='<div class="toolbar" style="margin-bottom:15px"><button class="btn" id="aeAdd">+ Add Employee</button><button class="btn light" id="aeRefresh">Refresh</button><button class="btn light" id="aeSupabase">Open Supabase Employee Records</button></div><div class="panel"><div class="head"><h2>Active Employees</h2></div><div class="body">'+list(active,false)+'</div></div><div class="panel"><div class="head"><h2>Removed / Inactive Employees</h2></div><div class="body">'+list(inactive,true)+'</div></div>';
+    h.querySelector('#aeRefresh').onclick=load;
+    h.querySelector('#aeSupabase').onclick=()=>window.open('https://supabase.com/dashboard/project/roywoofgypiyoobdcrwx/editor','_blank');
+    h.querySelector('#aeAdd').onclick=add;
+    h.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>edit(decodeURIComponent(b.dataset.edit)));
+    h.querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>pay(decodeURIComponent(b.dataset.pay)));
+    h.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>remove(decodeURIComponent(b.dataset.remove)));
+    h.querySelectorAll('[data-restore]').forEach(b=>b.onclick=()=>restore(decodeURIComponent(b.dataset.restore)));
+  }
+  async function load(){
+    const h=document.getElementById('adminEmployeeRecords');
+    if(!h)return;
+    h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';
+    try{rows=Array.isArray(await api('list'))?await api('list'):[];render();}
+    catch(e){h.innerHTML='<div class="empty"><strong>Employee records could not be loaded</strong><p>'+esc(e.message)+'</p><button class="btn" id="aeRetry">Try Again</button></div>';document.getElementById('aeRetry').onclick=load;}
+  }
+  function find(id){return rows.find(e=>String(e.employee_id)===String(id));}
+  async function add(){
+    const employee_id=prompt('Employee ID:'); if(!employee_id)return;
+    const first_name=prompt('First name:'); if(!first_name)return;
+    try{await api('add',{employee_id,first_name,last_name:prompt('Last name:')||null,email:prompt('Email:')||null,phone:prompt('Phone:')||null,position:prompt('Position:')||null,role:prompt('Role:','employee')||'employee',employment_status:'active',hourly_pay_rate:null,hire_date:null,notes:null});await load();alert('Employee added.');}catch(e){alert(e.message)}
+  }
+  async function edit(id){
+    const e=find(id);if(!e)return;
+    const p={first_name:prompt('First name:',e.first_name||'')||e.first_name,last_name:prompt('Last name:',e.last_name||'')||null,email:prompt('Email:',e.email||'')||null,phone:prompt('Phone:',e.phone||'')||null,position:prompt('Position:',e.position||'')||null,role:prompt('Role:',e.role||'employee')||'employee',employment_status:prompt('Status:',e.employment_status||'active')||'active',hire_date:e.hire_date||null,notes:e.notes||null};
+    try{await api('update',{employee_id:e.employee_id,payload:p});await load();alert('Employee updated.');}catch(x){alert(x.message)}
+  }
+  async function pay(id){
+    const e=find(id);if(!e)return;const v=prompt('Hourly pay rate:',e.hourly_pay_rate??'');if(v===null)return;const n=Number(v);if(!Number.isFinite(n)||n<0){alert('Enter a valid non-negative hourly rate.');return}
+    try{await api('pay',{employee_id:id,hourly_pay_rate:n});await load();alert('Pay updated.');}catch(x){alert(x.message)}
+  }
+  async function remove(id){if(!confirm('Remove this employee? They will become Inactive.'))return;try{await api('remove',{employee_id:id});await load();alert('Employee removed.');}catch(x){alert(x.message)}}
+  async function restore(id){try{await api('restore',{employee_id:id});await load();alert('Employee restored.');}catch(x){alert(x.message)}}
+  window.loadAdminEmployees=load;
+  document.addEventListener('DOMContentLoaded',()=>{
+    const b=[...document.querySelectorAll('aside button')].find(x=>x.textContent.trim()==='Employee Records');
+    if(b)b.onclick=()=>{show('employees',b);load();};
+  });
+  load();
+})();
 </script>
 </body>
 </html>
