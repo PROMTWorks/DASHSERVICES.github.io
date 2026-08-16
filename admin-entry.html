@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DASH Services | Admin Access</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif;color:#17202a}.box{background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:28px;max-width:430px;width:calc(100% - 40px);text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}h1{font-size:21px;margin:0 0 8px}.muted{color:#64748b;font-size:13px}.error{display:none;margin-top:15px;background:#fef2f2;color:#991b1b;padding:12px;border-radius:8px;font-size:13px}.btn{display:inline-block;margin-top:15px;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}</style>
+</head>
+<body><div class="box"><h1>DASH Services Admin</h1><div class="muted" id="status">Checking your secure session...</div><div class="error" id="error"></div><a class="btn" id="login" href="admin-login.html" style="display:none">Return to Admin Login</a></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const client=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const status=document.getElementById('status'),error=document.getElementById('error'),login=document.getElementById('login');
+(async()=>{try{const {data,error:e}=await client.auth.getSession();if(e)throw e;if(!data.session){location.replace('admin-login.html');return}status.textContent='Access verified. Opening DASH Services Admin Portal...';location.replace('admin-v2.html')}catch(e){status.textContent='Unable to verify your session.';error.textContent=e?.message||'Please sign in again.';error.style.display='block';login.style.display='inline-block'}})();
+</script></body></html>
