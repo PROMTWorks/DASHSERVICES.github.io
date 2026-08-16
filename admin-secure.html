@@ -15,23 +15,17 @@ iframe{display:none;width:100%;height:100%;border:0;background:#f3f5f8}
 <iframe id="adminFrame" title="DASH Services Admin Portal" src="admin-v2.html"></iframe>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
-const SUPABASE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const loading=document.getElementById('loading');
-const frame=document.getElementById('adminFrame');
+window.DASH_ADMIN_SUPABASE = window.DASH_ADMIN_SUPABASE || window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const dashLoading=document.getElementById('loading');
+const dashFrame=document.getElementById('adminFrame');
 (async()=>{
-  const {data:{session}}=await supabase.auth.getSession();
-  if(!session){
-    window.location.replace('admin-login.html');
-    return;
-  }
-  loading.style.display='none';
-  frame.style.display='block';
+ try{
+  const {data:{session}}=await window.DASH_ADMIN_SUPABASE.auth.getSession();
+  if(!session){window.location.replace('admin-login.html');return;}
+  dashLoading.style.display='none';dashFrame.style.display='block';
+ }catch(e){dashLoading.textContent='Unable to verify administrator access. Please sign in again.';}
 })();
-supabase.auth.onAuthStateChange((_event,session)=>{
-  if(!session) window.location.replace('admin-login.html');
-});
+window.DASH_ADMIN_SUPABASE.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html');});
 </script>
 </body>
 </html>
