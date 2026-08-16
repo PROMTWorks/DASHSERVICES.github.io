@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>DASH Services | Admin Portal</title>
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:0}</style>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}iframe{display:none;width:100%;height:100%;border:0}</style>
 </head>
 <body>
-<iframe id="portal" src="admin-production.html" title="DASH Services Admin Portal"></iframe>
+<div id="status">Verifying your secure Supabase session…</div>
+<iframe id="portal" title="DASH Services Admin Portal"></iframe>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const status=document.getElementById('status');
 const frame=document.getElementById('portal');
-frame.addEventListener('load',()=>{
-  try{
-    const doc=frame.contentDocument;
-    const nav=[...doc.querySelectorAll('aside button')].find(b=>b.textContent.trim()==='Communications');
-    const section=doc.getElementById('communications');
-    if(!nav||!section)return;
-    nav.textContent='Communications + Gmail';
-    const existing=doc.getElementById('gmailConnectionPanel');
-    if(existing)return;
-    const panel=doc.createElement('div');
-    panel.id='gmailConnectionPanel';
-    panel.className='panel';
-    panel.innerHTML='<div class="head"><h2>Gmail Connection</h2><span class="pill">Secure OAuth</span></div><div class="body"><p class="muted" style="margin-top:0">Connect the dedicated DASH Gmail account for business communications.</p><div class="rows"><div class="row"><div><strong>Gmail account</strong><span class="mini">supportdashservices@gmail.com</span></div><span class="pill">Dedicated account</span></div><div class="row"><div><strong>Customer-facing address</strong><span class="mini">support@dashservices.net</span></div><span class="pill">Reply-to</span></div></div><div class="toolbar" style="margin-top:15px"><a class="btn" href="admin-gmail-connection.html" target="_top">Open Gmail Connection</a></div></div>';
-    section.appendChild(panel);
-  }catch(e){console.error('Gmail portal integration:',e)}
-});
+async function loadPortal(){
+  const {data,error}=await client.auth.getUser();
+  if(error||!data?.user){window.location.replace('admin-login.html');return;}
+  const {data:sessionData}=await client.auth.getSession();
+  const token=sessionData?.session?.access_token;
+  if(!token){window.location.replace('admin-login.html');return;}
+  const response=await fetch('https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});
+  if(!response.ok)throw new Error('Protected admin portal could not be loaded.');
+  frame.srcdoc=await response.text();
+  status.style.display='none';
+  frame.style.display='block';
+}
+loadPortal().catch(error=>{status.textContent=error?.message||'Unable to verify administrator access.'});
+client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
 </script>
 </body>
 </html>
