@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>DASH Services | Admin Login</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{width:min(430px,92vw);background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;box-shadow:0 12px 35px rgba(15,23,42,.08)}h1{margin:0 0 6px;font-size:25px}.sub{color:#64748b;font-size:13px;margin-bottom:24px}.field{margin-bottom:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input{width:100%;padding:11px;border:1px solid #ccd4de;border-radius:8px;font-size:14px}.btn{width:100%;border:0;border-radius:8px;padding:11px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.btn:disabled{background:#9ca3af;cursor:not-allowed}.status{margin-top:14px;font-size:13px;padding:11px;border-radius:8px;display:none}.status.show{display:block}.error{background:#fef2f2;color:#991b1b}.success{background:#ecfdf5;color:#166534}.security{margin-top:18px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid #e2e7ed;color:#475569;font-size:11px;line-height:1.5}</style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{width:min(430px,92vw);background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;box-shadow:0 12px 35px rgba(15,23,42,.08)}h1{margin:0 0 6px;font-size:25px}.sub{color:#64748b;font-size:13px;margin-bottom:24px}.field{margin-bottom:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input{width:100%;padding:11px;border:1px solid #ccd4de;border-radius:8px;font-size:14px}.btn{width:100%;border:0;border-radius:8px;padding:11px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.btn:disabled{background:#9ca3af;cursor:not-allowed}.link{display:block;text-align:center;margin-top:14px;color:#b91c1c;font-size:13px;font-weight:700;text-decoration:none}.status{margin-top:14px;font-size:13px;padding:11px;border-radius:8px;display:none}.status.show{display:block}.error{background:#fef2f2;color:#991b1b}.success{background:#ecfdf5;color:#166534}.security{margin-top:18px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid #e2e7ed;color:#475569;font-size:11px;line-height:1.5}</style>
 </head>
 <body>
 <div class="box">
@@ -16,6 +15,7 @@
 <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
 <button class="btn" id="loginBtn" type="submit">Sign In</button>
 </form>
+<a class="link" href="#" id="forgot">Forgot your password?</a>
 <div id="status" class="status"></div>
 <div class="security"><b>Security:</b> Authentication is handled by Supabase Auth. The password is not stored in this GitHub page.</div>
 </div>
@@ -24,21 +24,10 @@
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const form=document.getElementById('loginForm');
-const btn=document.getElementById('loginBtn');
-const status=document.getElementById('status');
+const form=document.getElementById('loginForm'),btn=document.getElementById('loginBtn'),status=document.getElementById('status'),forgot=document.getElementById('forgot');
 function showStatus(message,type){status.textContent=message;status.className='status show '+type}
-form.addEventListener('submit',async(e)=>{
- e.preventDefault();btn.disabled=true;showStatus('Signing in…','success');
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
- if(error){showStatus(error.message,'error');btn.disabled=false;return}
- if(!data.session){showStatus('Login succeeded, but no Supabase session was created. Please try again.','error');btn.disabled=false;return}
- showStatus('Login successful. Opening Admin Portal…','success');
- await new Promise(r=>setTimeout(r,300));
- window.location.replace('admin-v2.html');
-});
+form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;showStatus('Signing in…','success');const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){showStatus(error.message,'error');btn.disabled=false;return}if(!data.session){showStatus('Login succeeded, but no Supabase session was created. Please try again.','error');btn.disabled=false;return}showStatus('Login successful. Opening Admin Portal…','success');await new Promise(r=>setTimeout(r,300));window.location.replace('admin-v2.html')});
+forgot.addEventListener('click',async e=>{e.preventDefault();const email=document.getElementById('email').value.trim();if(!email){showStatus('Enter your admin email first, then click Forgot your password.','error');return}forgot.style.pointerEvents='none';showStatus('Sending password reset email…','success');const redirectTo=new URL('admin-reset-password.html',window.location.href).href;const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});if(error){showStatus(error.message,'error');forgot.style.pointerEvents='auto';return}showStatus('Password reset email sent. Open the newest email and follow its link.','success');forgot.style.pointerEvents='auto'});
 </script>
 </body>
 </html>
