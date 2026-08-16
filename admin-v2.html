@@ -1,21 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>DASH Services | Secure Admin Portal</title>
-<style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{width:min(430px,90vw);background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}.spinner{width:30px;height:30px;border:4px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:22px;margin:0 0 8px}.muted{color:#64748b;font-size:13px}.error{display:none;margin-top:15px;color:#991b1b;background:#fef2f2;border-radius:8px;padding:12px;font-size:13px}.btn{display:inline-block;margin-top:15px;padding:10px 15px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{width:min(430px,90vw);background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;text-align:center;box-shadow:0 12px 35px rgba(15,23,42,.08)}.spinner{width:30px;height:30px;border:4px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:22px;margin:0 0 8px}.muted{color:#64748b;font-size:13px}.error{display:none;margin-top:15px;color:#991b1b;background:#fef2f2;border-radius:8px;padding:12px;font-size:13px}.btn{display:inline-block;margin-top:15px;padding:10px 15px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}
 </style>
 </head>
 <body>
-<div class="box">
-<div class="spinner" id="spinner"></div>
-<h1>DASH Services Admin</h1>
-<div class="muted" id="status">Checking your secure Supabase session...</div>
-<div class="error" id="error"></div>
-<a class="btn" id="login" href="admin-login.html" style="display:none">Return to Admin Login</a>
-</div>
+<div class="box"><div class="spinner" id="spinner"></div><h1>DASH Services Admin</h1><div class="muted" id="status">Checking your secure Supabase session...</div><div class="error" id="error"></div><a class="btn" id="login" href="admin-login.html" style="display:none">Return to Admin Login</a></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
@@ -23,7 +15,7 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const status=document.getElementById('status'),errorBox=document.getElementById('error'),spinner=document.getElementById('spinner'),login=document.getElementById('login');
 function fail(message){spinner.style.display='none';status.textContent='Unable to open admin portal.';errorBox.textContent=message;errorBox.style.display='block';login.style.display='inline-block'}
-(async()=>{try{const {data,error}=await client.auth.getSession();if(error)throw error;if(!data.session){location.replace('admin-login.html');return}status.textContent='Access verified. Opening DASH Services Admin Portal...';location.replace('admin-shell.html')}catch(e){fail(e?.message||'Please sign in again.')}})();
+(async()=>{try{const {data,error}=await client.auth.getUser();if(error)throw error;if(!data?.user){location.replace('admin-login.html');return}status.textContent='Access verified. Opening DASH Services Admin Portal...';await new Promise(r=>setTimeout(r,150));location.replace('admin-shell.html')}catch(e){fail(e?.message||'Please sign in again.')}})();
 client.auth.onAuthStateChange((_event,session)=>{if(!session)location.replace('admin-login.html')});
 </script>
 </body>
