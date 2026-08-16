@@ -1,38 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DASH Services | Secure Admin Portal</title>
-<style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{text-align:center;background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;box-shadow:0 12px 35px rgba(15,23,42,.08);width:min(430px,90vw)}.spinner{width:30px;height:30px;border:4px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:22px;margin:0 0 8px}.muted{color:#64748b;font-size:13px}.error{color:#991b1b;background:#fef2f2;border-radius:8px;padding:12px;margin-top:15px;display:none}.btn{display:inline-block;margin-top:15px;padding:10px 15px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}
-</style>
-</head>
-<body>
-<div class="box"><div class="spinner" id="spinner"></div><h1>Opening DASH Services Admin Portal</h1><div class="muted" id="status">Checking your secure Supabase session...</div><div class="error" id="error"></div><a class="btn" id="login" href="admin-login.html" style="display:none">Go to Admin Login</a></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-const PORTAL_URL=SUPABASE_URL+'/functions/v1/dash-admin-portal';
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const status=document.getElementById('status'),errorBox=document.getElementById('error'),spinner=document.getElementById('spinner'),login=document.getElementById('login');
-function fail(message){spinner.style.display='none';status.textContent='Authentication required.';errorBox.textContent=message;errorBox.style.display='block';login.style.display='inline-block'}
-function timeout(ms,message){return new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),ms))}
-(async()=>{try{
-status.textContent='Checking your secure Supabase session...';
-const sr=await Promise.race([client.auth.getSession(),timeout(8000,'Supabase did not return a session. Please sign in again.')]);
-if(sr.error)throw sr.error;const session=sr.data?.session;
-if(!session){window.location.replace('admin-login.html');return;}
-status.textContent='Verifying your account...';
-const ur=await Promise.race([client.auth.getUser(session.access_token),timeout(8000,'Supabase account verification timed out. Please sign in again.')]);
-if(ur.error||!ur.data?.user){window.location.replace('admin-login.html');return;}
-status.textContent='Loading secure admin portal...';
-const response=await Promise.race([fetch(PORTAL_URL,{method:'GET',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:'text/html'},cache:'no-store'}),timeout(10000,'The admin portal took too long to respond. Please try again.')]);
-if(!response.ok){if(response.status===401||response.status===403){window.location.replace('admin-login.html');return;}throw new Error('Secure admin portal could not be loaded ('+response.status+').')}
-const html=await response.text();if(!html.includes('DASH Services'))throw new Error('Admin portal returned an invalid response.');
-document.open();document.write(html);document.close();
-}catch(e){fail(e?.message||'Unable to authenticate. Please sign in again.')}})();
-</script>
-</body>
-</html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DASH Services | Secure Admin Portal</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f5f8;color:#17202a;font-family:Arial,Helvetica,sans-serif}.box{text-align:center;background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:30px;box-shadow:0 12px 35px rgba(15,23,42,.08);width:min(430px,90vw)}.spinner{width:30px;height:30px;border:4px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:22px;margin:0 0 8px}.muted{color:#64748b;font-size:13px}.error{color:#991b1b;background:#fef2f2;border-radius:8px;padding:12px;margin-top:15px;display:none}.btn{display:inline-block;margin-top:15px;padding:10px 15px;background:#111827;color:#fff;text-decoration:none;border-radius:8px;font-weight:700}</style></head>
+<body><div class="box"><div class="spinner" id="spinner"></div><h1>Opening DASH Services Admin Portal</h1><div class="muted" id="status">Checking your secure Supabase session...</div><div class="error" id="error"></div><a class="btn" id="login" href="admin-login.html" style="display:none">Go to Admin Login</a></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';const PORTAL_URL=SUPABASE_URL+'/functions/v1/dash-admin-portal';const client=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const status=document.getElementById('status'),errorBox=document.getElementById('error'),spinner=document.getElementById('spinner'),login=document.getElementById('login');
+function timeout(ms,message){return new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),ms))}function fail(message){spinner.style.display='none';status.textContent='Unable to open admin portal.';errorBox.textContent=message;errorBox.style.display='block';login.style.display='inline-block'}
+(async()=>{try{const sr=await Promise.race([client.auth.getSession(),timeout(8000,'Supabase session check timed out. Please sign in again.')]);if(sr.error)throw sr.error;const session=sr.data?.session;if(!session){location.replace('admin-login.html');return}status.textContent='Verifying your account...';const ur=await Promise.race([client.auth.getUser(session.access_token),timeout(8000,'Supabase account verification timed out. Please sign in again.')]);if(ur.error||!ur.data?.user){location.replace('admin-login.html');return}status.textContent='Loading secure admin portal...';const r=await Promise.race([fetch(PORTAL_URL,{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:'text/html'},cache:'no-store'}),timeout(10000,'The admin portal took too long to respond. Please try again.')]);if(!r.ok){if(r.status===401||r.status===403){location.replace('admin-login.html');return}throw new Error('Secure admin portal could not be loaded ('+r.status+').')}const html=await r.text();if(!html.includes('DASH Services'))throw new Error('Admin portal returned an invalid response.');const blob=new Blob([html],{type:'text/html'});location.replace(URL.createObjectURL(blob));}catch(e){fail(e?.message||'Unable to authenticate. Please sign in again.')}})();
+</script></body></html>
