@@ -119,7 +119,7 @@ main{padding:18px}
 <button onclick="show('customers',this)">Customers</button>
 
 <!-- Employee Records now opens the separate employee-management.html page -->
-<button onclick="window.location.href='employee-management.html'">Employee Records</button>
+<button onclick="show('employees',this);loadAdminEmployees()">Employee Records</button>
 
 <div class="group">Assets</div>
 
@@ -377,25 +377,10 @@ but the navigation button above opens employee-management.html.
 -->
 
 <section id="employees" class="section">
-
-<div class="title">
-<div>
-<h1>Employee Records</h1>
-<p>Employee directory, roles, records, assignments, and service history.</p>
-</div>
-</div>
-
-<div class="panel">
-
-<div class="body empty">
-
-<strong>No employees yet</strong>
-Employee records will be created when DASH Services hires employees.
-
-</div>
-
-</div>
-
+<div class="title"><div><h1>Employee Records</h1><p>Live employee records managed through Supabase.</p></div><div class="toolbar"><button class="btn" onclick="openAdminEmployeeForm()">+ Add Employee</button><button class="btn light" onclick="loadAdminEmployees()">Refresh</button></div></div>
+<div class="notice"><b>Owner / Super Admin:</b> You can add, edit, change pay, deactivate/remove, and restore employee records. Supabase is the master database.</div>
+<div class="panel"><div class="body" id="adminEmployeeRecords"><div class="empty"><strong>Loading employee records...</strong></div></div></div>
+<div id="adminEmployeeModal" class="modal"><div class="modalbox"><div class="modalhead"><h2 id="adminEmployeeModalTitle">Add Employee</h2><button class="close" onclick="closeAdminEmployeeForm()">Close</button></div><div class="form"><div class="field"><label>Employee ID</label><input id="ae_id" placeholder="Example: 1001"></div><div class="field"><label>First name</label><input id="ae_first"></div><div class="field"><label>Last name</label><input id="ae_last"></div><div class="field"><label>Email</label><input id="ae_email" type="email"></div><div class="field"><label>Phone</label><input id="ae_phone"></div><div class="field"><label>Position</label><input id="ae_position"></div><div class="field"><label>Role</label><select id="ae_role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="hr">HR</option><option value="admin">Super Admin</option><option value="owner">Owner</option></select></div><div class="field"><label>Hourly pay rate</label><input id="ae_pay" type="number" min="0" step="0.01"></div><div class="field"><label>Status</label><select id="ae_status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="field"><label>Hire date</label><input id="ae_hire" type="date"></div><div class="field full"><label>Notes</label><textarea id="ae_notes"></textarea></div></div><div class="actions"><button class="btn light" onclick="closeAdminEmployeeForm()">Cancel</button><button class="btn" onclick="saveAdminEmployee()">Save Employee</button></div></div></div>
 </section>
 
 
@@ -1562,5 +1547,20 @@ c=>({
 
 </script>
 
+
+<script id="DASH_EMPLOYEE_ADMIN_V2">
+const EMP_API='https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/employee-admin-api';
+let adminEmployees=[], editingAdminEmployee=null;
+function employeeToken(){return window.__supabaseSession?.access_token||localStorage.getItem('supabase.auth.token')||''}
+async function employeeApi(path='',opts={}){const token=employeeToken();if(!token)throw new Error('Please sign in again.');const r=await fetch(EMP_API+path,{...opts,headers:{'Authorization':'Bearer '+token,'apikey':'sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_','Content-Type':'application/json',...(opts.headers||{})}});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Employee request failed');return j}
+function loadAdminEmployees(){const h=document.getElementById('adminEmployeeRecords');if(!h)return;h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';employeeApi().then(j=>{adminEmployees=j.data||[];h.innerHTML=adminEmployees.length?adminEmployees.map(e=>{const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';const pay=e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr';return `<div class="row"><div><strong>${esc(n)}</strong><span class="mini">ID: ${esc(e.employee_id||'—')} · ${esc(e.position||'—')} · ${esc(e.role||'—')}</span><span class="mini">Phone: ${esc(e.phone||'—')} · Email: ${esc(e.email||'—')} · Pay: ${esc(pay)}</span></div><div class="toolbar"><button class="btn light" onclick="editAdminEmployee('${String(e.employee_id).replace(/'/g,"\'")}')">Edit</button><button class="btn light" onclick="editAdminPay('${String(e.employee_id).replace(/'/g,"\'")}')">Edit Pay</button><button class="btn light" onclick="removeAdminEmployee('${String(e.employee_id).replace(/'/g,"\'")}')">Remove</button><span class="pill">${esc(e.employment_status||'active')}</span></div></div>`}).join(''):'<div class="empty"><strong>No employee records</strong>Add your first employee.</div>'}).catch(e=>h.innerHTML='<div class="empty"><strong>Unable to load employees</strong>'+esc(e.message)+'</div>')}
+function openAdminEmployeeForm(e=null){editingAdminEmployee=e;document.getElementById('adminEmployeeModalTitle').textContent=e?'Edit Employee':'Add Employee';const m=e||{};[['ae_id','employee_id'],['ae_first','first_name'],['ae_last','last_name'],['ae_email','email'],['ae_phone','phone'],['ae_position','position'],['ae_pay','hourly_pay_rate'],['ae_hire','hire_date'],['ae_notes','notes']].forEach(([a,b])=>document.getElementById(a).value=m[b]??'');document.getElementById('ae_role').value=m.role||'employee';document.getElementById('ae_status').value=m.employment_status||'active';document.getElementById('adminEmployeeModal').classList.add('show')}
+function closeAdminEmployeeForm(){document.getElementById('adminEmployeeModal').classList.remove('show')}
+function editAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(e)openAdminEmployeeForm(e)}
+function editAdminPay(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;const v=prompt('Enter new hourly pay rate for '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'employee'),e.hourly_pay_rate??'');if(v===null)return;const n=Number(v);if(!Number.isFinite(n)||n<0)return alert('Enter a valid non-negative hourly rate.');employeeApi('?employee_id='+encodeURIComponent(e.employee_id),{method:'PATCH',body:JSON.stringify({hourly_pay_rate:n})}).then(loadAdminEmployees).catch(x=>alert(x.message))}
+function saveAdminEmployee(){const id=document.getElementById('ae_id').value.trim();const payload={employee_id:id,first_name:document.getElementById('ae_first').value.trim(),last_name:document.getElementById('ae_last').value.trim(),email:document.getElementById('ae_email').value.trim()||null,phone:document.getElementById('ae_phone').value.trim()||null,position:document.getElementById('ae_position').value.trim()||null,role:document.getElementById('ae_role').value,employment_status:document.getElementById('ae_status').value,hourly_pay_rate:document.getElementById('ae_pay').value===''?null:Number(document.getElementById('ae_pay').value),hire_date:document.getElementById('ae_hire').value||null,notes:document.getElementById('ae_notes').value.trim()||null};if(!id||!payload.first_name||!payload.last_name)return alert('Employee ID, first name, and last name are required.');const req=editingAdminEmployee?employeeApi('?employee_id='+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(payload)}):employeeApi('',{method:'POST',body:JSON.stringify(payload)});req.then(()=>{closeAdminEmployeeForm();loadAdminEmployees()}).catch(e=>alert(e.message))}
+function removeAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;if(!confirm('Remove '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'this employee')+' from Employee Records?'))return;employeeApi('?employee_id='+encodeURIComponent(id),{method:'DELETE'}).then(loadAdminEmployees).catch(e=>alert(e.message))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
 </body>
 </html>
