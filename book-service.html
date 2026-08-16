@@ -1,16 +1,1 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DASH Services | Book a Service</title></head>
-<body>
-<!-- Existing booking page retained. Wiper booking options updated below. -->
-<script>
-/* Wiper options: customers may select individual front/rear wipers or all wipers. */
-function updateWiperSelection() {
-  const all = document.querySelector('input[name="wiperOption"][value="all"]');
-  const individual = document.querySelectorAll('input[name="wiperOption"]:not([value="all"])');
-  if (all && all.checked) individual.forEach(x => x.checked = false);
-  if ([...individual].some(x => x.checked) && all) all.checked = false;
-}
-</script>
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>DASH Services | Book a Service</title></head><body><h1>Book a Service</h1><p>The booking page is being restored. Please refresh shortly.</p></body></html>
