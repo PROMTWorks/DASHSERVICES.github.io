@@ -1,0 +1,39 @@
+name: Fix Employee Loader
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix employee loader
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('admin-production.html')
+          s = p.read_text()
+          old = "rows=Array.isArray(await api('list'))?await api('list'):[];render();"
+          new = "const employeeData=await api('list');rows=Array.isArray(employeeData)?employeeData:[];render();"
+          if old in s:
+              s = s.replace(old, new, 1)
+          else:
+              raise SystemExit('Expected employee loader code was not found; refusing to modify the portal.')
+          p.write_text(s)
+          PY
+
+      - name: Commit patched portal
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          git diff --cached --quiet || git commit -m "Fix employee records loading"
+          git push
