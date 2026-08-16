@@ -23,11 +23,12 @@
 <script>
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+const RESET_REDIRECT='https://promtworks.github.io/DASHSERVICES.github.io/admin-reset-password.html';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const form=document.getElementById('loginForm'),btn=document.getElementById('loginBtn'),status=document.getElementById('status'),forgot=document.getElementById('forgot');
 function showStatus(message,type){status.textContent=message;status.className='status show '+type}
 form.addEventListener('submit',async e=>{e.preventDefault();btn.disabled=true;showStatus('Signing in…','success');const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){showStatus(error.message,'error');btn.disabled=false;return}if(!data.session){showStatus('Login succeeded, but no Supabase session was created. Please try again.','error');btn.disabled=false;return}showStatus('Login successful. Opening Admin Portal…','success');await new Promise(r=>setTimeout(r,300));window.location.replace('admin-v2.html')});
-forgot.addEventListener('click',async e=>{e.preventDefault();const email=document.getElementById('email').value.trim();if(!email){showStatus('Enter your admin email first, then click Forgot your password.','error');return}forgot.style.pointerEvents='none';showStatus('Sending password reset email…','success');const redirectTo=new URL('admin-reset-password.html',window.location.href).href;const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});if(error){showStatus(error.message,'error');forgot.style.pointerEvents='auto';return}showStatus('Password reset email sent. Open the newest email and follow its link.','success');forgot.style.pointerEvents='auto'});
+forgot.addEventListener('click',async e=>{e.preventDefault();const email=document.getElementById('email').value.trim();if(!email){showStatus('Enter your admin email first, then click Forgot your password.','error');return}forgot.style.pointerEvents='none';showStatus('Sending password reset email…','success');try{const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:RESET_REDIRECT});if(error)throw error;showStatus('Reset request accepted. Check the inbox, Spam/Junk, and Promotions folders for the newest DASH Services password email.','success')}catch(error){showStatus(error?.message||'Unable to start password reset.','error')}finally{forgot.style.pointerEvents='auto'}});
 </script>
 </body>
 </html>
