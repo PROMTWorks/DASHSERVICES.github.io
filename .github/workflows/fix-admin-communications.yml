@@ -65,11 +65,24 @@ jobs:
           <div class="security"><strong>Security:</strong> Gmail credentials and other email secrets will be stored outside the GitHub source code and connected through a secure backend when live email sending is enabled.</div>
         </section>'''
           p.write_text(s[:start] + new + s[end:], encoding='utf-8')
-      - name: Commit updated admin portal
+      - name: Update production portal Communications section
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p = Path('admin-production.html')
+          s = p.read_text(encoding='utf-8')
+          pattern = re.compile(r'<section id="communications" class="section">.*?</section>\n<section id=', re.S)
+          replacement = '''<section id="communications" class="section"><div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div><div class="panel"><div class="head"><h2>Gmail Connection</h2><span class="pill">DASH Support</span></div><div class="body"><div class="security"><b>Dedicated Gmail:</b> supportdashservices@gmail.com<br><span class="mini">Customer-facing address: support@dashservices.net</span></div><p class="muted">Connect the dedicated DASH support Gmail account for customer communication. Your existing admin login is not changed by this connection.</p><a class="btn" href="admin-gmail-connection.html">Open Gmail Connection</a></div></div><div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div></section>
+<section id='''
+          if not pattern.search(s):
+              raise SystemExit('Communications section not found in admin-production.html')
+          p.write_text(pattern.sub(replacement, s, count=1), encoding='utf-8')
+      - name: Commit updated admin portals
         run: |
           git config user.name "DASH Services Automation"
           git config user.email "actions@github.com"
-          git add admin.html
+          git add admin.html admin-production.html
           git diff --cached --quiet && exit 0
-          git commit -m "Fix Admin Portal Communications section"
+          git commit -m "Add Gmail connection to admin communications"
           git push
