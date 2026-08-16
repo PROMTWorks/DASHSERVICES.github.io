@@ -1,0 +1,31 @@
+name: Fix Employee Records Loader
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-employee-records.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix duplicate employee API request
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('admin-production.html')
+          s=p.read_text()
+          old="rows=Array.isArray(await api('list'))?await api('list'):[];render();"
+          new="const result=await api('list');rows=Array.isArray(result)?result:[];render();"
+          if old not in s:
+              raise SystemExit('Target employee loader code not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+      - name: Commit fixed portal
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin-production.html
+          git commit -m 'Fix Admin Portal employee records loading' || exit 0
+          git push
