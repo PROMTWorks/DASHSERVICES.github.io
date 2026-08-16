@@ -1,0 +1,1 @@
+Employee Management is connected to Supabase. The employee-management.html implementation is maintained on main and uses Supabase as the master employee database.
