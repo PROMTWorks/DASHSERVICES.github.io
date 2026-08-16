@@ -12,7 +12,7 @@ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:c
 <div class="box">
 <div class="spinner" id="spinner"></div>
 <h1>Opening DASH Services Admin Portal</h1>
-<div class="muted" id="status">Checking your secure Supabase session…</div>
+<div class="muted" id="status">Checking your secure Supabase session...</div>
 <div class="error" id="error"></div>
 <a class="btn" id="login" href="admin-login.html" style="display:none">Go to Admin Login</a>
 </div>
@@ -27,16 +27,20 @@ const errorBox=document.getElementById('error');
 const spinner=document.getElementById('spinner');
 const login=document.getElementById('login');
 function fail(message){spinner.style.display='none';status.textContent='Authentication required.';errorBox.textContent=message;errorBox.style.display='block';login.style.display='inline-block'}
+function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Supabase session check timed out. Please sign in again.')),ms))])}
 (async()=>{
  try{
-   let {data:{session},error}=await client.auth.getSession();
+   status.textContent='Checking your secure Supabase session...';
+   const {data:{session},error}=await withTimeout(client.auth.getSession(),8000);
    if(error) throw error;
    if(!session){window.location.replace('admin-login.html');return}
-   const {data:{user},error:userError}=await client.auth.getUser();
+   const {data:{user},error:userError}=await withTimeout(client.auth.getUser(session.access_token),8000);
    if(userError||!user){window.location.replace('admin-login.html');return}
-   const response=await fetch(PORTAL_URL,{method:'GET',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});
+   status.textContent='Loading secure admin portal...';
+   const response=await withTimeout(fetch(PORTAL_URL,{method:'GET',headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,Accept:'text/html'}}),10000);
    if(!response.ok){if(response.status===401||response.status===403){window.location.replace('admin-login.html');return}throw new Error('Secure admin portal could not be loaded ('+response.status+').')}
    const html=await response.text();
+   if(!html.includes('DASH Services'))throw new Error('Admin portal returned an invalid response.');
    document.open();document.write(html);document.close();
  }catch(e){fail(e.message||'Unable to authenticate. Please sign in again.');}
 })();
