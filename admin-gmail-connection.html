@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>DASH Services | Gmail Connection</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}.wrap{max-width:760px;margin:50px auto;padding:20px}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:26px;box-shadow:0 10px 30px rgba(15,23,42,.06)}h1{margin:0 0 8px}.muted{color:#64748b;font-size:14px;line-height:1.5}.row{margin:20px 0;padding:16px;background:#f8fafc;border-radius:10px}.label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:5px}.value{font-weight:700}.btn{display:inline-block;border:0;border-radius:8px;padding:12px 16px;background:#111827;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}.btn.secondary{background:#fff;color:#17202a;border:1px solid #d7dde5}.status{margin:16px 0;padding:12px;border-radius:8px;background:#eff6ff;color:#1e40af;font-size:13px}.warning{margin:16px 0;padding:12px;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:13px}.back{display:inline-block;margin-bottom:18px;color:#b91c1c;font-weight:800;text-decoration:none}</style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}.wrap{max-width:760px;margin:50px auto;padding:20px}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:14px;padding:26px;box-shadow:0 10px 30px rgba(15,23,42,.06)}h1{margin:0 0 8px}.muted{color:#64748b;font-size:14px;line-height:1.5}.row{margin:20px 0;padding:16px;background:#f8fafc;border-radius:10px}.label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:5px}.value{font-weight:700}.btn{display:inline-block;border:0;border-radius:8px;padding:12px 16px;background:#111827;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}.btn.secondary{background:#fff;color:#17202a;border:1px solid #d7dde5}.status{margin:16px 0;padding:12px;border-radius:8px;background:#eff6ff;color:#1e40af;font-size:13px}.warning{margin:16px 0;padding:12px;border-radius:8px;background:#fff7ed;color:#9a3412;font-size:13px}.error{display:none;margin:16px 0;padding:12px;border-radius:8px;background:#fef2f2;color:#991b1b;font-size:13px}.back{display:inline-block;margin-bottom:18px;color:#b91c1c;font-weight:800;text-decoration:none}</style>
 </head>
 <body>
 <main class="wrap">
@@ -16,11 +16,33 @@
 <div class="row"><div class="label">Recommended Gmail account</div><div class="value">supportdashservices@gmail.com</div></div>
 <div class="row"><div class="label">Customer-facing address</div><div class="value">support@dashservices.net</div></div>
 <div class="row"><div class="label">Customer replies</div><div class="value">support@dashservices.net</div></div>
-<div class="status"><strong>Next step:</strong> Connect the dedicated DASH Gmail account through Google's secure OAuth authorization. No Gmail password belongs in this website.</div>
-<div class="warning"><strong>Important:</strong> This page does not send email by itself. The connection must be authorized through the existing protected Supabase Gmail OAuth workflow before automated sending is enabled.</div>
-<a class="btn" href="https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/dash-gmail-oauth-replace-start">Connect / Replace Gmail Account</a>
+<div class="status" id="status"><strong>Ready:</strong> Sign in to DASH, then connect the dedicated Gmail account through Google's secure OAuth authorization.</div>
+<div class="warning"><strong>Important:</strong> Your Gmail password is never entered into DASH. Google handles authorization, and the connection uses the protected Supabase OAuth workflow.</div>
+<div class="error" id="error"></div>
+<button class="btn" id="connect" type="button">Connect / Replace Gmail Account</button>
 <a class="btn secondary" href="admin-communications.html" style="margin-left:8px">Communications</a>
 </section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabaseClient=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const button=document.getElementById('connect'),status=document.getElementById('status'),errorBox=document.getElementById('error');
+button.addEventListener('click',async()=>{
+  button.disabled=true;button.textContent='Starting secure Google connection...';errorBox.style.display='none';
+  try{
+    const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!session){window.location.href='admin-login.html';return;}
+    const {data,error}=await supabaseClient.functions.invoke('dash-gmail-oauth-replace-start',{headers:{Authorization:'Bearer '+session.access_token}});
+    if(error)throw error;
+    if(!data?.auth_url)throw new Error(data?.error||'Google authorization URL was not returned.');
+    window.location.href=data.auth_url;
+  }catch(e){
+    status.textContent='Unable to start the Gmail connection.';
+    errorBox.textContent=e?.message||'Please sign in again and try again.';errorBox.style.display='block';
+    button.disabled=false;button.textContent='Connect / Replace Gmail Account';
+  }
+});
+</script>
 </body>
 </html>
