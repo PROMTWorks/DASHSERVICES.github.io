@@ -1,0 +1,57 @@
+name: Add Gmail Connection to Admin Portal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-gmail-to-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Add Gmail connection panel
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('admin-production.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'id="dash-gmail-connection"'
+          if marker in s:
+              print('Gmail panel already present; nothing to do.')
+              raise SystemExit(0)
+
+          old = '<section id="communications" class="section"><div class="title"><div><h1>Communications</h1><p>Future customer and internal communication center.</p></div></div><div class="panel"><div class="body empty"><strong>No communications yet</strong>Communication history will appear when real customer or employee communications are connected.</div></div></section>'
+          new = '''<section id="communications" class="section"><div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div>
+          <div id="dash-gmail-connection" class="panel"><div class="head"><h2>Gmail Connection</h2><span class="pill">Super Admin</span></div><div class="body">
+          <div class="notice"><b>DASH Gmail:</b> Connect the dedicated business Gmail account used for customer communications.</div>
+          <div class="grid2"><div class="history-item"><h3>Business Gmail</h3><p><b>Account:</b> supportdashservices@gmail.com</p><p class="muted">This is the Google account that will be connected to DASH.</p></div><div class="history-item"><h3>Customer-facing address</h3><p><b>Address:</b> support@dashservices.net</p><p class="muted">Customers can reply to the DASH support address.</p></div></div>
+          <div class="actions"><a class="btn" href="admin-gmail-connection.html">Open Gmail Connection</a></div>
+          </div></div>
+          <div class="panel"><div class="body empty"><strong>No communications yet</strong>Communication history will appear when real customer or employee communications are connected.</div></div></section>'''
+          if old not in s:
+              raise SystemExit('Expected Communications section was not found; no changes made.')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          print('Added Gmail connection panel.')
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Add Gmail connection to admin communications"
+          git push
