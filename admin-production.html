@@ -5,56 +5,1562 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DASH Services | Admin Portal</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:5}.brand{font-size:22px;font-weight:800;letter-spacing:2px}.brand span{font-size:13px;font-weight:500;letter-spacing:0;color:#b8c2cf;margin-left:8px}.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}.layout{display:flex;min-height:calc(100vh - 70px)}aside{width:250px;background:#fff;border-right:1px solid #e2e7ed;padding:18px 14px;overflow:auto}.group{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;padding:10px 14px 6px;font-weight:800}aside button{width:100%;border:0;background:transparent;text-align:left;padding:11px 14px;border-radius:8px;margin-bottom:4px;font-size:14px;color:#334155;cursor:pointer}aside button:hover,aside button.active{background:#eef2f7;color:#111827;font-weight:700}main{flex:1;padding:30px;max-width:1500px;width:100%;margin:auto}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.title h1{margin:0;font-size:30px}.title p{margin:5px 0 0;color:#64748b;font-size:14px}.btn{border:0;border-radius:8px;padding:10px 15px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.btn.light{background:#fff;color:#17202a;border:1px solid #d7dde5}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}.card,.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px}.card{padding:18px}.label{font-size:11px;color:#64748b;font-weight:800;letter-spacing:.5px}.value{font-size:28px;font-weight:800;margin:5px 0}.muted{color:#64748b;font-size:13px}.panel{margin-bottom:20px;overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center}.head h2{margin:0;font-size:18px}.body{padding:20px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.empty{padding:38px;text-align:center;color:#64748b}.empty strong{display:block;color:#334155;font-size:16px;margin-bottom:5px}.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}.security{background:#f8fafc;border:1px solid #e2e7ed;padding:14px;border-radius:8px;margin-bottom:20px;font-size:13px}.section{display:none}.section.active{display:block}.rows{display:grid;gap:10px}.row{border:1px solid #e2e7ed;border-radius:9px;padding:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}.row strong{display:block}.pill{font-size:11px;padding:5px 9px;border-radius:20px;background:#f1f5f9;color:#475569;font-weight:700}.form{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;background:#fff}.field textarea{min-height:100px;resize:vertical}.full{grid-column:1/-1}.chart{height:230px;border:1px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;text-align:center}.workflow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 20px}.step{border:1px solid #dbe2e9;background:#f8fafc;border-radius:9px;padding:12px;font-size:12px;text-align:center}.step b{display:block;font-size:10px;color:#64748b;margin-bottom:5px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.modal{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modalbox{background:#fff;width:min(900px,100%);max-height:90vh;overflow:auto;border-radius:14px;padding:24px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.modalhead h2{margin:0}.close{border:0;background:#eef2f7;border-radius:7px;padding:8px 11px;cursor:pointer}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}.mini{font-size:11px;color:#64748b}.hidden{display:none!important}.history-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.history-tab{border:1px solid #d7dde5;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:700;font-size:12px}.history-tab.active{background:#111827;color:#fff;border-color:#111827}.history-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.history-item{border:1px solid #e2e7ed;border-radius:9px;padding:14px;background:#fff}.history-item h3{margin:0 0 8px;font-size:14px}.history-item p{margin:4px 0;color:#64748b;font-size:13px}.statusline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.timeline{display:grid;gap:10px}.timeline-item{border-left:3px solid #cbd5e1;padding:8px 0 8px 14px}.timeline-item strong{display:block;font-size:13px}.timeline-item span{font-size:12px;color:#64748b}@media(max-width:1000px){aside{width:75px}aside button{font-size:0;text-align:center}aside button:before{content:'•';font-size:22px}.group{display:none}.cards{grid-template-columns:repeat(2,1fr)}.grid2,.form,.grid3,.history-grid{grid-template-columns:1fr}.workflow{grid-template-columns:1fr 1fr}}@media(max-width:560px){.cards{grid-template-columns:1fr}main{padding:18px}.workflow{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}
+header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:5}
+.brand{font-size:22px;font-weight:800;letter-spacing:2px}
+.brand span{font-size:13px;font-weight:500;letter-spacing:0;color:#b8c2cf;margin-left:8px}
+.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}
+.layout{display:flex;min-height:calc(100vh - 70px)}
+aside{width:250px;background:#fff;border-right:1px solid #e2e7ed;padding:18px 14px;overflow:auto}
+.group{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;padding:10px 14px 6px;font-weight:800}
+aside button{width:100%;border:0;background:transparent;text-align:left;padding:11px 14px;border-radius:8px;margin-bottom:4px;font-size:14px;color:#334155;cursor:pointer}
+aside button:hover,aside button.active{background:#eef2f7;color:#111827;font-weight:700}
+main{flex:1;padding:30px;max-width:1500px;width:100%;margin:auto}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.title h1{margin:0;font-size:30px}
+.title p{margin:5px 0 0;color:#64748b;font-size:14px}
+.btn{border:0;border-radius:8px;padding:10px 15px;background:#111827;color:#fff;font-weight:700;cursor:pointer}
+.btn.light{background:#fff;color:#17202a;border:1px solid #d7dde5}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}
+.card,.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px}
+.card{padding:18px}
+.label{font-size:11px;color:#64748b;font-weight:800;letter-spacing:.5px}
+.value{font-size:28px;font-weight:800;margin:5px 0}
+.muted{color:#64748b;font-size:13px}
+.panel{margin-bottom:20px;overflow:hidden}
+.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center}
+.head h2{margin:0;font-size:18px}
+.body{padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.empty{padding:38px;text-align:center;color:#64748b}
+.empty strong{display:block;color:#334155;font-size:16px;margin-bottom:5px}
+.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}
+.security{background:#f8fafc;border:1px solid #e2e7ed;padding:14px;border-radius:8px;margin-bottom:20px;font-size:13px}
+.section{display:none}
+.section.active{display:block}
+.rows{display:grid;gap:10px}
+.row{border:1px solid #e2e7ed;border-radius:9px;padding:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.row strong{display:block}
+.pill{font-size:11px;padding:5px 9px;border-radius:20px;background:#f1f5f9;color:#475569;font-weight:700}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;background:#fff}
+.field textarea{min-height:100px;resize:vertical}
+.full{grid-column:1/-1}
+.chart{height:230px;border:1px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;text-align:center}
+.workflow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0 20px}
+.step{border:1px solid #dbe2e9;background:#f8fafc;border-radius:9px;padding:12px;font-size:12px;text-align:center}
+.step b{display:block;font-size:10px;color:#64748b;margin-bottom:5px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal.show{display:flex}
+.modalbox{background:#fff;width:min(900px,100%);max-height:90vh;overflow:auto;border-radius:14px;padding:24px}
+.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modalhead h2{margin:0}
+.close{border:0;background:#eef2f7;border-radius:7px;padding:8px 11px;cursor:pointer}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.mini{font-size:11px;color:#64748b}
+.hidden{display:none!important}
+.history-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.history-tab{border:1px solid #d7dde5;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:700;font-size:12px}
+.history-tab.active{background:#111827;color:#fff;border-color:#111827}
+.history-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.history-item{border:1px solid #e2e7ed;border-radius:9px;padding:14px;background:#fff}
+.history-item h3{margin:0 0 8px;font-size:14px}
+.history-item p{margin:4px 0;color:#64748b;font-size:13px}
+.statusline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.timeline{display:grid;gap:10px}
+.timeline-item{border-left:3px solid #cbd5e1;padding:8px 0 8px 14px}
+.timeline-item strong{display:block;font-size:13px}
+.timeline-item span{font-size:12px;color:#64748b}
+
+@media(max-width:1000px){
+aside{width:75px}
+aside button{font-size:0;text-align:center}
+aside button:before{content:'•';font-size:22px}
+.group{display:none}
+.cards{grid-template-columns:repeat(2,1fr)}
+.grid2,.form,.grid3,.history-grid{grid-template-columns:1fr}
+.workflow{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:560px){
+.cards{grid-template-columns:1fr}
+main{padding:18px}
+.workflow{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
-<header><div class="brand">DASH <span>Services · Admin Portal</span></div><div class="tag">SUPER ADMIN</div></header>
+
+<header>
+<div class="brand">DASH <span>Services · Admin Portal</span></div>
+<div class="tag">SUPER ADMIN</div>
+</header>
+
 <div class="layout">
+
 <aside>
-<div class="group">Operations</div><button class="active" onclick="show('dashboard',this)">Dashboard</button><button onclick="show('bookings',this)">Bookings</button><button onclick="show('payments',this)">Payments</button><button onclick="show('schedule',this)">Schedule</button><button onclick="show('waitlist',this)">Wait List</button><button onclick="show('complaints',this)">Complaints & Evidence</button>
-<div class="group">People</div><button onclick="show('customers',this)">Customers</button><button onclick="show('employees',this)">Employee Records</button>
-<div class="group">Assets</div><button onclick="show('fleet',this)">Fleet & Equipment</button>
-<div class="group">Finances</div><button onclick="show('revenue',this)">Revenue Analytics</button><button onclick="show('finances',this)">Company Finances</button><button onclick="show('optimization',this)">Business Optimization</button>
-<div class="group">Administration</div><button onclick="show('communications',this)">Communications</button><button onclick="show('policies',this)">Policies</button><button onclick="show('access',this)">Admin Accessibility</button><button onclick="show('security',this)">Security & Activity</button><button onclick="show('settings',this)">Business Settings</button>
+
+<div class="group">Operations</div>
+
+<button class="active" onclick="show('dashboard',this)">Dashboard</button>
+<button onclick="show('bookings',this)">Bookings</button>
+<button onclick="show('payments',this)">Payments</button>
+<button onclick="show('schedule',this)">Schedule</button>
+<button onclick="show('waitlist',this)">Wait List</button>
+<button onclick="show('complaints',this)">Complaints & Evidence</button>
+
+<div class="group">People</div>
+
+<button onclick="show('customers',this)">Customers</button>
+
+<!-- Employee Records now opens the separate employee-management.html page -->
+<button onclick="window.location.href='employee-management.html'">Employee Records</button>
+
+<div class="group">Assets</div>
+
+<button onclick="show('fleet',this)">Fleet & Equipment</button>
+
+<div class="group">Finances</div>
+
+<button onclick="show('revenue',this)">Revenue Analytics</button>
+<button onclick="show('finances',this)">Company Finances</button>
+<button onclick="show('optimization',this)">Business Optimization</button>
+
+<div class="group">Administration</div>
+
+<button onclick="show('communications',this)">Communications</button>
+<button onclick="show('policies',this)">Policies</button>
+<button onclick="show('access',this)">Admin Accessibility</button>
+<button onclick="show('security',this)">Security & Activity</button>
+<button onclick="show('settings',this)">Business Settings</button>
+
 </aside>
+
 <main>
-<section id="dashboard" class="section active"><div class="title"><div><h1>Dashboard</h1><p>Your DASH Services business command center.</p></div></div><div class="notice"><b>Ready for real data.</b> No customer, financial, employee, vehicle, payment, or revenue records have been entered.</div><div class="cards"><div class="card"><div class="label">REVENUE</div><div class="value">$0.00</div><div class="muted">No revenue recorded</div></div><div class="card"><div class="label">BOOKINGS</div><div class="value">0</div><div class="muted">No bookings</div></div><div class="card"><div class="label">PAYMENTS PENDING</div><div class="value">0</div><div class="muted">No payment records</div></div><div class="card"><div class="label">COMPLAINTS</div><div class="value">0</div><div class="muted">No complaints</div></div></div></section>
-<section id="bookings" class="section"><div class="title"><div><h1>Bookings</h1><p>Booking command center connected to Customer History.</p></div><button class="btn" onclick="openBooking()">+ New Booking</button></div><div class="notice"><b>Booking rule:</b> Customers can request service timing. DASH assigns the final service date and service window.</div><div class="workflow"><div class="step"><b>01</b>Booking Received</div><div class="step"><b>02</b>Review</div><div class="step"><b>03</b>Payment</div><div class="step"><b>04</b>DASH Assigns Date</div><div class="step"><b>05</b>Service</div></div><div class="cards"><div class="card"><div class="label">TOTAL BOOKINGS</div><div class="value" id="bookingCount">0</div><div class="muted">Current booking records</div></div><div class="card"><div class="label">PAYMENT PENDING</div><div class="value" id="pendingCount">0</div><div class="muted">Awaiting payment confirmation</div></div><div class="card"><div class="label">SCHEDULED</div><div class="value" id="scheduledCount">0</div><div class="muted">DASH-assigned service dates</div></div><div class="card"><div class="label">COMPLETED</div><div class="value" id="completedCount">0</div><div class="muted">Completed services</div></div></div><div class="panel"><div class="head"><h2>Booking Records</h2></div><div class="body" id="bookingList"><div class="empty"><strong>No bookings yet</strong>When a real booking is created, its Customer History record will appear here.</div></div></div></section>
-<section id="payments" class="section"><div class="title"><div><h1>Payments</h1><p>Payment verification and future processor integration.</p></div></div><div class="panel"><div class="body empty"><strong>No payment records</strong>Payment records will appear here when real customer payments are received and recorded.</div></div></section>
-<section id="schedule" class="section"><div class="title"><div><h1>Schedule</h1><p>DASH-controlled service scheduling.</p></div></div><div class="panel"><div class="body empty"><strong>No scheduled services</strong>Assigned dates, service windows, employees, vehicles, and equipment will appear here.</div></div></section>
-<section id="waitlist" class="section"><div class="title"><div><h1>Wait List</h1><p>Customers awaiting an available DASH service date.</p></div></div><div class="panel"><div class="body empty"><strong>Wait List is empty</strong>No customers are currently waiting for scheduling.</div></div></section>
-<section id="complaints" class="section"><div class="title"><div><h1>Complaints & Evidence</h1><p>Customer complaint and service-review workflow.</p></div></div><div class="notice"><b>Review policy:</b> Submitted evidence can be reviewed by DASH Admin. Reviews may take up to 14 days.</div><div class="panel"><div class="body empty"><strong>No complaints under review</strong>No complaint records exist.</div></div></section>
-<section id="customers" class="section"><div class="title"><div><h1>Customers</h1><p>Customer profiles and continuous Customer History.</p></div></div><div class="notice"><b>Customer History design:</b> One customer record can contain multiple bookings and services over time. The same customer should not be recreated for every booking.</div><div class="panel"><div class="body" id="customerHistoryHome"><div class="empty"><strong>No customers yet</strong>Customer profiles will be created from real bookings. Each profile will contain bookings, services, payments, complaints/evidence, internal notes, assignments, and activity.</div></div></div></section>
-<section id="employees" class="section"><div class="title"><div><h1>Employee Records</h1><p>Employee directory, roles, records, assignments, and service history.</p></div></div><div class="panel"><div class="body empty"><strong>No employees yet</strong>Employee records will be created when DASH Services hires employees.</div></div></section>
-<section id="fleet" class="section"><div class="title"><div><h1>Fleet & Equipment</h1><p>Company-owned vehicles and equipment.</p></div></div><div class="notice"><b>Permissions:</b> Super Admin controls master vehicle and equipment records. Managers may later view assets, assign vehicles, and submit maintenance documentation. Official mileage editing remains restricted to the approved maintenance-proof workflow.</div><div class="panel"><div class="body empty"><strong>No vehicles or equipment</strong>No company assets have been entered.</div></div></section>
-<section id="revenue" class="section"><div class="title"><div><h1>Revenue Analytics</h1><p>Revenue trends, slow periods, spikes, and service performance.</p></div></div><div class="panel"><div class="body"><div class="chart">Revenue graph will populate from real payment records.</div></div></div></section>
-<section id="finances" class="section"><div class="title"><div><h1>Company Finances</h1><p>Business bank balances, income, expenses, profit/loss, and spending analysis.</p></div></div><div class="security"><b>Restricted financial area:</b> Sensitive company financial information will be available only to authorized roles, with Super Admin retaining full control.</div><div class="cards"><div class="card"><div class="label">BANK BALANCE</div><div class="value">$0.00</div><div class="muted">No account connected</div></div><div class="card"><div class="label">INCOME</div><div class="value">$0.00</div><div class="muted">No income recorded</div></div><div class="card"><div class="label">EXPENSES</div><div class="value">$0.00</div><div class="muted">No expenses recorded</div></div><div class="card"><div class="label">NET PROFIT</div><div class="value">$0.00</div><div class="muted">No financial data</div></div></div></section>
-<section id="optimization" class="section"><div class="title"><div><h1>Business Optimization</h1><p>Future analysis of spending, pricing, capacity, and profit opportunities.</p></div></div><div class="panel"><div class="body empty"><strong>No business data yet</strong>Optimization recommendations will be based on real DASH financial and operational records.</div></div></section>
-<section id="communications" class="section"><div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div>
-<div id="dash-gmail-connection" class="panel"><div class="head"><h2>Gmail Connection</h2><span class="pill">Super Admin</span></div><div class="body">
-<div class="notice"><b>DASH Gmail:</b> Connect the dedicated business Gmail account used for customer communications.</div>
-<div class="grid2"><div class="history-item"><h3>Business Gmail</h3><p><b>Account:</b> supportdashservices@gmail.com</p><p class="muted">This is the Google account that will be connected to DASH.</p></div><div class="history-item"><h3>Customer-facing address</h3><p><b>Address:</b> support@dashservices.net</p><p class="muted">Customers can reply to the DASH support address.</p></div></div>
-<div class="actions"><a class="btn" href="admin-gmail-connection.html">Open Gmail Connection</a></div>
-</div></div>
-<div class="panel"><div class="body empty"><strong>No communications yet</strong>Communication history will appear when real customer or employee communications are connected.</div></div></section>
-<section id="policies" class="section"><div class="title"><div><h1>Policies</h1><p>Business policies and internal operating standards.</p></div></div><div class="panel"><div class="body empty"><strong>No policies entered</strong>Policies can be added when the business is ready.</div></div></section>
-<section id="access" class="section"><div class="title"><div><h1>Admin Accessibility</h1><p>Role-based access and future permission management.</p></div></div><div class="grid3"><div class="card"><div class="label">SUPER ADMIN</div><div class="value">Full</div><div class="muted">Complete business access</div></div><div class="card"><div class="label">MANAGER</div><div class="value">Limited</div><div class="muted">Operational access only</div></div><div class="card"><div class="label">EMPLOYEE</div><div class="value">Assigned</div><div class="muted">Assigned-work access</div></div></div></section>
-<section id="security" class="section"><div class="title"><div><h1>Security & Activity</h1><p>Future authentication, access logs, and administrative activity tracking.</p></div></div><div class="panel"><div class="body empty"><strong>No activity records</strong>Audit history will populate after secure authentication is implemented.</div></div></section>
-<section id="settings" class="section"><div class="title"><div><h1>Business Settings</h1><p>DASH Services configuration.</p></div></div><div class="panel"><div class="body empty"><strong>No business settings configured</strong>Business configuration can be entered when ready.</div></div></section>
-</main></div>
-<div id="bookingModal" class="modal"><div class="modalbox"><div class="modalhead"><h2>New Booking</h2><button class="close" onclick="closeBooking()">Close</button></div><div class="notice"><b>Real-data only:</b> Saving a booking will require actual customer information. This form does not contain demo data.</div><div class="form"><div class="field"><label>Customer name</label><input id="customerName" placeholder="Enter real customer name"></div><div class="field"><label>Phone</label><input id="customerPhone" placeholder="Enter real phone number"></div><div class="field"><label>Email</label><input id="customerEmail" type="email" placeholder="Enter real email"></div><div class="field"><label>Service requested</label><input id="serviceRequested" placeholder="Enter requested service"></div><div class="field full"><label>Service address</label><input id="serviceAddress" placeholder="Enter real service address"></div><div class="field"><label>Customer requested date</label><input id="requestedDate" type="date"></div><div class="field"><label>Customer requested time/window</label><input id="requestedWindow" placeholder="Example: morning, afternoon, specific time"></div><div class="field"><label>Booking status</label><select id="bookingStatus"><option>Booking Received</option><option>Under Review</option><option>Awaiting Payment</option><option>Paid</option><option>Scheduled</option><option>In Progress</option><option>Completed</option><option>Closed</option><option>Cancelled</option></select></div><div class="field"><label>Payment status</label><select id="paymentStatus"><option>Not Recorded</option><option>Pending</option><option>Received</option><option>Refunded</option></select></div><div class="field"><label>Amount owed</label><input id="amountOwed" type="number" min="0" step="0.01" placeholder="Enter actual amount"></div><div class="field"><label>Payment method</label><input id="paymentMethod" placeholder="Enter actual payment method"></div><div class="field"><label>DASH assigned date</label><input id="assignedDate" type="date"></div><div class="field"><label>DASH assigned time/window</label><input id="assignedWindow" placeholder="Enter DASH-assigned window"></div><div class="field"><label>Assigned employee</label><input id="assignedEmployee" placeholder="Leave blank until employees exist"></div><div class="field"><label>Assigned vehicle</label><input id="assignedVehicle" placeholder="Leave blank until vehicles exist"></div><div class="field full"><label>Equipment requirements</label><textarea id="equipmentRequirements" placeholder="Enter actual equipment requirements"></textarea></div><div class="field full"><label>Internal DASH notes</label><textarea id="internalNotes" placeholder="Private internal notes"></textarea></div></div><div class="actions"><button class="btn light" onclick="closeBooking()">Cancel</button><button class="btn" onclick="saveBooking()">Save Real Booking</button></div></div></div>
-<div id="historyModal" class="modal"><div class="modalbox"><div class="modalhead"><h2 id="historyTitle">Customer History</h2><button class="close" onclick="closeHistory()">Close</button></div><div id="historyBody"></div></div></div>
+
+<section id="dashboard" class="section active">
+
+<div class="title">
+<div>
+<h1>Dashboard</h1>
+<p>Your DASH Services business command center.</p>
+</div>
+</div>
+
+<div class="notice">
+<b>Ready for real data.</b>
+No customer, financial, employee, vehicle, payment, or revenue records have been entered.
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="label">REVENUE</div>
+<div class="value">$0.00</div>
+<div class="muted">No revenue recorded</div>
+</div>
+
+<div class="card">
+<div class="label">BOOKINGS</div>
+<div class="value">0</div>
+<div class="muted">No bookings</div>
+</div>
+
+<div class="card">
+<div class="label">PAYMENTS PENDING</div>
+<div class="value">0</div>
+<div class="muted">No payment records</div>
+</div>
+
+<div class="card">
+<div class="label">COMPLAINTS</div>
+<div class="value">0</div>
+<div class="muted">No complaints</div>
+</div>
+
+</div>
+</section>
+
+
+<section id="bookings" class="section">
+
+<div class="title">
+<div>
+<h1>Bookings</h1>
+<p>Booking command center connected to Customer History.</p>
+</div>
+
+<button class="btn" onclick="openBooking()">+ New Booking</button>
+</div>
+
+<div class="notice">
+<b>Booking rule:</b>
+Customers can request service timing. DASH assigns the final service date and service window.
+</div>
+
+<div class="workflow">
+
+<div class="step"><b>01</b>Booking Received</div>
+<div class="step"><b>02</b>Review</div>
+<div class="step"><b>03</b>Payment</div>
+<div class="step"><b>04</b>DASH Assigns Date</div>
+<div class="step"><b>05</b>Service</div>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="label">TOTAL BOOKINGS</div>
+<div class="value" id="bookingCount">0</div>
+<div class="muted">Current booking records</div>
+</div>
+
+<div class="card">
+<div class="label">PAYMENT PENDING</div>
+<div class="value" id="pendingCount">0</div>
+<div class="muted">Awaiting payment confirmation</div>
+</div>
+
+<div class="card">
+<div class="label">SCHEDULED</div>
+<div class="value" id="scheduledCount">0</div>
+<div class="muted">DASH-assigned service dates</div>
+</div>
+
+<div class="card">
+<div class="label">COMPLETED</div>
+<div class="value" id="completedCount">0</div>
+<div class="muted">Completed services</div>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="head">
+<h2>Booking Records</h2>
+</div>
+
+<div class="body" id="bookingList">
+
+<div class="empty">
+<strong>No bookings yet</strong>
+When a real booking is created, its Customer History record will appear here.
+</div>
+
+</div>
+</div>
+
+</section>
+
+
+<section id="payments" class="section">
+
+<div class="title">
+<div>
+<h1>Payments</h1>
+<p>Payment verification and future processor integration.</p>
+</div>
+</div>
+
+<div class="panel">
+<div class="body empty">
+<strong>No payment records</strong>
+Payment records will appear here when real customer payments are received and recorded.
+</div>
+</div>
+
+</section>
+
+
+<section id="schedule" class="section">
+
+<div class="title">
+<div>
+<h1>Schedule</h1>
+<p>DASH-controlled service scheduling.</p>
+</div>
+</div>
+
+<div class="panel">
+<div class="body empty">
+<strong>No scheduled services</strong>
+Assigned dates, service windows, employees, vehicles, and equipment will appear here.
+</div>
+</div>
+
+</section>
+
+
+<section id="waitlist" class="section">
+
+<div class="title">
+<div>
+<h1>Wait List</h1>
+<p>Customers awaiting an available DASH service date.</p>
+</div>
+</div>
+
+<div class="panel">
+<div class="body empty">
+<strong>Wait List is empty</strong>
+No customers are currently waiting for scheduling.
+</div>
+</div>
+
+</section>
+
+
+<section id="complaints" class="section">
+
+<div class="title">
+<div>
+<h1>Complaints & Evidence</h1>
+<p>Customer complaint and service-review workflow.</p>
+</div>
+</div>
+
+<div class="notice">
+<b>Review policy:</b>
+Submitted evidence can be reviewed by DASH Admin. Reviews may take up to 14 days.
+</div>
+
+<div class="panel">
+<div class="body empty">
+<strong>No complaints under review</strong>
+No complaint records exist.
+</div>
+</div>
+
+</section>
+
+
+<section id="customers" class="section">
+
+<div class="title">
+<div>
+<h1>Customers</h1>
+<p>Customer profiles and continuous Customer History.</p>
+</div>
+</div>
+
+<div class="notice">
+<b>Customer History design:</b>
+One customer record can contain multiple bookings and services over time.
+The same customer should not be recreated for every booking.
+</div>
+
+<div class="panel">
+<div class="body" id="customerHistoryHome">
+
+<div class="empty">
+<strong>No customers yet</strong>
+Customer profiles will be created from real bookings.
+Each profile will contain bookings, services, payments, complaints/evidence, internal notes, assignments, and activity.
+</div>
+
+</div>
+</div>
+
+</section>
+
+
+<!--
+The old Employee Records section remains in the HTML for now,
+but the navigation button above opens employee-management.html.
+-->
+
+<section id="employees" class="section">
+
+<div class="title">
+<div>
+<h1>Employee Records</h1>
+<p>Employee directory, roles, records, assignments, and service history.</p>
+</div>
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No employees yet</strong>
+Employee records will be created when DASH Services hires employees.
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="fleet" class="section">
+
+<div class="title">
+<div>
+<h1>Fleet & Equipment</h1>
+<p>Company-owned vehicles and equipment.</p>
+</div>
+</div>
+
+<div class="notice">
+<b>Permissions:</b>
+Super Admin controls master vehicle and equipment records.
+Managers may later view assets, assign vehicles, and submit maintenance documentation.
+Official mileage editing remains restricted to the approved maintenance-proof workflow.
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No vehicles or equipment</strong>
+No company assets have been entered.
+
+</div>
+</div>
+
+</section>
+
+
+<section id="revenue" class="section">
+
+<div class="title">
+<div>
+<h1>Revenue Analytics</h1>
+<p>Revenue trends, slow periods, spikes, and service performance.</p>
+</div>
+</div>
+
+<div class="panel">
+
+<div class="body">
+
+<div class="chart">
+Revenue graph will populate from real payment records.
+</div>
+
+</div>
+</div>
+
+</section>
+
+
+<section id="finances" class="section">
+
+<div class="title">
+
+<div>
+<h1>Company Finances</h1>
+<p>Business bank balances, income, expenses, profit/loss, and spending analysis.</p>
+</div>
+
+</div>
+
+<div class="security">
+
+<b>Restricted financial area:</b>
+Sensitive company financial information will be available only to authorized roles,
+with Super Admin retaining full control.
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="label">BANK BALANCE</div>
+<div class="value">$0.00</div>
+<div class="muted">No account connected</div>
+</div>
+
+<div class="card">
+<div class="label">INCOME</div>
+<div class="value">$0.00</div>
+<div class="muted">No income recorded</div>
+</div>
+
+<div class="card">
+<div class="label">EXPENSES</div>
+<div class="value">$0.00</div>
+<div class="muted">No expenses recorded</div>
+</div>
+
+<div class="card">
+<div class="label">NET PROFIT</div>
+<div class="value">$0.00</div>
+<div class="muted">No financial data</div>
+</div>
+
+</div>
+
+</section>
+
+
+<section id="optimization" class="section">
+
+<div class="title">
+<div>
+<h1>Business Optimization</h1>
+<p>Future analysis of spending, pricing, capacity, and profit opportunities.</p>
+</div>
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No business data yet</strong>
+Optimization recommendations will be based on real DASH financial and operational records.
+
+</div>
+</div>
+
+</section>
+
+
+<section id="communications" class="section">
+
+<div class="title">
+
+<div>
+<h1>Communications</h1>
+<p>Customer and internal communication center.</p>
+</div>
+
+</div>
+
+<div id="dash-gmail-connection" class="panel">
+
+<div class="head">
+
+<h2>Gmail Connection</h2>
+<span class="pill">Super Admin</span>
+
+</div>
+
+<div class="body">
+
+<div class="notice">
+
+<b>DASH Gmail:</b>
+Connect the dedicated business Gmail account used for customer communications.
+
+</div>
+
+<div class="grid2">
+
+<div class="history-item">
+
+<h3>Business Gmail</h3>
+
+<p>
+<b>Account:</b>
+supportdashservices@gmail.com
+</p>
+
+<p class="muted">
+This is the Google account that will be connected to DASH.
+</p>
+
+</div>
+
+<div class="history-item">
+
+<h3>Customer-facing address</h3>
+
+<p>
+<b>Address:</b>
+support@dashservices.net
+</p>
+
+<p class="muted">
+Customers can reply to the DASH support address.
+</p>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<a class="btn" href="admin-gmail-connection.html">
+Open Gmail Connection
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No communications yet</strong>
+Communication history will appear when real customer or employee communications are connected.
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="policies" class="section">
+
+<div class="title">
+
+<div>
+<h1>Policies</h1>
+<p>Business policies and internal operating standards.</p>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No policies entered</strong>
+Policies can be added when the business is ready.
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="access" class="section">
+
+<div class="title">
+
+<div>
+<h1>Admin Accessibility</h1>
+<p>Role-based access and future permission management.</p>
+</div>
+
+</div>
+
+<div class="grid3">
+
+<div class="card">
+
+<div class="label">SUPER ADMIN</div>
+<div class="value">Full</div>
+<div class="muted">Complete business access</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">MANAGER</div>
+<div class="value">Limited</div>
+<div class="muted">Operational access only</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">EMPLOYEE</div>
+<div class="value">Assigned</div>
+<div class="muted">Assigned-work access</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="security" class="section">
+
+<div class="title">
+
+<div>
+<h1>Security & Activity</h1>
+<p>Future authentication, access logs, and administrative activity tracking.</p>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No activity records</strong>
+Audit history will populate after secure authentication is implemented.
+
+</div>
+
+</div>
+
+</section>
+
+
+<section id="settings" class="section">
+
+<div class="title">
+
+<div>
+<h1>Business Settings</h1>
+<p>DASH Services configuration.</p>
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="body empty">
+
+<strong>No business settings configured</strong>
+Business configuration can be entered when ready.
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+</div>
+
+
+<div id="bookingModal" class="modal">
+
+<div class="modalbox">
+
+<div class="modalhead">
+<h2>New Booking</h2>
+<button class="close" onclick="closeBooking()">Close</button>
+</div>
+
+<div class="notice">
+
+<b>Real-data only:</b>
+Saving a booking will require actual customer information.
+This form does not contain demo data.
+
+</div>
+
+<div class="form">
+
+<div class="field">
+<label>Customer name</label>
+<input id="customerName" placeholder="Enter real customer name">
+</div>
+
+<div class="field">
+<label>Phone</label>
+<input id="customerPhone" placeholder="Enter real phone number">
+</div>
+
+<div class="field">
+<label>Email</label>
+<input id="customerEmail" type="email" placeholder="Enter real email">
+</div>
+
+<div class="field">
+<label>Service requested</label>
+<input id="serviceRequested" placeholder="Enter requested service">
+</div>
+
+<div class="field full">
+<label>Service address</label>
+<input id="serviceAddress" placeholder="Enter real service address">
+</div>
+
+<div class="field">
+<label>Customer requested date</label>
+<input id="requestedDate" type="date">
+</div>
+
+<div class="field">
+<label>Customer requested time/window</label>
+<input id="requestedWindow" placeholder="Example: morning, afternoon, specific time">
+</div>
+
+<div class="field">
+<label>Booking status</label>
+
+<select id="bookingStatus">
+
+<option>Booking Received</option>
+<option>Under Review</option>
+<option>Awaiting Payment</option>
+<option>Paid</option>
+<option>Scheduled</option>
+<option>In Progress</option>
+<option>Completed</option>
+<option>Closed</option>
+<option>Cancelled</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>Payment status</label>
+
+<select id="paymentStatus">
+
+<option>Not Recorded</option>
+<option>Pending</option>
+<option>Received</option>
+<option>Refunded</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>Amount owed</label>
+
+<input
+id="amountOwed"
+type="number"
+min="0"
+step="0.01"
+placeholder="Enter actual amount"
+>
+
+</div>
+
+<div class="field">
+
+<label>Payment method</label>
+
+<input
+id="paymentMethod"
+placeholder="Enter actual payment method"
+>
+
+</div>
+
+<div class="field">
+
+<label>DASH assigned date</label>
+
+<input id="assignedDate" type="date">
+
+</div>
+
+<div class="field">
+
+<label>DASH assigned time/window</label>
+
+<input
+id="assignedWindow"
+placeholder="Enter DASH-assigned window"
+>
+
+</div>
+
+<div class="field">
+
+<label>Assigned employee</label>
+
+<input
+id="assignedEmployee"
+placeholder="Leave blank until employees exist"
+>
+
+</div>
+
+<div class="field">
+
+<label>Assigned vehicle</label>
+
+<input
+id="assignedVehicle"
+placeholder="Leave blank until vehicles exist"
+>
+
+</div>
+
+<div class="field full">
+
+<label>Equipment requirements</label>
+
+<textarea
+id="equipmentRequirements"
+placeholder="Enter actual equipment requirements"
+></textarea>
+
+</div>
+
+<div class="field full">
+
+<label>Internal DASH notes</label>
+
+<textarea
+id="internalNotes"
+placeholder="Private internal notes"
+></textarea>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button class="btn light" onclick="closeBooking()">
+Cancel
+</button>
+
+<button class="btn" onclick="saveBooking()">
+Save Real Booking
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="historyModal" class="modal">
+
+<div class="modalbox">
+
+<div class="modalhead">
+
+<h2 id="historyTitle">
+Customer History
+</h2>
+
+<button class="close" onclick="closeHistory()">
+Close
+</button>
+
+</div>
+
+<div id="historyBody"></div>
+
+</div>
+
+</div>
+
+
 <script>
+
 let bookings=[];
-function show(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('aside button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
-function openBooking(){document.getElementById('bookingModal').classList.add('show')}
-function closeBooking(){document.getElementById('bookingModal').classList.remove('show')}
-function saveBooking(){const name=document.getElementById('customerName').value.trim();const service=document.getElementById('serviceRequested').value.trim();if(!name||!service){alert('Please enter the customer name and requested service.');return}const booking={id:Date.now(),name,phone:document.getElementById('customerPhone').value.trim(),email:document.getElementById('customerEmail').value.trim(),service,address:document.getElementById('serviceAddress').value.trim(),requestedDate:document.getElementById('requestedDate').value,requestedWindow:document.getElementById('requestedWindow').value.trim(),status:document.getElementById('bookingStatus').value,paymentStatus:document.getElementById('paymentStatus').value,amount:document.getElementById('amountOwed').value,paymentMethod:document.getElementById('paymentMethod').value.trim(),assignedDate:document.getElementById('assignedDate').value,assignedWindow:document.getElementById('assignedWindow').value.trim(),employee:document.getElementById('assignedEmployee').value.trim(),vehicle:document.getElementById('assignedVehicle').value.trim(),equipment:document.getElementById('equipmentRequirements').value.trim(),notes:document.getElementById('internalNotes').value.trim(),created:new Date().toLocaleString()};bookings.push(booking);renderBookings();closeBooking();document.querySelectorAll('#bookingModal input,#bookingModal textarea').forEach(e=>e.value='');document.getElementById('bookingStatus').value='Booking Received';document.getElementById('paymentStatus').value='Not Recorded';}
-function renderBookings(){document.getElementById('bookingCount').textContent=bookings.length;document.getElementById('pendingCount').textContent=bookings.filter(b=>b.paymentStatus==='Pending').length;document.getElementById('scheduledCount').textContent=bookings.filter(b=>b.status==='Scheduled').length;document.getElementById('completedCount').textContent=bookings.filter(b=>b.status==='Completed'||b.status==='Closed').length;const list=document.getElementById('bookingList');if(!bookings.length){list.innerHTML='<div class="empty"><strong>No bookings yet</strong>When a real booking is created, its Customer History record will appear here.</div>';return}list.innerHTML=bookings.map(b=>`<div class="row"><div><strong>${escapeHtml(b.name)}</strong><span class="muted">${escapeHtml(b.service)} · ${escapeHtml(b.status)}</span><div class="mini">Created ${escapeHtml(b.created)}</div></div><div class="toolbar"><span class="pill">${escapeHtml(b.paymentStatus)}</span><button class="btn light" onclick="openHistory(${b.id})">Customer History</button></div></div>`).join('')}
-function openHistory(id){const b=bookings.find(x=>x.id===id);if(!b)return;document.getElementById('historyTitle').textContent='Customer History — '+b.name;document.getElementById('historyBody').innerHTML=`<div class="statusline"><span class="pill">Customer Profile</span><span class="pill">${escapeHtml(b.status)}</span><span class="pill">${escapeHtml(b.paymentStatus)}</span></div><div class="history-tabs"><button class="history-tab active" onclick="historyTab('overview',this,${b.id})">Overview</button><button class="history-tab" onclick="historyTab('bookings',this,${b.id})">Bookings</button><button class="history-tab" onclick="historyTab('services',this,${b.id})">Services</button><button class="history-tab" onclick="historyTab('payments',this,${b.id})">Payments</button><button class="history-tab" onclick="historyTab('issues',this,${b.id})">Complaints & Evidence</button><button class="history-tab" onclick="historyTab('notes',this,${b.id})">Internal Notes</button><button class="history-tab" onclick="historyTab('activity',this,${b.id})">Activity</button></div><div id="historyPanel"></div>`;historyTab('overview',document.querySelector('.history-tab.active'),b.id);document.getElementById('historyModal').classList.add('show')}
-function closeHistory(){document.getElementById('historyModal').classList.remove('show')}
-function historyTab(tab,btn,id){document.querySelectorAll('.history-tab').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');const b=bookings.find(x=>x.id===id);if(!b)return;let html='';if(tab==='overview')html=`<div class="history-grid"><div class="history-item"><h3>Customer Information</h3><p><b>Name:</b> ${escapeHtml(b.name)}</p><p><b>Phone:</b> ${escapeHtml(b.phone||'Not recorded')}</p><p><b>Email:</b> ${escapeHtml(b.email||'Not recorded')}</p><p><b>Address:</b> ${escapeHtml(b.address||'Not recorded')}</p></div><div class="history-item"><h3>Current Service</h3><p><b>Service:</b> ${escapeHtml(b.service)}</p><p><b>Requested:</b> ${escapeHtml(b.requestedDate||'Not recorded')} ${escapeHtml(b.requestedWindow||'')}</p><p><b>DASH assigned:</b> ${escapeHtml(b.assignedDate||'Not assigned')} ${escapeHtml(b.assignedWindow||'')}</p><p><b>Employee:</b> ${escapeHtml(b.employee||'Not assigned')}</p><p><b>Vehicle:</b> ${escapeHtml(b.vehicle||'Not assigned')}</p></div></div>`;else if(tab==='bookings')html=`<div class="history-item"><h3>Booking History</h3><p>This customer currently has 1 recorded booking in the front-end structure.</p><p><b>Status:</b> ${escapeHtml(b.status)}</p><p><b>Created:</b> ${escapeHtml(b.created)}</p></div>`;else if(tab==='services')html=`<div class="history-item"><h3>Service History</h3><p>${b.status==='Completed'||b.status==='Closed'?'Completed service recorded.':'No completed service has been recorded yet.'}</p><p><b>Requested service:</b> ${escapeHtml(b.service)}</p>`;else if(tab==='payments')html=`<div class="history-item"><h3>Payment History</h3><p><b>Amount owed:</b> ${escapeHtml(b.amount||'Not recorded')}</p><p><b>Status:</b> ${escapeHtml(b.paymentStatus)}</p><p><b>Method:</b> ${escapeHtml(b.paymentMethod||'Not recorded')}</p></div>`;else if(tab==='issues')html=`<div class="empty"><strong>No complaints or evidence</strong>No complaint/evidence records are attached to this customer.</div>`;else if(tab==='notes')html=`<div class="history-item"><h3>Internal DASH Notes</h3><p>${escapeHtml(b.notes||'No internal notes recorded.')}</p></div>`;else html=`<div class="timeline"><div class="timeline-item"><strong>Booking created</strong><span>${escapeHtml(b.created)}</span></div><div class="timeline-item"><strong>Current status: ${escapeHtml(b.status)}</strong><span>Customer activity will expand as the customer receives additional services.</span></div></div>`;document.getElementById('historyPanel').innerHTML=html}
-function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+
+function show(id,btn){
+
+document.querySelectorAll('.section')
+.forEach(s=>s.classList.remove('active'));
+
+document.getElementById(id)
+.classList.add('active');
+
+document.querySelectorAll('aside button')
+.forEach(b=>b.classList.remove('active'));
+
+if(btn)btn.classList.add('active');
+
+}
+
+function openBooking(){
+
+document.getElementById('bookingModal')
+.classList.add('show');
+
+}
+
+function closeBooking(){
+
+document.getElementById('bookingModal')
+.classList.remove('show');
+
+}
+
+function saveBooking(){
+
+const name=
+document.getElementById('customerName')
+.value.trim();
+
+const service=
+document.getElementById('serviceRequested')
+.value.trim();
+
+if(!name||!service){
+
+alert(
+'Please enter the customer name and requested service.'
+);
+
+return;
+
+}
+
+const booking={
+
+id:Date.now(),
+
+name:name,
+
+phone:
+document.getElementById('customerPhone')
+.value.trim(),
+
+email:
+document.getElementById('customerEmail')
+.value.trim(),
+
+service:service,
+
+address:
+document.getElementById('serviceAddress')
+.value.trim(),
+
+requestedDate:
+document.getElementById('requestedDate')
+.value,
+
+requestedWindow:
+document.getElementById('requestedWindow')
+.value.trim(),
+
+status:
+document.getElementById('bookingStatus')
+.value,
+
+paymentStatus:
+document.getElementById('paymentStatus')
+.value,
+
+amount:
+document.getElementById('amountOwed')
+.value,
+
+paymentMethod:
+document.getElementById('paymentMethod')
+.value.trim(),
+
+assignedDate:
+document.getElementById('assignedDate')
+.value,
+
+assignedWindow:
+document.getElementById('assignedWindow')
+.value.trim(),
+
+employee:
+document.getElementById('assignedEmployee')
+.value.trim(),
+
+vehicle:
+document.getElementById('assignedVehicle')
+.value.trim(),
+
+equipment:
+document.getElementById('equipmentRequirements')
+.value.trim(),
+
+notes:
+document.getElementById('internalNotes')
+.value.trim(),
+
+created:
+new Date().toLocaleString()
+
+};
+
+bookings.push(booking);
+
+renderBookings();
+
+closeBooking();
+
+document
+.querySelectorAll('#bookingModal input,#bookingModal textarea')
+.forEach(e=>e.value='');
+
+document.getElementById('bookingStatus')
+.value='Booking Received';
+
+document.getElementById('paymentStatus')
+.value='Not Recorded';
+
+}
+
+function renderBookings(){
+
+document.getElementById('bookingCount')
+.textContent=bookings.length;
+
+document.getElementById('pendingCount')
+.textContent=
+bookings.filter(
+b=>b.paymentStatus==='Pending'
+).length;
+
+document.getElementById('scheduledCount')
+.textContent=
+bookings.filter(
+b=>b.status==='Scheduled'
+).length;
+
+document.getElementById('completedCount')
+.textContent=
+bookings.filter(
+b=>b.status==='Completed'||
+b.status==='Closed'
+).length;
+
+const list=
+document.getElementById('bookingList');
+
+if(!bookings.length){
+
+list.innerHTML=
+'<div class="empty"><strong>No bookings yet</strong>When a real booking is created, its Customer History record will appear here.</div>';
+
+return;
+
+}
+
+list.innerHTML=
+
+bookings.map(b=>`
+
+<div class="row">
+
+<div>
+
+<strong>
+${escapeHtml(b.name)}
+</strong>
+
+<span class="muted">
+${escapeHtml(b.service)}
+·
+${escapeHtml(b.status)}
+</span>
+
+<div class="mini">
+Created ${escapeHtml(b.created)}
+</div>
+
+</div>
+
+<div class="toolbar">
+
+<span class="pill">
+${escapeHtml(b.paymentStatus)}
+</span>
+
+<button
+class="btn light"
+onclick="openHistory(${b.id})"
+>
+Customer History
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+}
+
+function openHistory(id){
+
+const b=bookings.find(x=>x.id===id);
+
+if(!b)return;
+
+document.getElementById('historyTitle')
+.textContent=
+'Customer History — '+b.name;
+
+document.getElementById('historyBody')
+.innerHTML=`
+
+<div class="statusline">
+
+<span class="pill">
+Customer Profile
+</span>
+
+<span class="pill">
+${escapeHtml(b.status)}
+</span>
+
+<span class="pill">
+${escapeHtml(b.paymentStatus)}
+</span>
+
+</div>
+
+<div class="history-tabs">
+
+<button
+class="history-tab active"
+onclick="historyTab('overview',this,${b.id})"
+>
+Overview
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('bookings',this,${b.id})"
+>
+Bookings
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('services',this,${b.id})"
+>
+Services
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('payments',this,${b.id})"
+>
+Payments
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('issues',this,${b.id})"
+>
+Complaints & Evidence
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('notes',this,${b.id})"
+>
+Internal Notes
+</button>
+
+<button
+class="history-tab"
+onclick="historyTab('activity',this,${b.id})"
+>
+Activity
+</button>
+
+</div>
+
+<div id="historyPanel"></div>
+
+`;
+
+historyTab(
+'overview',
+document.querySelector('.history-tab.active'),
+b.id
+);
+
+document.getElementById('historyModal')
+.classList.add('show');
+
+}
+
+function closeHistory(){
+
+document.getElementById('historyModal')
+.classList.remove('show');
+
+}
+
+function historyTab(tab,btn,id){
+
+document
+.querySelectorAll('.history-tab')
+.forEach(x=>x.classList.remove('active'));
+
+if(btn)btn.classList.add('active');
+
+const b=bookings.find(x=>x.id===id);
+
+if(!b)return;
+
+let html='';
+
+if(tab==='overview'){
+
+html=`
+
+<div class="history-grid">
+
+<div class="history-item">
+
+<h3>
+Customer Information
+</h3>
+
+<p>
+<b>Name:</b>
+${escapeHtml(b.name)}
+</p>
+
+<p>
+<b>Phone:</b>
+${escapeHtml(b.phone||'Not recorded')}
+</p>
+
+<p>
+<b>Email:</b>
+${escapeHtml(b.email||'Not recorded')}
+</p>
+
+<p>
+<b>Address:</b>
+${escapeHtml(b.address||'Not recorded')}
+</p>
+
+</div>
+
+<div class="history-item">
+
+<h3>
+Current Service
+</h3>
+
+<p>
+<b>Service:</b>
+${escapeHtml(b.service)}
+</p>
+
+<p>
+<b>Requested:</b>
+${escapeHtml(b.requestedDate||'Not recorded')}
+${escapeHtml(b.requestedWindow||'')}
+</p>
+
+<p>
+<b>DASH assigned:</b>
+${escapeHtml(b.assignedDate||'Not assigned')}
+${escapeHtml(b.assignedWindow||'')}
+</p>
+
+<p>
+<b>Employee:</b>
+${escapeHtml(b.employee||'Not assigned')}
+</p>
+
+<p>
+<b>Vehicle:</b>
+${escapeHtml(b.vehicle||'Not assigned')}
+</p>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+else if(tab==='bookings'){
+
+html=`
+
+<div class="history-item">
+
+<h3>
+Booking History
+</h3>
+
+<p>
+This customer currently has 1 recorded booking in the front-end structure.
+</p>
+
+<p>
+<b>Status:</b>
+${escapeHtml(b.status)}
+</p>
+
+<p>
+<b>Created:</b>
+${escapeHtml(b.created)}
+</p>
+
+</div>
+
+`;
+
+}
+
+else if(tab==='services'){
+
+html=`
+
+<div class="history-item">
+
+<h3>
+Service History
+</h3>
+
+<p>
+${
+b.status==='Completed'||b.status==='Closed'
+?
+'Completed service recorded.'
+:
+'No completed service has been recorded yet.'
+}
+</p>
+
+<p>
+<b>Requested service:</b>
+${escapeHtml(b.service)}
+</p>
+
+</div>
+
+`;
+
+}
+
+else if(tab==='payments'){
+
+html=`
+
+<div class="history-item">
+
+<h3>
+Payment History
+</h3>
+
+<p>
+<b>Amount owed:</b>
+${escapeHtml(b.amount||'Not recorded')}
+</p>
+
+<p>
+<b>Status:</b>
+${escapeHtml(b.paymentStatus)}
+</p>
+
+<p>
+<b>Method:</b>
+${escapeHtml(b.paymentMethod||'Not recorded')}
+</p>
+
+</div>
+
+`;
+
+}
+
+else if(tab==='issues'){
+
+html=`
+
+<div class="empty">
+
+<strong>
+No complaints or evidence
+</strong>
+
+No complaint/evidence records are attached to this customer.
+
+</div>
+
+`;
+
+}
+
+else if(tab==='notes'){
+
+html=`
+
+<div class="history-item">
+
+<h3>
+Internal DASH Notes
+</h3>
+
+<p>
+${escapeHtml(b.notes||'No internal notes recorded.')}
+</p>
+
+</div>
+
+`;
+
+}
+
+else{
+
+html=`
+
+<div class="timeline">
+
+<div class="timeline-item">
+
+<strong>
+Booking created
+</strong>
+
+<span>
+${escapeHtml(b.created)}
+</span>
+
+</div>
+
+<div class="timeline-item">
+
+<strong>
+Current status:
+${escapeHtml(b.status)}
+</strong>
+
+<span>
+Customer activity will expand as the customer receives additional services.
+</span>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+document.getElementById('historyPanel')
+.innerHTML=html;
+
+}
+
+function escapeHtml(v){
+
+return String(v??'')
+.replace(
+/[&<>'"]/g,
+c=>({
+
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+"'":'&#39;',
+'"':'&quot;'
+
+}[c])
+
+);
+
+}
+
 </script>
-</body></html>
+
+</body>
+</html>
