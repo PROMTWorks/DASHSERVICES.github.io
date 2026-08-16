@@ -12,26 +12,99 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Patch admin employee management
-        env:
-          FILE: admin-production.html
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           p=Path('admin-production.html')
           s=p.read_text()
-          if 'DASH_EMPLOYEE_ADMIN_V2' in s:
-              raise SystemExit(0)
-          old="<button onclick=\"window.location.href='employee-management.html'\">Employee Records</button>"
-          new="<button onclick=\"show('employees',this);loadAdminEmployees()\">Employee Records</button>"
-          if old not in s:
-              raise SystemExit('Employee navigation marker not found')
-          s=s.replace(old,new,1)
-          start=s.index('<section id="employees" class="section">')
-          end=s.index('</section>',start)+len('</section>')
-          section='''<section id="employees" class="section">\n<div class="title"><div><h1>Employee Records</h1><p>Live employee records managed through Supabase.</p></div><div class="toolbar"><button class="btn" onclick="openAdminEmployeeForm()">+ Add Employee</button><button class="btn light" onclick="loadAdminEmployees()">Refresh</button></div></div>\n<div class="notice"><b>Owner / Super Admin:</b> You can add, edit, change pay, deactivate/remove, and restore employee records. Supabase is the master database.</div>\n<div class="panel"><div class="body" id="adminEmployeeRecords"><div class="empty"><strong>Loading employee records...</strong></div></div></div>\n<div id="adminEmployeeModal" class="modal"><div class="modalbox"><div class="modalhead"><h2 id="adminEmployeeModalTitle">Add Employee</h2><button class="close" onclick="closeAdminEmployeeForm()">Close</button></div><div class="form"><div class="field"><label>Employee ID</label><input id="ae_id" placeholder="Example: 1001"></div><div class="field"><label>First name</label><input id="ae_first"></div><div class="field"><label>Last name</label><input id="ae_last"></div><div class="field"><label>Email</label><input id="ae_email" type="email"></div><div class="field"><label>Phone</label><input id="ae_phone"></div><div class="field"><label>Position</label><input id="ae_position"></div><div class="field"><label>Role</label><select id="ae_role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="hr">HR</option><option value="admin">Super Admin</option><option value="owner">Owner</option></select></div><div class="field"><label>Hourly pay rate</label><input id="ae_pay" type="number" min="0" step="0.01"></div><div class="field"><label>Status</label><select id="ae_status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="field"><label>Hire date</label><input id="ae_hire" type="date"></div><div class="field full"><label>Notes</label><textarea id="ae_notes"></textarea></div></div><div class="actions"><button class="btn light" onclick="closeAdminEmployeeForm()">Cancel</button><button class="btn" onclick="saveAdminEmployee()">Save Employee</button></div></div></div>\n</section>'''
-          s=s[:start]+section+s[end:]
-          script='''\n<script id="DASH_EMPLOYEE_ADMIN_V2">\nconst EMP_API='https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/employee-admin-api';\nlet adminEmployees=[], editingAdminEmployee=null;\nfunction employeeToken(){return window.__supabaseSession?.access_token||localStorage.getItem('supabase.auth.token')||''}\nasync function employeeApi(path='',opts={}){const token=employeeToken();if(!token)throw new Error('Please sign in again.');const r=await fetch(EMP_API+path,{...opts,headers:{'Authorization':'Bearer '+token,'apikey':'sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_','Content-Type':'application/json',...(opts.headers||{})}});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Employee request failed');return j}\nfunction loadAdminEmployees(){const h=document.getElementById('adminEmployeeRecords');if(!h)return;h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';employeeApi().then(j=>{adminEmployees=j.data||[];h.innerHTML=adminEmployees.length?adminEmployees.map(e=>{const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';const pay=e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr';return `<div class="row"><div><strong>${esc(n)}</strong><span class="mini">ID: ${esc(e.employee_id||'—')} · ${esc(e.position||'—')} · ${esc(e.role||'—')}</span><span class="mini">Phone: ${esc(e.phone||'—')} · Email: ${esc(e.email||'—')} · Pay: ${esc(pay)}</span></div><div class="toolbar"><button class="btn light" onclick="editAdminEmployee('${String(e.employee_id).replace(/'/g,"\\'")}')">Edit</button><button class="btn light" onclick="editAdminPay('${String(e.employee_id).replace(/'/g,"\\'")}')">Edit Pay</button><button class="btn light" onclick="removeAdminEmployee('${String(e.employee_id).replace(/'/g,"\\'")}')">Remove</button><span class="pill">${esc(e.employment_status||'active')}</span></div></div>`}).join(''):'<div class="empty"><strong>No employee records</strong>Add your first employee.</div>'}).catch(e=>h.innerHTML='<div class="empty"><strong>Unable to load employees</strong>'+esc(e.message)+'</div>')}\nfunction openAdminEmployeeForm(e=null){editingAdminEmployee=e;document.getElementById('adminEmployeeModalTitle').textContent=e?'Edit Employee':'Add Employee';const m=e||{};[['ae_id','employee_id'],['ae_first','first_name'],['ae_last','last_name'],['ae_email','email'],['ae_phone','phone'],['ae_position','position'],['ae_pay','hourly_pay_rate'],['ae_hire','hire_date'],['ae_notes','notes']].forEach(([a,b])=>document.getElementById(a).value=m[b]??'');document.getElementById('ae_role').value=m.role||'employee';document.getElementById('ae_status').value=m.employment_status||'active';document.getElementById('adminEmployeeModal').classList.add('show')}\nfunction closeAdminEmployeeForm(){document.getElementById('adminEmployeeModal').classList.remove('show')}\nfunction editAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(e)openAdminEmployeeForm(e)}\nfunction editAdminPay(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;const v=prompt('Enter new hourly pay rate for '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'employee'),e.hourly_pay_rate??'');if(v===null)return;const n=Number(v);if(!Number.isFinite(n)||n<0)return alert('Enter a valid non-negative hourly rate.');employeeApi('?employee_id='+encodeURIComponent(e.employee_id),{method:'PATCH',body:JSON.stringify({hourly_pay_rate:n})}).then(loadAdminEmployees).catch(x=>alert(x.message))}\nfunction saveAdminEmployee(){const id=document.getElementById('ae_id').value.trim();const payload={employee_id:id,first_name:document.getElementById('ae_first').value.trim(),last_name:document.getElementById('ae_last').value.trim(),email:document.getElementById('ae_email').value.trim()||null,phone:document.getElementById('ae_phone').value.trim()||null,position:document.getElementById('ae_position').value.trim()||null,role:document.getElementById('ae_role').value,employment_status:document.getElementById('ae_status').value,hourly_pay_rate:document.getElementById('ae_pay').value===''?null:Number(document.getElementById('ae_pay').value),hire_date:document.getElementById('ae_hire').value||null,notes:document.getElementById('ae_notes').value.trim()||null};if(!id||!payload.first_name||!payload.last_name)return alert('Employee ID, first name, and last name are required.');const req=editingAdminEmployee?employeeApi('?employee_id='+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(payload)}):employeeApi('',{method:'POST',body:JSON.stringify(payload)});req.then(()=>{closeAdminEmployeeForm();loadAdminEmployees()}).catch(e=>alert(e.message))}\nfunction removeAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;if(!confirm('Remove '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'this employee')+' from Employee Records?'))return;employeeApi('?employee_id='+encodeURIComponent(id),{method:'DELETE'}).then(loadAdminEmployees).catch(e=>alert(e.message))}\nfunction esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}\n</script>\n'''
+          old_nav='<button onclick="show(\'employees\',this);loadAdminEmployees()">Employee Records</button>'
+          if old_nav not in s:
+              old_nav='<button onclick="window.location.href=\'employee-management.html\'">Employee Records</button>'
+          new_nav='<button onclick="show(\'employees\',this);loadAdminEmployees()">Employee Records</button>'
+          if old_nav in s:
+              s=s.replace(old_nav,new_nav,1)
+          start=s.find('<script id="DASH_EMPLOYEE_ADMIN_V2">')
+          if start<0:
+              start=s.find('<script id="DASH_EMPLOYEE_ADMIN_V23">')
+          if start>=0:
+              end=s.find('</script>',start)
+              if end<0: raise SystemExit('Employee script closing tag not found')
+              end+=len('</script>')
+              s=s[:start]+s[end:]
+          script=r'''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script id="DASH_EMPLOYEE_ADMIN_V4">
+const EMP_SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
+const EMP_SUPABASE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+const EMP_API=EMP_SUPABASE_URL+'/functions/v1/employee-management';
+let adminEmployees=[], editingAdminEmployee=null;
+let dashEmployeeClient=null;
+function employeeClient(){
+  if(!dashEmployeeClient) dashEmployeeClient=window.supabase.createClient(EMP_SUPABASE_URL,EMP_SUPABASE_KEY);
+  return dashEmployeeClient;
+}
+async function employeeSession(){
+  const {data,error}=await employeeClient().auth.getSession();
+  if(error||!data.session) throw new Error('Your Admin Portal session is missing or expired. Please sign in again.');
+  return data.session;
+}
+async function employeeApi(action,payload={}){
+  const session=await employeeSession();
+  const r=await fetch(EMP_API,{method:'POST',headers:{apikey:EMP_SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({action,...payload})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.error) throw new Error(j.error||'Employee request failed');
+  return j.data||[];
+}
+async function loadAdminEmployees(){
+  const h=document.getElementById('adminEmployeeRecords');
+  if(!h)return;
+  h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';
+  try{
+    adminEmployees=await employeeApi('list');
+    const active=adminEmployees.filter(e=>e.employment_status==='active'||!e.employment_status);
+    const inactive=adminEmployees.filter(e=>e.employment_status!=='active');
+    const render=(list,isInactive)=>list.length?list.map(e=>{
+      const id=String(e.employee_id||'');
+      const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';
+      const pay=e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr';
+      return '<div class="row"><div><strong>'+esc(n)+'</strong><span class="mini">ID: '+esc(id)+' · '+esc(e.position||'—')+' · '+esc(e.role||'—')+'</span><span class="mini">Phone: '+esc(e.phone||'—')+' · Email: '+esc(e.email||'—')+' · Pay: '+esc(pay)+'</span></div><div class="toolbar">'+(!isInactive?'<button class="btn light" onclick="editAdminEmployee('+JSON.stringify(id)+')">Edit</button><button class="btn light" onclick="editAdminPay('+JSON.stringify(id)+')">Edit Pay</button><button class="btn light" onclick="removeAdminEmployee('+JSON.stringify(id)+')">Remove</button>':'<button class="btn light" onclick="restoreAdminEmployee('+JSON.stringify(id)+')">Restore</button>')+'<span class="pill">'+esc(e.employment_status||'active')+'</span></div></div>';
+    }).join(''):'<div class="empty"><strong>No '+(isInactive?'removed/inactive':'active')+' employees</strong></div>';
+    h.innerHTML='<div class="panel"><div class="head"><h2>Active Employees</h2></div><div class="body">'+render(active,false)+'</div></div><div class="panel"><div class="head"><h2>Removed / Inactive Employees</h2></div><div class="body">'+render(inactive,true)+'</div></div>';
+  }catch(e){h.innerHTML='<div class="empty"><strong>Unable to load employees</strong><div style="margin-top:8px">'+esc(e.message)+'</div><button class="btn" style="margin-top:12px" onclick="loadAdminEmployees()">Try Again</button></div>';}
+}
+function openAdminEmployeeForm(e=null){
+  editingAdminEmployee=e;
+  document.getElementById('adminEmployeeModalTitle').textContent=e?'Edit Employee':'Add Employee';
+  const m=e||{};
+  [['ae_id','employee_id'],['ae_first','first_name'],['ae_last','last_name'],['ae_email','email'],['ae_phone','phone'],['ae_position','position'],['ae_pay','hourly_pay_rate'],['ae_hire','hire_date'],['ae_notes','notes']].forEach(([a,b])=>document.getElementById(a).value=m[b]??'');
+  document.getElementById('ae_role').value=m.role||'employee';
+  document.getElementById('ae_status').value=m.employment_status||'active';
+  document.getElementById('adminEmployeeModal').classList.add('show');
+}
+function closeAdminEmployeeForm(){document.getElementById('adminEmployeeModal').classList.remove('show');}
+function editAdminEmployee(id){const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(e)openAdminEmployeeForm(e);}
+async function editAdminPay(id){
+  const e=adminEmployees.find(x=>String(x.employee_id)===String(id)); if(!e)return;
+  const v=prompt('Enter new hourly pay rate for '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'employee'),e.hourly_pay_rate??'');
+  if(v===null)return;
+  const n=Number(v); if(!Number.isFinite(n)||n<0)return alert('Enter a valid non-negative hourly rate.');
+  try{await employeeApi('pay',{employee_id:e.employee_id,hourly_pay_rate:n});await loadAdminEmployees();alert('Pay updated.');}catch(x){alert(x.message);}
+}
+async function saveAdminEmployee(){
+  const id=document.getElementById('ae_id').value.trim();
+  const payload={employee_id:id,first_name:document.getElementById('ae_first').value.trim(),last_name:document.getElementById('ae_last').value.trim(),email:document.getElementById('ae_email').value.trim()||null,phone:document.getElementById('ae_phone').value.trim()||null,position:document.getElementById('ae_position').value.trim()||null,role:document.getElementById('ae_role').value,employment_status:document.getElementById('ae_status').value,hourly_pay_rate:document.getElementById('ae_pay').value===''?null:Number(document.getElementById('ae_pay').value),hire_date:document.getElementById('ae_hire').value||null,notes:document.getElementById('ae_notes').value.trim()||null};
+  if(!id||!payload.first_name||!payload.last_name)return alert('Employee ID, first name, and last name are required.');
+  try{await employeeApi(editingAdminEmployee?'update':'add',editingAdminEmployee?{...payload,old_employee_id:editingAdminEmployee.employee_id}:{...payload});closeAdminEmployeeForm();await loadAdminEmployees();alert(editingAdminEmployee?'Employee updated.':'Employee added.');}catch(e){alert(e.message);}
+}
+async function removeAdminEmployee(id){
+  const e=adminEmployees.find(x=>String(x.employee_id)===String(id));if(!e)return;
+  if(!confirm('Remove '+([e.first_name,e.last_name].filter(Boolean).join(' ')||'this employee')+'?'))return;
+  try{await employeeApi('remove',{employee_id:id});await loadAdminEmployees();alert('Employee removed.');}catch(e){alert(e.message);}
+}
+async function restoreAdminEmployee(id){try{await employeeApi('restore',{employee_id:id});await loadAdminEmployees();alert('Employee restored.');}catch(e){alert(e.message);}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+'''
           s=s.replace('</body>',script+'</body>')
           p.write_text(s)
           PY
@@ -40,5 +113,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add admin-production.html
-          git diff --cached --quiet || git commit -m 'Fix Admin Portal employee add edit pay and remove'
+          git diff --cached --quiet || git commit -m 'Fix Admin Portal employee Supabase CRUD'
           git push
