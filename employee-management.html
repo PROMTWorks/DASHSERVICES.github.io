@@ -1,1 +1,1860 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DASH Services | Employee Management</title><style>*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px}.brand{font-size:22px;font-weight:800;letter-spacing:2px}.brand span{font-size:13px;font-weight:500;letter-spacing:0;color:#b8c2cf;margin-left:8px}.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}main{max-width:1500px;margin:auto;padding:30px}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.title h1{margin:0;font-size:30px}.title p{margin:5px 0 0;color:#64748b;font-size:14px}.btn{border:0;border-radius:8px;padding:10px 15px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;margin-bottom:20px;overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center}.head h2{margin:0;font-size:18px}.body{padding:20px}.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}.security{background:#fff7ed;border:1px solid #fed7aa;padding:14px;border-radius:8px;margin-bottom:20px;font-size:13px}.empty{padding:38px;text-align:center;color:#64748b}.empty strong{display:block;color:#334155;font-size:16px;margin-bottom:5px}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid #e2e7ed;font-size:13px}.table th{font-size:11px;color:#64748b}.row{border:1px solid #e2e7ed;border-radius:9px;padding:14px;display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:10px}.mini{font-size:11px;color:#64748b;display:block;margin-top:4px}.pill{font-size:11px;padding:5px 9px;border-radius:20px;background:#f1f5f9;color:#475569;font-weight:700}@media(max-width:700px){main{padding:18px}.table{display:block;overflow:auto;white-space:nowrap}}</style></head><body><header><div class="brand">DASH <span>Services · Employee Management</span></div><div class="tag">SUPER ADMIN</div></header><main><div class="title"><div><h1>Employee Records</h1><p>Employee directory and controlled payroll information.</p></div></div><div class="notice"><b>Owner / Super Admin:</b> You have full employee-record authority. Hourly pay rates may only be changed by Owner / Super Admin.</div><div class="security"><b>Pay-rate security:</b> HR may view authorized pay information but cannot change it. Managers and employees cannot change pay rates.</div><div class="panel"><div class="head"><h2>Employee Directory</h2></div><div class="body" id="employees"><div class="empty"><strong>Loading employee records…</strong></div></div></div></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>(async()=>{const url='https://roywoofgypiyoobdcrwx.supabase.co',key='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',client=supabase.createClient(url,key),host=document.getElementById('employees');const {data:{session}}=await client.auth.getSession();if(!session){host.innerHTML='<div class="empty"><strong>Sign in required</strong>Please sign in to view employee records.</div>';return}const r=await fetch(url+'/rest/v1/employees?select=employee_id,first_name,last_name,email,phone,position,role,hourly_pay_rate,employment_status,hire_date,notes&order=first_name.asc',{headers:{apikey:key,Authorization:'Bearer '+session.access_token}});if(!r.ok){host.innerHTML='<div class="empty"><strong>Unable to load employee records</strong>Check database permissions.</div>';return}const rows=await r.json();host.innerHTML=rows.length?rows.map(e=>{const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';const p=e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr';return '<div class="row"><div><strong>'+esc(n)+'</strong><span class="mini">ID: '+esc(e.employee_id||'—')+' · '+esc(e.position||'—')+' · '+esc(e.role||'—')+'</span><span class="mini">Phone: '+esc(e.phone||'—')+' · Email: '+esc(e.email||'—')+' · Pay: '+esc(p)+'</span></div><span class="pill">'+esc(e.employment_status||'Active')+'</span></div>'}).join(''):'<div class="empty"><strong>No employee records</strong>No employees have been entered yet.</div>';function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}})();</script></body></html>
+# DASH Services — Employee Management
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DASH Services | Employee Management</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f5f8;
+    color:#17202a
+}
+
+header{
+    height:70px;
+    background:#111827;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px
+}
+
+.brand{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:2px
+}
+
+.brand span{
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0;
+    color:#b8c2cf;
+    margin-left:8px
+}
+
+.tag{
+    font-size:12px;
+    background:#26364a;
+    padding:7px 11px;
+    border-radius:20px
+}
+
+main{
+    max-width:1500px;
+    margin:auto;
+    padding:30px
+}
+
+.title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:22px;
+    gap:15px
+}
+
+.title h1{
+    margin:0;
+    font-size:30px
+}
+
+.title p{
+    margin:5px 0 0;
+    color:#64748b;
+    font-size:14px
+}
+
+.toolbar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap
+}
+
+.btn{
+    border:0;
+    border-radius:8px;
+    padding:10px 15px;
+    background:#111827;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block
+}
+
+.btn:hover{
+    opacity:.9
+}
+
+.btn.light{
+    background:#fff;
+    color:#17202a;
+    border:1px solid #d7dde5
+}
+
+.btn.danger{
+    background:#b91c1c
+}
+
+.btn.success{
+    background:#166534
+}
+
+.btn:disabled{
+    opacity:.5;
+    cursor:not-allowed
+}
+
+.panel{
+    background:#fff;
+    border:1px solid #e2e7ed;
+    border-radius:12px;
+    margin-bottom:20px;
+    overflow:hidden
+}
+
+.head{
+    padding:18px 20px;
+    border-bottom:1px solid #e2e7ed;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px
+}
+
+.head h2{
+    margin:0;
+    font-size:18px
+}
+
+.body{
+    padding:20px
+}
+
+.notice{
+    background:#eff6ff;
+    border-left:4px solid #3b82f6;
+    padding:14px;
+    border-radius:7px;
+    font-size:13px;
+    margin-bottom:20px
+}
+
+.security{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    padding:14px;
+    border-radius:8px;
+    margin-bottom:20px;
+    font-size:13px
+}
+
+.successNotice{
+    background:#ecfdf5;
+    border-left:4px solid #16a34a;
+    padding:14px;
+    border-radius:7px;
+    font-size:13px;
+    margin-bottom:20px
+}
+
+.errorNotice{
+    background:#fef2f2;
+    border-left:4px solid #dc2626;
+    padding:14px;
+    border-radius:7px;
+    font-size:13px;
+    margin-bottom:20px
+}
+
+.empty{
+    padding:38px;
+    text-align:center;
+    color:#64748b
+}
+
+.empty strong{
+    display:block;
+    color:#334155;
+    font-size:16px;
+    margin-bottom:5px
+}
+
+.search{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #ccd4de;
+    border-radius:8px;
+    margin-bottom:15px;
+    font-size:14px
+}
+
+.tableWrap{
+    width:100%;
+    overflow-x:auto
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1050px
+}
+
+.table th,
+.table td{
+    text-align:left;
+    padding:13px 12px;
+    border-bottom:1px solid #e2e7ed;
+    font-size:13px;
+    vertical-align:middle
+}
+
+.table th{
+    font-size:11px;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    background:#f8fafc
+}
+
+.table tr:hover td{
+    background:#fafafa
+}
+
+.name{
+    font-weight:800;
+    color:#17202a
+}
+
+.mini{
+    font-size:11px;
+    color:#64748b;
+    display:block;
+    margin-top:4px
+}
+
+.pill{
+    font-size:11px;
+    padding:5px 9px;
+    border-radius:20px;
+    background:#f1f5f9;
+    color:#475569;
+    font-weight:700;
+    display:inline-block
+}
+
+.pill.active{
+    background:#dcfce7;
+    color:#166534
+}
+
+.pill.inactive{
+    background:#fee2e2;
+    color:#991b1b
+}
+
+.actions{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.62);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50
+}
+
+.modal.show{
+    display:flex
+}
+
+.modalbox{
+    background:#fff;
+    width:min(850px,100%);
+    max-height:92vh;
+    overflow:auto;
+    border-radius:14px;
+    padding:24px
+}
+
+.modalhead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px
+}
+
+.modalhead h2{
+    margin:0
+}
+
+.close{
+    border:0;
+    background:#eef2f7;
+    border-radius:7px;
+    padding:8px 11px;
+    cursor:pointer
+}
+
+.form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:6px
+}
+
+.field input,
+.field select,
+.field textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccd4de;
+    border-radius:7px;
+    background:#fff;
+    font-family:inherit
+}
+
+.field textarea{
+    min-height:100px;
+    resize:vertical
+}
+
+.full{
+    grid-column:1/-1
+}
+
+.modalActions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    margin-top:20px
+}
+
+.payBox{
+    background:#f8fafc;
+    border:1px solid #e2e7ed;
+    border-radius:9px;
+    padding:15px;
+    margin-top:15px
+}
+
+.payBox strong{
+    display:block;
+    margin-bottom:5px
+}
+
+.hidden{
+    display:none!important
+}
+
+.loading{
+    text-align:center;
+    padding:30px;
+    color:#64748b
+}
+
+@media(max-width:800px){
+    main{
+        padding:18px
+    }
+
+    .title{
+        align-items:flex-start;
+        flex-direction:column
+    }
+
+    .form{
+        grid-template-columns:1fr
+    }
+
+    .full{
+        grid-column:auto
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="brand">
+        DASH
+        <span>Services · Employee Management</span>
+    </div>
+
+    <div class="tag" id="roleBadge">
+        AUTHENTICATING
+    </div>
+</header>
+
+<main>
+
+    <div class="title">
+        <div>
+            <h1>Employee Records</h1>
+            <p>Employee directory, payroll information, roles, and employment records.</p>
+        </div>
+
+        <div class="toolbar">
+            <a
+                class="btn light"
+                href="https://supabase.com/dashboard/project/roywoofgypiyoobdcrwx/editor"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Open Supabase Employee Records
+            </a>
+
+            <button
+                class="btn"
+                id="addEmployeeButton"
+                onclick="openEmployeeModal()"
+            >
+                + Add Employee
+            </button>
+        </div>
+    </div>
+
+    <div class="notice">
+        <b>Owner / Super Admin:</b>
+        You have full employee-record authority, including adding employees,
+        editing employee records, changing hourly pay, and removing employees.
+    </div>
+
+    <div class="security">
+        <b>Pay-rate security:</b>
+        Hourly pay is sensitive payroll information.
+        Only the Owner / Super Admin can change an employee's hourly pay.
+        HR may view authorized pay information but cannot change it.
+        Managers and employees cannot change pay rates.
+    </div>
+
+    <div id="messageArea"></div>
+
+    <div class="panel">
+        <div class="head">
+            <h2>Employee Directory</h2>
+
+            <span class="pill" id="employeeCount">
+                Loading...
+            </span>
+        </div>
+
+        <div class="body">
+
+            <input
+                id="searchInput"
+                class="search"
+                type="text"
+                placeholder="Search by name, employee ID, role, position, phone, or email..."
+                oninput="renderEmployees()"
+            >
+
+            <div id="employees">
+                <div class="loading">
+                    Loading employee records...
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+
+<!-- EMPLOYEE MODAL -->
+
+<div id="employeeModal" class="modal">
+
+    <div class="modalbox">
+
+        <div class="modalhead">
+
+            <h2 id="modalTitle">
+                Add Employee
+            </h2>
+
+            <button
+                class="close"
+                onclick="closeEmployeeModal()"
+            >
+                Close
+            </button>
+
+        </div>
+
+        <div class="notice">
+            <b>Employee record:</b>
+            Enter the employee's actual information.
+        </div>
+
+        <form id="employeeForm">
+
+            <div class="form">
+
+                <div class="field">
+                    <label>Employee ID</label>
+                    <input
+                        id="employee_id"
+                        required
+                        placeholder="Example: EMP-001"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Employment Status</label>
+
+                    <select id="employment_status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>First Name</label>
+                    <input
+                        id="first_name"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Last Name</label>
+                    <input
+                        id="last_name"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="employee@example.com"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Phone</label>
+                    <input
+                        id="phone"
+                        placeholder="(555) 555-5555"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Position</label>
+                    <input
+                        id="position"
+                        placeholder="Example: Lube Technician"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Role</label>
+
+                    <select id="role">
+                        <option value="employee">Employee</option>
+                        <option value="manager">Manager</option>
+                        <option value="hr">HR</option>
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Hire Date</label>
+                    <input
+                        id="hire_date"
+                        type="date"
+                    >
+                </div>
+
+                <div
+                    class="field"
+                    id="payField"
+                >
+                    <label>
+                        Hourly Pay Rate
+                        <span id="payPermissionLabel"></span>
+                    </label>
+
+                    <input
+                        id="hourly_pay_rate"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Example: 14.00"
+                    >
+                </div>
+
+                <div class="field full">
+                    <label>Notes</label>
+
+                    <textarea
+                        id="notes"
+                        placeholder="Internal employee notes"
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <div
+                class="payBox"
+                id="paySecurityMessage"
+            >
+                <strong>Hourly Pay Security</strong>
+                Only the Owner / Super Admin can modify the hourly pay rate.
+            </div>
+
+            <div class="modalActions">
+
+                <button
+                    type="button"
+                    class="btn light"
+                    onclick="closeEmployeeModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn"
+                >
+                    Save Employee
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- DELETE CONFIRMATION MODAL -->
+
+<div id="deleteModal" class="modal">
+
+    <div class="modalbox" style="max-width:500px">
+
+        <div class="modalhead">
+            <h2>Remove Employee</h2>
+
+            <button
+                class="close"
+                onclick="closeDeleteModal()"
+            >
+                Close
+            </button>
+        </div>
+
+        <div class="errorNotice">
+            <b>Warning:</b>
+            Removing an employee permanently deletes the employee record
+            from the employee table.
+        </div>
+
+        <p id="deleteMessage"></p>
+
+        <div class="modalActions">
+
+            <button
+                class="btn light"
+                onclick="closeDeleteModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="btn danger"
+                onclick="confirmDelete()"
+            >
+                Remove Employee
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+    'https://roywoofgypiyoobdcrwx.supabase.co';
+
+const SUPABASE_KEY =
+    'sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+
+const client =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+let employees = [];
+let currentUser = null;
+let currentRole = null;
+let editingUserId = null;
+let deletingUserId = null;
+
+
+/* ---------------------------------------
+   INITIALIZATION
+--------------------------------------- */
+
+async function initialize(){
+
+    const {
+        data: {
+            session
+        }
+    } = await client.auth.getSession();
+
+    if(!session){
+
+        document.getElementById('roleBadge').textContent =
+            'SIGN IN REQUIRED';
+
+        document.getElementById('employees').innerHTML =
+            '<div class="empty">' +
+            '<strong>Sign in required</strong>' +
+            'Please sign in to view employee records.' +
+            '</div>';
+
+        document.getElementById('addEmployeeButton').disabled = true;
+
+        return;
+    }
+
+    currentUser =
+        session.user;
+
+    await determineRole();
+
+    applyPermissions();
+
+    await loadEmployees();
+}
+
+
+/* ---------------------------------------
+   DETERMINE CURRENT EMPLOYEE ROLE
+--------------------------------------- */
+
+async function determineRole(){
+
+    const {
+        data,
+        error
+    } = await client
+        .from('employees')
+        .select('role')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+    if(error){
+
+        console.error(error);
+
+        currentRole = null;
+
+        return;
+    }
+
+    currentRole =
+        data?.role || null;
+
+    const badge =
+        document.getElementById('roleBadge');
+
+    if(currentRole){
+
+        badge.textContent =
+            currentRole.toUpperCase();
+
+    }else{
+
+        badge.textContent =
+            'AUTHORIZED USER';
+    }
+}
+
+
+/* ---------------------------------------
+   PERMISSIONS
+--------------------------------------- */
+
+function isOwner(){
+
+    return currentRole === 'owner';
+}
+
+function isHR(){
+
+    return currentRole === 'hr';
+}
+
+function canViewEmployees(){
+
+    return (
+        currentRole === 'owner' ||
+        currentRole === 'hr'
+    );
+}
+
+function applyPermissions(){
+
+    const addButton =
+        document.getElementById(
+            'addEmployeeButton'
+        );
+
+    /*
+      Only Owner can add employees.
+    */
+
+    addButton.style.display =
+        isOwner()
+            ? 'inline-block'
+            : 'none';
+
+    /*
+      If HR is viewing the page,
+      they can view pay but cannot
+      edit it.
+    */
+
+    const payInput =
+        document.getElementById(
+            'hourly_pay_rate'
+        );
+
+    payInput.readOnly =
+        !isOwner();
+
+    if(!isOwner()){
+
+        payInput.title =
+            'Only the Owner / Super Admin can change pay rates.';
+
+    }
+
+    document.getElementById(
+        'payPermissionLabel'
+    ).textContent =
+        isOwner()
+            ? '(Owner editable)'
+            : '(View only)';
+
+}
+
+
+/* ---------------------------------------
+   LOAD EMPLOYEES
+--------------------------------------- */
+
+async function loadEmployees(){
+
+    const host =
+        document.getElementById(
+            'employees'
+        );
+
+    host.innerHTML =
+        '<div class="loading">Loading employee records...</div>';
+
+    if(!canViewEmployees()){
+
+        host.innerHTML =
+            '<div class="empty">' +
+            '<strong>Employee records unavailable</strong>' +
+            'Your account does not have permission to view the employee directory.' +
+            '</div>';
+
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await client
+        .from('employees')
+        .select(
+            'user_id,employee_id,first_name,last_name,email,phone,position,role,hourly_pay_rate,employment_status,hire_date,notes'
+        )
+        .order(
+            'first_name',
+            {
+                ascending:true
+            }
+        );
+
+    if(error){
+
+        console.error(error);
+
+        host.innerHTML =
+            '<div class="empty">' +
+            '<strong>Unable to load employee records</strong>' +
+            escapeHtml(error.message) +
+            '</div>';
+
+        return;
+    }
+
+    employees =
+        data || [];
+
+    renderEmployees();
+}
+
+
+/* ---------------------------------------
+   RENDER EMPLOYEES
+--------------------------------------- */
+
+function renderEmployees(){
+
+    const host =
+        document.getElementById(
+            'employees'
+        );
+
+    const search =
+        document
+            .getElementById(
+                'searchInput'
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+    const filtered =
+        employees.filter(e => {
+
+            const text = [
+                e.employee_id,
+                e.first_name,
+                e.last_name,
+                e.email,
+                e.phone,
+                e.position,
+                e.role,
+                e.employment_status
+            ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+            return text.includes(search);
+
+        });
+
+    document.getElementById(
+        'employeeCount'
+    ).textContent =
+        employees.length +
+        (
+            employees.length === 1
+                ? ' Employee'
+                : ' Employees'
+        );
+
+    if(!filtered.length){
+
+        host.innerHTML =
+            '<div class="empty">' +
+            '<strong>No employee records found</strong>' +
+            (
+                employees.length
+                    ? 'Try a different search.'
+                    : 'No employees have been entered yet.'
+            ) +
+            '</div>';
+
+        return;
+    }
+
+    host.innerHTML = `
+
+        <div class="tableWrap">
+
+            <table class="table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Employee</th>
+                        <th>Employee ID</th>
+                        <th>Position</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Hourly Pay</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${filtered.map(
+                        employeeRow
+                    ).join('')}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+}
+
+
+/* ---------------------------------------
+   EMPLOYEE ROW
+--------------------------------------- */
+
+function employeeRow(e){
+
+    const name =
+        [
+            e.first_name,
+            e.last_name
+        ]
+        .filter(Boolean)
+        .join(' ') ||
+        'Unnamed Employee';
+
+    const pay =
+        e.hourly_pay_rate === null ||
+        e.hourly_pay_rate === undefined
+            ? 'Not set'
+            : '$' +
+              Number(
+                  e.hourly_pay_rate
+              ).toFixed(2) +
+              '/hr';
+
+    const status =
+        e.employment_status ||
+        'active';
+
+    const statusClass =
+        status === 'active'
+            ? 'active'
+            : 'inactive';
+
+    return `
+
+        <tr>
+
+            <td>
+
+                <span class="name">
+                    ${esc(name)}
+                </span>
+
+                <span class="mini">
+                    ${esc(e.employee_id || 'No ID')}
+                </span>
+
+            </td>
+
+            <td>
+                ${esc(e.employee_id || '—')}
+            </td>
+
+            <td>
+                ${esc(e.position || '—')}
+            </td>
+
+            <td>
+                <span class="pill">
+                    ${esc(e.role || 'employee')}
+                </span>
+            </td>
+
+            <td>
+                ${esc(e.phone || '—')}
+            </td>
+
+            <td>
+                ${esc(e.email || '—')}
+            </td>
+
+            <td>
+
+                <strong>
+                    ${esc(pay)}
+                </strong>
+
+            </td>
+
+            <td>
+
+                <span class="pill ${statusClass}">
+                    ${esc(status)}
+                </span>
+
+            </td>
+
+            <td>
+
+                <div class="actions">
+
+                    ${
+                        isOwner()
+                        ?
+                        `
+                        <button
+                            class="btn light"
+                            onclick="editEmployee('${e.user_id}')"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="btn danger"
+                            onclick="openDeleteModal('${e.user_id}')"
+                        >
+                            Remove
+                        </button>
+                        `
+                        :
+                        `
+                        <button
+                            class="btn light"
+                            onclick="viewEmployee('${e.user_id}')"
+                        >
+                            View
+                        </button>
+                        `
+                    }
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `;
+}
+
+
+/* ---------------------------------------
+   OPEN ADD MODAL
+--------------------------------------- */
+
+function openEmployeeModal(){
+
+    if(!isOwner()){
+
+        showMessage(
+            'Only the Owner / Super Admin can add employees.',
+            'error'
+        );
+
+        return;
+    }
+
+    editingUserId =
+        null;
+
+    document.getElementById(
+        'modalTitle'
+    ).textContent =
+        'Add Employee';
+
+    document.getElementById(
+        'employeeForm'
+    ).reset();
+
+    document.getElementById(
+        'employee_id'
+    ).disabled =
+        false;
+
+    document.getElementById(
+        'role'
+    ).value =
+        'employee';
+
+    document.getElementById(
+        'employment_status'
+    ).value =
+        'active';
+
+    document.getElementById(
+        'hourly_pay_rate'
+    ).readOnly =
+        false;
+
+    document.getElementById(
+        'payPermissionLabel'
+    ).textContent =
+        '(Owner editable)';
+
+    document.getElementById(
+        'employeeModal'
+    ).classList.add('show');
+}
+
+
+/* ---------------------------------------
+   EDIT EMPLOYEE
+--------------------------------------- */
+
+function editEmployee(userId){
+
+    if(!isOwner()){
+
+        showMessage(
+            'Only the Owner / Super Admin can edit employee records.',
+            'error'
+        );
+
+        return;
+    }
+
+    const employee =
+        employees.find(
+            e => e.user_id === userId
+        );
+
+    if(!employee)
+        return;
+
+    editingUserId =
+        userId;
+
+    document.getElementById(
+        'modalTitle'
+    ).textContent =
+        'Edit Employee';
+
+    document.getElementById(
+        'employee_id'
+    ).value =
+        employee.employee_id || '';
+
+    document.getElementById(
+        'employee_id'
+    ).disabled =
+        true;
+
+    document.getElementById(
+        'first_name'
+    ).value =
+        employee.first_name || '';
+
+    document.getElementById(
+        'last_name'
+    ).value =
+        employee.last_name || '';
+
+    document.getElementById(
+        'email'
+    ).value =
+        employee.email || '';
+
+    document.getElementById(
+        'phone'
+    ).value =
+        employee.phone || '';
+
+    document.getElementById(
+        'position'
+    ).value =
+        employee.position || '';
+
+    document.getElementById(
+        'role'
+    ).value =
+        employee.role || 'employee';
+
+    document.getElementById(
+        'employment_status'
+    ).value =
+        employee.employment_status || 'active';
+
+    document.getElementById(
+        'hire_date'
+    ).value =
+        employee.hire_date || '';
+
+    document.getElementById(
+        'hourly_pay_rate'
+    ).value =
+        employee.hourly_pay_rate ?? '';
+
+    document.getElementById(
+        'notes'
+    ).value =
+        employee.notes || '';
+
+    document.getElementById(
+        'hourly_pay_rate'
+    ).readOnly =
+        false;
+
+    document.getElementById(
+        'payPermissionLabel'
+    ).textContent =
+        '(Owner editable)';
+
+    document.getElementById(
+        'employeeModal'
+    ).classList.add('show');
+}
+
+
+/* ---------------------------------------
+   VIEW EMPLOYEE
+--------------------------------------- */
+
+function viewEmployee(userId){
+
+    const employee =
+        employees.find(
+            e => e.user_id === userId
+        );
+
+    if(!employee)
+        return;
+
+    document.getElementById(
+        'modalTitle'
+    ).textContent =
+        'Employee Details';
+
+    document.getElementById(
+        'employeeForm'
+    ).reset();
+
+    document.getElementById(
+        'employee_id'
+    ).value =
+        employee.employee_id || '';
+
+    document.getElementById(
+        'first_name'
+    ).value =
+        employee.first_name || '';
+
+    document.getElementById(
+        'last_name'
+    ).value =
+        employee.last_name || '';
+
+    document.getElementById(
+        'email'
+    ).value =
+        employee.email || '';
+
+    document.getElementById(
+        'phone'
+    ).value =
+        employee.phone || '';
+
+    document.getElementById(
+        'position'
+    ).value =
+        employee.position || '';
+
+    document.getElementById(
+        'role'
+    ).value =
+        employee.role || 'employee';
+
+    document.getElementById(
+        'employment_status'
+    ).value =
+        employee.employment_status || 'active';
+
+    document.getElementById(
+        'hire_date'
+    ).value =
+        employee.hire_date || '';
+
+    document.getElementById(
+        'hourly_pay_rate'
+    ).value =
+        employee.hourly_pay_rate ?? '';
+
+    document.getElementById(
+        'notes'
+    ).value =
+        employee.notes || '';
+
+    document.querySelectorAll(
+        '#employeeForm input, #employeeForm select, #employeeForm textarea'
+    ).forEach(
+        element => element.disabled = true
+    );
+
+    document.querySelector(
+        '#employeeForm button[type="submit"]'
+    ).style.display =
+        'none';
+
+    document.getElementById(
+        'employeeModal'
+    ).classList.add('show');
+}
+
+
+/* ---------------------------------------
+   CLOSE EMPLOYEE MODAL
+--------------------------------------- */
+
+function closeEmployeeModal(){
+
+    document.getElementById(
+        'employeeModal'
+    ).classList.remove('show');
+
+    document.querySelectorAll(
+        '#employeeForm input, #employeeForm select, #employeeForm textarea'
+    ).forEach(
+        element => {
+            element.disabled = false;
+        }
+    );
+
+    document.querySelector(
+        '#employeeForm button[type="submit"]'
+    ).style.display =
+        'inline-block';
+
+    document.getElementById(
+        'employee_id'
+    ).disabled =
+        false;
+
+    editingUserId =
+        null;
+}
+
+
+/* ---------------------------------------
+   SAVE EMPLOYEE
+--------------------------------------- */
+
+document.getElementById(
+    'employeeForm'
+).addEventListener(
+    'submit',
+    async function(event){
+
+        event.preventDefault();
+
+        if(!isOwner()){
+
+            showMessage(
+                'Only the Owner / Super Admin can save employee changes.',
+                'error'
+            );
+
+            return;
+        }
+
+        const employeeData = {
+
+            employee_id:
+                document.getElementById(
+                    'employee_id'
+                ).value.trim(),
+
+            first_name:
+                document.getElementById(
+                    'first_name'
+                ).value.trim(),
+
+            last_name:
+                document.getElementById(
+                    'last_name'
+                ).value.trim(),
+
+            email:
+                document.getElementById(
+                    'email'
+                ).value.trim() || null,
+
+            phone:
+                document.getElementById(
+                    'phone'
+                ).value.trim() || null,
+
+            position:
+                document.getElementById(
+                    'position'
+                ).value.trim() || null,
+
+            role:
+                document.getElementById(
+                    'role'
+                ).value,
+
+            employment_status:
+                document.getElementById(
+                    'employment_status'
+                ).value,
+
+            hire_date:
+                document.getElementById(
+                    'hire_date'
+                ).value || null,
+
+            hourly_pay_rate:
+                document.getElementById(
+                    'hourly_pay_rate'
+                ).value === ''
+                    ? null
+                    : Number(
+                        document.getElementById(
+                            'hourly_pay_rate'
+                        ).value
+                    ),
+
+            notes:
+                document.getElementById(
+                    'notes'
+                ).value.trim() || null
+        };
+
+        if(
+            !employeeData.employee_id ||
+            !employeeData.first_name ||
+            !employeeData.last_name
+        ){
+
+            showMessage(
+                'Employee ID, first name, and last name are required.',
+                'error'
+            );
+
+            return;
+        }
+
+        const button =
+            document.querySelector(
+                '#employeeForm button[type="submit"]'
+            );
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            'Saving...';
+
+        let result;
+
+        try{
+
+            if(editingUserId){
+
+                result =
+                    await client
+                        .from('employees')
+                        .update(
+                            employeeData
+                        )
+                        .eq(
+                            'user_id',
+                            editingUserId
+                        );
+
+            }else{
+
+                /*
+                  A new employee record needs
+                  a user_id because the table
+                  uses user_id as its primary key.
+
+                  For a production employee-creation
+                  flow, the employee's Supabase Auth
+                  account should be created first.
+                */
+
+                showMessage(
+                    'New employee records require a Supabase Auth user account. Create the employee Auth account first, then add the employee record.',
+                    'error'
+                );
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    'Save Employee';
+
+                return;
+            }
+
+            if(result.error){
+
+                console.error(
+                    result.error
+                );
+
+                showMessage(
+                    result.error.message,
+                    'error'
+                );
+
+            }else{
+
+                showMessage(
+                    'Employee record updated successfully.',
+                    'success'
+                );
+
+                closeEmployeeModal();
+
+                await loadEmployees();
+            }
+
+        }catch(error){
+
+            console.error(error);
+
+            showMessage(
+                'An unexpected error occurred while saving the employee.',
+                'error'
+            );
+
+        }finally{
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                'Save Employee';
+        }
+
+    }
+);
+
+
+/* ---------------------------------------
+   DELETE MODAL
+--------------------------------------- */
+
+function openDeleteModal(userId){
+
+    if(!isOwner()){
+
+        showMessage(
+            'Only the Owner / Super Admin can remove employees.',
+            'error'
+        );
+
+        return;
+    }
+
+    const employee =
+        employees.find(
+            e => e.user_id === userId
+        );
+
+    if(!employee)
+        return;
+
+    deletingUserId =
+        userId;
+
+    const name =
+        [
+            employee.first_name,
+            employee.last_name
+        ]
+        .filter(Boolean)
+        .join(' ');
+
+    document.getElementById(
+        'deleteMessage'
+    ).textContent =
+        'Are you sure you want to remove ' +
+        (name || 'this employee') +
+        '? This will permanently delete the employee record.';
+
+    document.getElementById(
+        'deleteModal'
+    ).classList.add('show');
+}
+
+
+function closeDeleteModal(){
+
+    document.getElementById(
+        'deleteModal'
+    ).classList.remove('show');
+
+    deletingUserId =
+        null;
+}
+
+
+/* ---------------------------------------
+   DELETE EMPLOYEE
+--------------------------------------- */
+
+async function confirmDelete(){
+
+    if(!isOwner()){
+
+        closeDeleteModal();
+
+        showMessage(
+            'Only the Owner / Super Admin can remove employees.',
+            'error'
+        );
+
+        return;
+    }
+
+    if(!deletingUserId)
+        return;
+
+    const result =
+        await client
+            .from('employees')
+            .delete()
+            .eq(
+                'user_id',
+                deletingUserId
+            );
+
+    if(result.error){
+
+        console.error(
+            result.error
+        );
+
+        showMessage(
+            result.error.message,
+            'error'
+        );
+
+        return;
+    }
+
+    closeDeleteModal();
+
+    showMessage(
+        'Employee record removed successfully.',
+        'success'
+    );
+
+    await loadEmployees();
+}
+
+
+/* ---------------------------------------
+   MESSAGE
+--------------------------------------- */
+
+function showMessage(
+    message,
+    type
+){
+
+    const area =
+        document.getElementById(
+            'messageArea'
+        );
+
+    const className =
+        type === 'success'
+            ? 'successNotice'
+            : 'errorNotice';
+
+    area.innerHTML =
+        '<div class="' +
+        className +
+        '">' +
+        escapeHtml(message) +
+        '</div>';
+
+    setTimeout(
+        () => {
+            area.innerHTML = '';
+        },
+        6000
+    );
+}
+
+
+/* ---------------------------------------
+   HTML ESCAPING
+--------------------------------------- */
+
+function escapeHtml(value){
+
+    return String(
+        value ?? ''
+    ).replace(
+        /[&<>"']/g,
+        function(character){
+
+            return {
+                '&':'&amp;',
+                '<':'&lt;',
+                '>':'&gt;',
+                '"':'&quot;',
+                "'":'&#39;'
+            }[character];
+
+        }
+    );
+}
+
+const esc =
+    escapeHtml;
+
+
+/* ---------------------------------------
+   START
+--------------------------------------- */
+
+initialize();
+
+</script>
+
+</body>
+</html>
+```
