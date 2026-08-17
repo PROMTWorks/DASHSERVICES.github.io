@@ -1,32 +1,92 @@
 /* PROMT WORKS — EXPANDED VEHICLE DATABASE
-   Comprehensive U.S. vehicle selector powered by the NHTSA vPIC database.
-   Coverage: model years 1981–2026, with live Year → Make → Model loading.
-   Engine selection is confirmed separately so the site does not guess an engine.
+   Robust Year -> Make -> Model selector.
+   Live NHTSA data is merged with a broad fallback make list so a missing
+   NHTSA entry never removes a make from the booking form.
 */
 (function(){
-  const $=id=>document.getElementById(id);
-  const year=$('year'), make=$('make'), model=$('model'), engine=$('engine');
-  if(!year||!make||!model||!engine)return;
-  const api='https://vpic.nhtsa.dot.gov/api/vehicles';
-  year.innerHTML='<option value="">Select year</option>';
-  for(let y=2026;y>=1981;y--) year.add(new Option(y,y));
-  function reset(el,label){el.innerHTML='';el.add(new Option(label,''));el.disabled=true;}
-  function loading(el){el.innerHTML='<option value="">Loading...</option>';el.disabled=true;}
-  async function get(url){const r=await fetch(url);if(!r.ok)throw new Error('Vehicle database unavailable');return r.json();}
-  year.onchange=async function(){
-    reset(make,'Select make');reset(model,'Select model');reset(engine,'Select engine');if(!this.value)return;loading(make);
-    try{const d=await get(`${api}/GetMakesForVehicleType/car?format=json`);const names=[...new Set((d.Results||[]).map(x=>x.MakeName).filter(Boolean))].sort();make.innerHTML='<option value="">Select make</option>';names.forEach(n=>make.add(new Option(n,n)));make.disabled=false;}catch(e){make.innerHTML='<option value="">Vehicle database unavailable</option>';}
-  };
-  make.onchange=async function(){
-    reset(model,'Select model');reset(engine,'Select engine');if(!year.value||!this.value)return;loading(model);
-    try{const d=await get(`${api}/GetModelsForMakeYear/make/${encodeURIComponent(this.value)}/modelyear/${year.value}/vehicletype/car?format=json`);const names=[...new Set((d.Results||[]).map(x=>x.Model_Name).filter(Boolean))].sort();model.innerHTML='<option value="">Select model</option>';names.forEach(n=>model.add(new Option(n,n)));model.disabled=false;}catch(e){model.innerHTML='<option value="">Models unavailable</option>';}
-  };
-  model.onchange=function(){
-    reset(engine,'Select engine');if(!this.value)return;
-    engine.add(new Option('I know my engine — enter below','custom'));engine.add(new Option('Engine not listed — enter below','custom'));engine.disabled=false;
-    let wrap=$('customEngineWrap');
-    if(wrap)wrap.classList.remove('hidden');
-    engine.onchange=function(){if(wrap)wrap.classList.toggle('hidden',this.value!=='custom');};
-  };
-  window.PROMT_VEHICLE_DATABASE={name:'PROMT WORKS Expanded Vehicle Database',source:'NHTSA vPIC',coverage:'U.S. passenger vehicles, model years 1981–2026',selector:'Year → Make → Model → Engine'};
+  'use strict';
+  function init(){
+    const year=document.getElementById('year');
+    const make=document.getElementById('make');
+    const model=document.getElementById('model');
+    const engine=document.getElementById('engine');
+    if(!year||!make||!model||!engine)return;
+    if(year.dataset.dashVehicleInit==='1')return;
+    year.dataset.dashVehicleInit='1';
+
+    const api='https://vpic.nhtsa.dot.gov/api/vehicles';
+    const fallbackMakes=[
+      'Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar',
+      'Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu',
+      'Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner',
+      'Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu',
+      'Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack',
+      'Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI',
+      'Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar',
+      'Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','SEAT',
+      'Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD',
+      'Volkswagen','Volvo','Western Star','Willys','Workhorse'
+    ];
+    const uniq=a=>[...new Set(a.filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b));
+    function options(el,label,values,disabled){el.innerHTML='';el.add(new Option(label,''));uniq(values).forEach(v=>el.add(new Option(v,v)));el.disabled=!!disabled;}
+    function reset(el,label){options(el,label,[],true);}
+    async function get(url){const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('request failed');return r.json();}
+
+    options(year,'Select year',Array.from({length:127},(_,i)=>2026-i),false);
+    options(make,'Select make',fallbackMakes,true);
+    reset(model,'Select model');
+    reset(engine,'Select engine');
+
+    year.addEventListener('change',async function(){
+      reset(model,'Select model');reset(engine,'Select engine');
+      if(!this.value){options(make,'Select make',fallbackMakes,true);return;}
+      options(make,'Loading makes...',[],true);
+      try{
+        const d=await get(api+'/GetMakesForVehicleType/car?format=json');
+        const live=(d.Results||[]).map(x=>x.MakeName||x.Make_Name);
+        options(make,'Select make',fallbackMakes.concat(live),false);
+      }catch(e){options(make,'Select make',fallbackMakes,false);}
+    });
+
+    make.addEventListener('change',async function(){
+      reset(model,'Select model');reset(engine,'Select engine');
+      if(!year.value||!this.value)return;
+      options(model,'Loading models...',[],true);
+      try{
+        const d=await get(api+'/GetModelsForMakeYear/make/'+encodeURIComponent(this.value)+'/modelyear/'+encodeURIComponent(year.value)+'/vehicletype/car?format=json');
+        let names=(d.Results||[]).map(x=>x.Model_Name||x.ModelName);
+        if(!names.length){
+          const broad=await get(api+'/GetModelsForMake/make/'+encodeURIComponent(this.value)+'?format=json');
+          names=(broad.Results||[]).map(x=>x.Model_Name||x.ModelName);
+        }
+        if(names.length){options(model,'Select model',names,false);}
+        else{options(model,'Model not listed — enter below',[],false);addCustomModel();}
+      }catch(e){options(model,'Model not listed — enter below',[],false);addCustomModel();}
+    });
+
+    function addCustomModel(){
+      let wrap=document.getElementById('dashCustomModelWrap');
+      if(!wrap){
+        wrap=document.createElement('div');wrap.id='dashCustomModelWrap';wrap.className='field full';
+        wrap.innerHTML='<label for="dashCustomModel">Exact model</label><input id="dashCustomModel" placeholder="Example: F-150, Civic, Silverado 1500">';
+        model.closest('.field').after(wrap);
+      }
+      wrap.classList.remove('hidden');
+    }
+
+    model.addEventListener('change',function(){
+      const custom=document.getElementById('dashCustomModelWrap');
+      if(custom&&this.value)custom.classList.add('hidden');
+      options(engine,'Select engine',['I know my engine — enter below','Engine not listed — enter below'],false);
+      let wrap=document.getElementById('dashCustomEngineWrap');
+      if(!wrap){
+        wrap=document.createElement('div');wrap.id='dashCustomEngineWrap';wrap.className='field full hidden';
+        wrap.innerHTML='<label for="dashCustomEngine">Exact engine</label><input id="dashCustomEngine" placeholder="Example: 2.5L 4-Cylinder">';
+        engine.closest('.field').after(wrap);
+      }
+      engine.onchange=function(){wrap.classList.toggle('hidden',!this.value);};
+    });
+    window.PROMT_VEHICLE_DATABASE={name:'PROMT WORKS Expanded Vehicle Database',source:'NHTSA vPIC + fallback make coverage',coverage:'Model years 1900–2026; broad U.S. make coverage'};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
