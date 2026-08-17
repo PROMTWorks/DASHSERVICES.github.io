@@ -1,8 +1,12 @@
 /* DASH vehicle database entrypoint.
-   The legacy integration is preserved separately; this entrypoint loads it and
-   the robust public booking selector for pages that use the shared vehicle fields.
+   Self-contained loader: the booking selector is the single source of truth.
+   No dependency on vehicle-database-legacy.js.
 */
 (function(){
+  'use strict';
+  if (window.DASHVehicleDatabaseLoader) return;
+  window.DASHVehicleDatabaseLoader = true;
+
   function load(src){
     return new Promise(function(resolve,reject){
       var s=document.createElement('script');
@@ -12,7 +16,11 @@
       document.head.appendChild(s);
     });
   }
-  load('vehicle-database-legacy.js')
-    .catch(function(){})
-    .finally(function(){ return load('vehicle-booking.js').catch(function(){}); });
+
+  // Load the actual booking selector directly. The selector contains its own
+  // fallback make list and live model lookup, so a missing legacy file cannot
+  // prevent vehicle selection from initializing.
+  load('./vehicle-booking.js').catch(function(err){
+    console.error('DASH vehicle selector failed to load', err);
+  });
 })();
