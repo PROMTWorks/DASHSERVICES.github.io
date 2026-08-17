@@ -1,15 +1,23 @@
 /* DASH vehicle database entrypoint.
-   Loads the expanded selector used by the public booking page.
+   Loads the public vehicle selector first, then the Year -> Make -> Model ->
+   Engine -> Trim -> Service catalog layer.
 */
 (function(){
   'use strict';
-  function load(){
+  function load(src, done){
     var s=document.createElement('script');
-    s.src='./vehicle-database-expanded.js?v=20260816';
+    s.src=src;
     s.async=false;
-    s.onload=function(){window.DASHVehicleDatabaseLoaded=true;};
-    s.onerror=function(){console.error('DASH vehicle database failed to load');};
+    s.onload=done;
+    s.onerror=function(){console.error('DASH vehicle database failed to load:',src);};
     document.head.appendChild(s);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
+  function start(){
+    load('./vehicle-database-expanded.js?v=20260816b',function(){
+      load('./vehicle-catalog.js?v=20260816b',function(){
+        window.DASHVehicleDatabaseLoaded=true;
+      });
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
