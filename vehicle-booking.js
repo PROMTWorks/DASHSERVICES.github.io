@@ -1,8 +1,11 @@
 /* DASH public booking vehicle selector
-   Uses NHTSA vPIC for Year -> Make -> Model coverage.
-   Engine is a confirmation step because vPIC model results can have multiple engines.
+   Static master make list supplied by PROMT WORKS + NHTSA vPIC model lookup.
+   The static make list is authoritative for the dropdown; NHTSA is used only
+   to populate model names when available.
 */
 (function () {
+  'use strict';
+
   function init() {
     const year = document.getElementById('year');
     const make = document.getElementById('make');
@@ -12,17 +15,32 @@
 
     const api = 'https://vpic.nhtsa.dot.gov/api/vehicles';
 
-    const fallbackMakes = [
-      'Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar',
-      'Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu',
-      'Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner',
-      'Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu',
-      'Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack',
-      'Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI',
-      'Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar',
-      'Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','SEAT',
-      'Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD',
-      'Volkswagen','Volvo','Western Star','Willys','Workhorse'
+    // Master make list supplied by PROMT WORKS. This list is deliberately
+    // static so a make cannot disappear because an external API omits it.
+    const masterMakes = [
+      'ABT','AC Schnitzer','Acura','Alfa Romeo','Alpina','Alpine','Apex','Arrinera','Artega','Ascari','Aston Martin','Audi',
+      'BAC','BAIC','BMW','Bentley','Bertone','Borgward','Brabham','Brabus','Breckland','Bugatti','Buick',
+      'Cadillac','Caparo','Carlsson','Caterham','Chevrolet','Chrysler','Citroen','Covini','Cupra','Czinger',
+      'DS','Dacia','Daewoo','Daihatsu','Daimler','Datsun','De Tomaso','Devon','Dodge','Donkervoort',
+      'EDAG','Edo','Elfin','Eterniti','FM Auto','FPV','Farbio','Ferrari','Fiat','Fisker','Ford',
+      'GAC','GM','GMC','GTA','Geely','Genesis','Gordon Murray','Gumpert',
+      'HSV','Hamann','Hennessey','Holden','Honda','Hummer','Hyundai',
+      'Icona','Infiniti','Isuzu','Italdesign','Iveco',
+      'Jaguar','Jeep',
+      'KTM','Karma','Kia','Kleemann','Koenigsegg',
+      'LCC','Lada','Lamborghini','Lancia','Land Rover','Larte','Leblanc','Lexus','Lincoln','Lobini','Loremo','Lotus','Lucid','Lynk Co',
+      'MG','Mahindra','Mansory','Marcos','Maserati','Maybach','Mazda','Mazel','McLaren','Mercedes-Benz','Mercury','Mindset','Mini','Mitsubishi','Mitsuoka','Morgan',
+      'NanoFlowcell','Nilu','Nismo','Nissan','Noble',
+      'ORCA','Oldsmobile','Opel',
+      'PGO','Pagani','Panoz','Peugeot','Pininfarina','Plymouth','Polestar','Pontiac','Porsche','Proton',
+      'Qoros',
+      'Ram','Renault','Rimac','Rinspeed','Rivian','Rolls-Royce','Rover',
+      'Saab','Saleen','Saturn','Scion','Scout','Seat','Singer','Skoda','Slate','Smart','Sony','Spada','Spyker','SsangYong','Startech','Stola','Strosek','StudioTorino','Subaru','Suzuki',
+      'TVR','TWR','Tata','TechArt','Tesla','Think','Touring','Toyota','Tramontana',
+      'Valmet','Vauxhall','Venturi','VinFast','Volkswagen','Volvo','Vuhl',
+      'Wald','Wiesmann',
+      'Yes',
+      'Zagato','Zenvo'
     ];
 
     function setOptions(select, label, values, disabled) {
@@ -44,25 +62,19 @@
       return response.json();
     }
 
-    setOptions(year, 'Select year', Array.from({ length: 46 }, (_, i) => 2026 - i), false);
+    // Model years. The make list is independent of the year so historic and
+    // specialty makes remain selectable; year-specific availability is checked
+    // by the model lookup when possible.
+    setOptions(year, 'Select year', Array.from({ length: 127 }, (_, i) => 2026 - i), false);
     setOptions(make, 'Select make', [], true);
     setOptions(model, 'Select model', [], true);
     setOptions(engine, 'Select / confirm engine', [], true);
 
     year.onchange = async function () {
-      setOptions(make, 'Select make', [], true);
+      setOptions(make, 'Select make', masterMakes, false);
       setOptions(model, 'Select model', [], true);
       setOptions(engine, 'Select / confirm engine', [], true);
-      if (!this.value) return;
-
-      loading(make, 'Loading makes...');
-      try {
-        const data = await json(api + '/GetMakesForVehicleType/car?format=json');
-        const liveNames = (data.Results || []).map(x => x.MakeName || x.Make_Name).filter(Boolean);
-        setOptions(make, 'Select make', [...liveNames, ...fallbackMakes], false);
-      } catch (e) {
-        setOptions(make, 'Select make', fallbackMakes, false);
-      }
+      if (!this.value) setOptions(make, 'Select make', [], true);
     };
 
     make.onchange = async function () {
@@ -72,29 +84,22 @@
 
       loading(model, 'Loading models...');
       try {
-        // First ask vPIC for models for the exact make/year.
         const yearUrl = api + '/GetModelsForMakeYear/make/' + encodeURIComponent(this.value) + '/modelyear/' + encodeURIComponent(year.value) + '/vehicletype/car?format=json';
         const yearData = await json(yearUrl);
         let names = (yearData.Results || []).map(x => x.Model_Name || x.ModelName).filter(Boolean);
 
-        // Some historical, low-volume, and specialty makes do not return
-        // complete year-specific results. Fall back to the make's broader model
-        // list so the customer can still select the model instead of getting an
-        // empty dropdown. Exact year/fitment is still confirmed later.
         if (!names.length) {
           const makeUrl = api + '/GetModelsForMake/make/' + encodeURIComponent(this.value) + '?format=json';
           const makeData = await json(makeUrl);
           names = (makeData.Results || []).map(x => x.Model_Name || x.ModelName).filter(Boolean);
         }
 
-        if (names.length) {
-          setOptions(model, 'Select model', names, false);
-        } else {
-          setOptions(model, 'Model not found — enter below', [], false);
+        if (names.length) setOptions(model, 'Select model', names, false);
+        else {
+          setOptions(model, 'Model not listed — enter below', [], false);
           addCustomModelField();
         }
       } catch (e) {
-        // Keep booking usable even when vPIC has no model data for a rare make.
         setOptions(model, 'Model not listed — enter below', [], false);
         addCustomModelField();
       }
@@ -106,7 +111,7 @@
         wrap = document.createElement('div');
         wrap.id = 'dashCustomModelWrap';
         wrap.className = 'field full';
-        wrap.innerHTML = '<label for="dashCustomModel">Exact model</label><input id="dashCustomModel" placeholder="Example: Model name / trim">';
+        wrap.innerHTML = '<label for="dashCustomModel">Exact model</label><input id="dashCustomModel" placeholder="Enter exact model / trim">';
         model.closest('.field').after(wrap);
       }
       wrap.classList.remove('hidden');
