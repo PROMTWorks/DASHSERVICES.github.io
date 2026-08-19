@@ -54,14 +54,17 @@ function init(){
       try{return await get(trimDemoApi+path.replace('/get-trims/','/get-trims-demo/').replace('/get-engines/','/get-engines-demo/'))}catch(demo){throw primary}
     }
   }
+  function localCatalogEntry(y,m,mo){
+    const catalog=window.DASH_VEHICLE_CATALOG||window.DASH_VEHICLE_TRIMS||{};
+    return catalog[[y,m,mo].join('|')]||catalog[y]?.[m]?.[mo]||catalog[m+'|'+mo]||catalog[m]?.[mo]||null;
+  }
   async function loadTrims(){
     if(!trim||!year.value||!make.value||!model.value)return;
     const y=year.value,m=make.value,mo=model.value;
     resetTrim();trim.disabled=true;trim.options[0].text='Loading trims...';
     let values=[];
     try{values=extract(await carListGet('/get-trims/'+encodeURIComponent(y)+'/'+encodeURIComponent(m)+'/'+encodeURIComponent(mo)+'/asc'),'trim')}catch(e){}
-    const catalog=window.DASH_VEHICLE_CATALOG||window.DASH_VEHICLE_TRIMS||{};
-    try{const entry=catalog[[y,m,mo].join('|')]||catalog[y]?.[m]?.[mo]||catalog[m]?.[mo];if(Array.isArray(entry))values=values.concat(entry);else if(entry&&Array.isArray(entry.trims))values=values.concat(entry.trims);else if(entry&&Array.isArray(entry.Trim))values=values.concat(entry.Trim)}catch(e){}
+    try{const entry=localCatalogEntry(y,m,mo);if(Array.isArray(entry))values=values.concat(entry);else if(entry&&Array.isArray(entry.trims))values=values.concat(entry.trims);else if(entry&&Array.isArray(entry.Trim))values=values.concat(entry.Trim)}catch(e){}
     values=uniq(values);
     if(values.length){options(trim,'Select trim',values,false)}
     else{options(trim,'No trim data found — enter below',[],false);addCustomTrim()}
@@ -78,6 +81,8 @@ function init(){
     options(engine,'Loading engines...',[],true);
     let values=[];
     try{values=extract(await carListGet('/get-engines/'+encodeURIComponent(y)+'/'+encodeURIComponent(m)+'/'+encodeURIComponent(mo)+'/'+encodeURIComponent(t)+'/asc'),'engine')}catch(e){}
+    try{const entry=localCatalogEntry(y,m,mo);if(entry&&Array.isArray(entry.engines))values=values.concat(entry.engines);else if(entry&&Array.isArray(entry.engine))values=values.concat(entry.engine)}catch(e){}
+    values=uniq(values);
     const custom=addCustomEngine();
     if(values.length){options(engine,'Select engine',values,false);engine.add(new Option('I know my engine — enter below','__custom__'))}
     else{options(engine,'No engine data found — enter below',[],false);custom.classList.remove('hidden')}
