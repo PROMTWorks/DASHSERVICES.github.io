@@ -9,7 +9,7 @@
     'Audi':['4000','5000','Quattro'],
     'Bentley':['Continental','Mulsanne'],
     'Blue Bird':['All American','SBCV','School Bus','Wanderlodge'],
-    'BMW':['318','318I','325','524','528','533','535','633','635','733','733I','735','750','850','K Series','R Series'],
+    'BMW':['318','318I','325','524','528','533','535','633','635','733','733I','735','750','850'],
     'Buick':['Century','Electra','Estate','LeSabre','Park Avenue','Regal','Riviera','Skyhawk','Skylark'],
     'Cadillac':['Brougham','Cadillac','Cimarron','DeVille','Eldorado','Fleetwood','Seville'],
     'Chevrolet':['Astro','B6P','B6P042','Beretta','Blazer','C Series','C Series (Light)','C Series(Light)','C1','C10','C15','C2','C20','C25','C3','C30','C35','C50','C6','C7','C70','Camaro','Caprice','Cavalier','Celebrity','Chevette','Chevrolet','Chevrolet Truck','Chevy Van','Citation','Corvette','D Series','El Camino','G Series','G1','G10','G2','G20','G3','G30','Impala','K Series','K1','K10','K15','K2','K20','K25','K30','K35','Malibu','Monte Carlo','Nova','P Series','P20','P3','P30','P6T042','R Series','R20','S10','S7T042','School Bus Series','School Buses','Silverado','Suburban','T10','Tiltmaster'],
