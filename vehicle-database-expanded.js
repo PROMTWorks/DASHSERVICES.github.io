@@ -1,7 +1,6 @@
 /* PROMT WORKS — EXPANDED VEHICLE DATABASE
-   Year / make / model / engine / trim selector backed by NHTSA vPIC where
-   the API supports model-year lookups, while preserving vehicle data supplied
-   directly to DASH.
+   Year / make / model / engine / trim selector.
+   Uses customer-supplied historic data plus NHTSA vPIC for year-specific models.
 */
 (function(){'use strict';
 function init(){
@@ -11,11 +10,11 @@ function init(){
   const api='https://vpic.nhtsa.dot.gov/api/vehicles';
   const suppliedYears=Array.from({length:83},(_,i)=>1945+i);
   const suppliedVehicles=window.DASH_CUSTOMER_VEHICLES||{};
-  const fallbackMakes=['Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar','Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu','Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner','Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu','Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack','Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI','Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar','Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','SEAT','Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD','Volkswagen','Volvo','Western Star','Willys','Workhorse'];
+  const fallbackMakes=['Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar','Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu','Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner','Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu','Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack','Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI','Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar','Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD','Volkswagen','Volvo','Western Star','Willys','Workhorse'];
   const uniq=a=>[...new Set(a.filter(Boolean).map(v=>String(v).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const options=(el,label,values,disabled)=>{if(!el)return;el.innerHTML='';el.add(new Option(label,''));uniq(values).forEach(v=>el.add(new Option(v,v)));el.disabled=!!disabled};
+  const options=(el,label,values,disabled)=>{el.innerHTML='';el.add(new Option(label,''));uniq(values).forEach(v=>el.add(new Option(v,v)));el.disabled=!!disabled};
   const reset=(el,label)=>options(el,label,[],true);
-  async function get(url){const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw Error('NHTSA request failed');return r.json()}
+  async function get(url){const r=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('NHTSA request failed');return r.json()}
   const sm=y=>Object.keys(suppliedVehicles[String(y)]||{});
   const sx=(y,m)=>(suppliedVehicles[String(y)]||{})[m]||[];
   const nhtsaYearSupported=y=>Number(y)>=1996;
@@ -23,14 +22,10 @@ function init(){
 
   options(year,'Select year',suppliedYears,false);
   options(make,'Select make',fallbackMakes,true);
-  reset(model,'Select model');
-  reset(engine,'Select engine');
-  resetTrim();
+  reset(model,'Select model');reset(engine,'Select engine');resetTrim();
 
   year.addEventListener('change',async function(){
-    reset(model,'Select model');
-    reset(engine,'Select engine');
-    resetTrim();
+    reset(model,'Select model');reset(engine,'Select engine');resetTrim();
     if(!this.value){options(make,'Select make',fallbackMakes,true);return}
     const supplied=sm(this.value);
     options(make,'Loading makes...',[],true);
@@ -41,16 +36,26 @@ function init(){
   });
 
   make.addEventListener('change',async function(){
-    reset(model,'Select model');
-    reset(engine,'Select engine');
-    resetTrim();
+    reset(model,'Select model');reset(engine,'Select engine');resetTrim();
     if(!year.value||!this.value)return;
-    const supplied=sx(year.value,this.value);
+    const y=year.value,m=this.value,supplied=sx(y,m);
     options(model,'Loading models...',[],true);
-    if(nhtsaYearSupported(year.value)){
+
+    // For 1996+, ask vPIC for the complete model list for the selected
+    // make/year without restricting the vehicle type to passenger cars.
+    // The previous implementation used /vehicletype/car, which excluded
+    // trucks, vans, motorcycles and other vehicle types and caused the
+    // booking selector to show only a small subset such as five Dodge models.
+    if(nhtsaYearSupported(y)){
       try{
-        const d=await get(api+'/GetModelsForMakeYear/make/'+encodeURIComponent(this.value)+'/modelyear/'+encodeURIComponent(year.value)+'/vehicletype/car?format=json');
-        const names=uniq((d.Results||[]).map(x=>x.Model_Name||x.ModelName).concat(supplied));
+        const urls=[
+          api+'/GetModelsForMakeYear/make/'+encodeURIComponent(m)+'/modelyear/'+encodeURIComponent(y)+'?format=json',
+          api+'/GetModelsForMakeYear/make/'+encodeURIComponent(m)+'/modelyear/'+encodeURIComponent(y)+'/vehicletype/car?format=json'
+        ];
+        const responses=await Promise.allSettled(urls.map(get));
+        let names=[];
+        responses.forEach(r=>{if(r.status==='fulfilled')names=names.concat((r.value.Results||[]).map(x=>x.Model_Name||x.ModelName))});
+        names=uniq(names.concat(supplied));
         if(names.length){options(model,'Select model',names,false);return}
       }catch(e){}
     }
@@ -70,36 +75,23 @@ function init(){
     resetTrim();
     let w=document.getElementById('dashCustomEngineWrap');
     if(!w){w=document.createElement('div');w.id='dashCustomEngineWrap';w.className='field full hidden';w.innerHTML='<label for="dashCustomEngine">Exact engine</label><input id="dashCustomEngine" placeholder="Example: 2.5L 4-Cylinder">';engine.closest('.field').after(w)}
-    engine.onchange=function(){w.classList.toggle('hidden',!this.value);if(this.value)populateTrim()};
+    engine.onchange=function(){w.classList.toggle('hidden',!this.value);populateTrim()};
     populateTrim();
   });
 
   function populateTrim(){
     if(!trim)return;
-    const y=year.value,m=make.value,mo=model.value;
-    const catalog=window.DASH_VEHICLE_CATALOG||window.DASH_VEHICLE_TRIMS||{};
+    const y=year.value,m=make.value,mo=model.value,catalog=window.DASH_VEHICLE_CATALOG||window.DASH_VEHICLE_TRIMS||{};
     let values=[];
     try{
-      const key=[y,m,mo].join('|');
-      const entry=catalog[key]||catalog[y]?.[m]?.[mo]||catalog[m]?.[mo];
-      if(Array.isArray(entry))values=entry;
-      else if(entry&&Array.isArray(entry.trims))values=entry.trims;
-      else if(entry&&Array.isArray(entry.Trim))values=entry.Trim;
+      const entry=catalog[[y,m,mo].join('|')]||catalog[y]?.[m]?.[mo]||catalog[m]?.[mo];
+      if(Array.isArray(entry))values=entry;else if(entry&&Array.isArray(entry.trims))values=entry.trims;else if(entry&&Array.isArray(entry.Trim))values=entry.Trim;
     }catch(e){}
-    if(!values.length) values=['Base / Standard','DX / Entry','LX / Mid-Level','EX / Premium','LE / Luxury','Sport / Performance','Limited / Top Trim','Other / Exact Trim'];
+    if(!values.length)values=['Base / Standard','DX / Entry','LX / Mid-Level','EX / Premium','LE / Luxury','Sport / Performance','Limited / Top Trim','Other / Exact Trim'];
     options(trim,'Select trim',values,false);
   }
 
-  window.PROMT_VEHICLE_DATABASE={
-    name:'PROMT WORKS Expanded Vehicle Database',
-    source:'Customer-supplied vehicle data + NHTSA vPIC',
-    nhtsaSource:'https://www.nhtsa.gov/vehicle',
-    apiSource:api,
-    years:suppliedYears,
-    suppliedVehicles:suppliedVehicles,
-    behavior:'NHTSA vPIC supplies year-specific models for 1996+; DASH-supplied historic data is retained for earlier years and any NHTSA gaps. Trim options use the catalog when available and otherwise provide generic trim categories.',
-    normalization:'Repeated makes and models are deduplicated in selector options while year relationships remain distinct.'
-  };
+  window.PROMT_VEHICLE_DATABASE={name:'PROMT WORKS Expanded Vehicle Database',source:'Customer-supplied vehicle data + NHTSA vPIC',nhtsaSource:'https://www.nhtsa.gov/vehicle',apiSource:api,years:suppliedYears,suppliedVehicles:suppliedVehicles,behavior:'NHTSA vPIC year-specific model data for 1996+ is merged with DASH-supplied historic data; all returned vehicle types are included.',normalization:'Repeated makes and models are deduplicated in selector options while year relationships remain distinct.'};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
