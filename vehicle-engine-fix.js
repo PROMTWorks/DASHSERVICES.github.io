@@ -1,50 +1,58 @@
-/* DASH VEHICLE SELECTOR FIX v4
-   Self-contained selector. Make is populated locally immediately; model can use NHTSA
-   when available, with a manual fallback. Engine and trim are always selectable after model.
+/* DASH VEHICLE SELECTOR FIX v5
+   Final, network-independent selector controller.
+   The booking page must always expose Make after Year and Model after Make.
 */
 (function(){
 'use strict';
 const MAKES=['Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar','Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu','Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner','Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu','Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack','Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI','Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar','Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD','Volkswagen','Volvo','Western Star','Willys','Workhorse'];
-function el(id){return document.getElementById(id)}
-function opts(node,placeholder,values,disabled){if(!node)return;node.innerHTML='';node.add(new Option(placeholder,''));[...new Set((values||[]).filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b)).forEach(v=>node.add(new Option(v,v)));node.disabled=!!disabled;node.removeAttribute('aria-disabled');node.style.display='';}
-async function getModels(make,year){try{const u='https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/'+encodeURIComponent(make)+'/modelyear/'+encodeURIComponent(year)+'?format=json';const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error('model lookup failed');const d=await r.json();return (d.Results||[]).map(x=>x.Model_Name||x.ModelName).filter(Boolean)}catch(e){return []}}
+function get(id){return document.getElementById(id)}
+function unique(values){return [...new Set((values||[]).filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b))}
+function fill(select,placeholder,values,disabled){if(!select)return;select.innerHTML='';select.appendChild(new Option(placeholder,''));unique(values).forEach(v=>select.appendChild(new Option(v,v)));select.disabled=!!disabled;select.hidden=false;select.style.display='';select.removeAttribute('aria-hidden');select.removeAttribute('aria-disabled')}
+async function nhtsaModels(make,year){try{const r=await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/'+encodeURIComponent(make)+'/modelyear/'+encodeURIComponent(year)+'?format=json',{cache:'no-store'});if(!r.ok)return[];const d=await r.json();return(d.Results||[]).map(x=>x.Model_Name||x.ModelName).filter(Boolean)}catch(e){return[]}}
 function setup(){
- const y=el('year'),m=el('make'),mo=el('model'),eng=el('engine'),tr=el('trim');
- if(!y||!m||!mo||!eng||!tr)return false;
- // Remove any stale disabled state left by previous selector scripts.
- y.disabled=false;
- opts(m,'Select make',[],true);opts(mo,'Select model',[],true);opts(eng,'Select engine',[],true);opts(tr,'Select trim',[],true);
- // Use one controlled set of handlers. onchange replaces prior property handlers but leaves other listeners harmless.
- y.onchange=function(){
-   if(!y.value){opts(m,'Select make',[],true);opts(mo,'Select model',[],true);opts(eng,'Select engine',[],true);opts(tr,'Select trim',[],true);return;}
-   // IMPORTANT: populate Make immediately. Do not wait for a network call.
-   opts(m,'Select make',MAKES,false);
-   opts(mo,'Select model',[],true);opts(eng,'Select engine',[],true);opts(tr,'Select trim',[],true);
+ const year=get('year'),make=get('make'),model=get('model'),engine=get('engine'),trim=get('trim');
+ if(!year||!make||!model||!engine||!trim)return false;
+ year.disabled=false;
+ // Make is deliberately available immediately, so a failed API cannot make the customer stuck.
+ fill(make,'Select make',MAKES,false);
+ fill(model,'Select model / choose manual entry',[],false);
+ model.appendChild(new Option('Manual model entry','__manual__'));
+ fill(engine,'Select engine / choose manual entry',[],false);
+ engine.appendChild(new Option('Manual engine entry','__manual__'));
+ fill(trim,'Select trim / choose manual entry',[],false);
+ trim.appendChild(new Option('Manual trim entry','__manual__'));
+ function onYear(){
+   if(!year.value){fill(make,'Select make',MAKES,false);fill(model,'Select model / choose manual entry',[],false);model.appendChild(new Option('Manual model entry','__manual__'));return;}
+   // Never wait for NHTSA to populate Make.
+   fill(make,'Select make',MAKES,false);
+   fill(model,'Select model / choose manual entry',[],false);model.appendChild(new Option('Manual model entry','__manual__'));
+   fill(engine,'Select engine / choose manual entry',[],false);engine.appendChild(new Option('Manual engine entry','__manual__'));
+   fill(trim,'Select trim / choose manual entry',[],false);trim.appendChild(new Option('Manual trim entry','__manual__'));
+ }
+ function onMake(){
+   if(!year.value||!make.value)return;
+   const y=year.value,m=make.value;
+   fill(model,'Loading models...',[],true);
+   nhtsaModels(m,y).then(list=>{if(year.value!==y||make.value!==m)return;fill(model,list.length?'Select model':'Select model / manual entry',list,false);model.appendChild(new Option('Manual model entry','__manual__'));});
+   setTimeout(()=>{if(year.value===y&&make.value===m&&model.disabled){fill(model,'Select model / manual entry',[],false);model.appendChild(new Option('Manual model entry','__manual__'));}},800);
+ }
+ function onModel(){if(!model.value)return;fill(engine,'Select engine / manual entry',[],false);engine.appendChild(new Option('Manual engine entry','__manual__'));fill(trim,'Select trim / manual entry',[],false);trim.appendChild(new Option('Manual trim entry','__manual__'));}
+ // Capture listeners run before legacy bubble listeners.
+ year.addEventListener('change',onYear,true);
+ make.addEventListener('change',onMake,true);
+ model.addEventListener('change',onModel,true);
+ // Protect against legacy scripts changing disabled/hidden state after our handlers run.
+ const repair=()=>{
+   [make,model,engine,trim].forEach(s=>{s.hidden=false;s.style.display='';s.removeAttribute('aria-hidden')});
+   if(year.value){make.disabled=false;if(make.options.length<=1)fill(make,'Select make',MAKES,false)}
+   if(make.value){model.disabled=false;if(model.options.length<=1){fill(model,'Select model / manual entry',[],false);model.appendChild(new Option('Manual model entry','__manual__'))}}
  };
- m.onchange=function(){
-   if(!m.value){opts(mo,'Select model',[],true);opts(eng,'Select engine',[],true);opts(tr,'Select trim',[],true);return;}
-   const selectedYear=y.value;
-   opts(mo,'Loading models...',[],true);opts(eng,'Select engine',[],true);opts(tr,'Select trim',[],true);
-   getModels(m.value,selectedYear).then(function(models){
-     opts(mo,models.length?'Select model':'Model not listed — select manual entry',models,false);
-     mo.add(new Option('Manual model entry','__manual__'));
-   });
-   // Network-independent fallback: allow the customer to select manual model immediately.
-   setTimeout(function(){if(mo.disabled){opts(mo,'Select model',[],false);mo.add(new Option('Manual model entry','__manual__'));}},1200);
- };
- mo.onchange=function(){
-   if(!mo.value)return;
-   opts(eng,'Select engine',[],false);eng.add(new Option('I know my engine — manual entry','__manual__'));
-   opts(tr,'Select trim',[],false);tr.add(new Option('I know my trim — manual entry','__manual__'));
- };
- // Keep the selectors visible/enabled if another legacy script changes their state.
- const keep=function(){
-   [m,mo,eng,tr].forEach(function(x){if(x)x.style.display='';});
-   if(y.value && m.options.length<=1)opts(m,'Select make',MAKES,false);
- };
- setInterval(keep,500);
+ new MutationObserver(repair).observe(document.body,{subtree:true,attributes:true,attributeFilter:['disabled','hidden','style','aria-hidden']});
+ setInterval(repair,250);
+ repair();
+ if(year.value)onYear();
  return true;
 }
-function boot(){if(!setup())return setTimeout(boot,100);}
+function boot(){if(!setup())setTimeout(boot,100)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
