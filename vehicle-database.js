@@ -15,14 +15,10 @@
     load('./vehicle-customer-data.js?v=20260819a',function(){
       load('./vehicle-customer-data-1984.js?v=20260819d',function(){
         load('./vehicle-customer-data-1988.js?v=20260819e',function(){
-          load('./vehicle-catalog.js?v=20260819m',function(){
-            load('./vehicle-database-expanded.js?v=20260819m',function(){
+          load('./vehicle-catalog.js?v=20260819n',function(){
+            load('./vehicle-database-expanded.js?v=20260819n',function(){
               window.DASHVehicleDatabaseLoaded=true;
-              load('./vehicle-service-policy.js?v=20260819b',function(){
-                load('./vehicle-booking.js?v=20260819h',function(){
-                  window.DASHVehicleBookingLoaded=true;
-                });
-              });
+              document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
             });
           });
         });
