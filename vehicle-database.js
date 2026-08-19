@@ -4,7 +4,7 @@
 function load(src,done){var s=document.createElement('script');s.src=src;s.async=false;s.onload=done;s.onerror=function(){console.error('DASH script failed:',src);done&&done()};document.head.appendChild(s)}
 function req(){var d=new Date();return 'DASH-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000)}
 function key(){return ['locationStreet','locationCity','locationState','locationZip'].map(function(id){var e=document.getElementById(id);return e&&e.value?e.value.trim().toLowerCase().replace(/[^a-z0-9]/g,''):''}).join('|')}
-function restrictions(){var r=document.getElementById('addressRestrictions'),p=document.getElementById('restrictionProofSection');if(!r)return;var email='supportdashservices@gmail.com',number=req();window.DASHServiceRequestNumber=number;r.required=true;
+function restrictions(){var r=document.getElementById('addressRestrictions'),p=document.getElementById('restrictionProofSection');if(!r)return;var email='supportdashservices@gmail.com',number=req();window.DASHServiceRequestNumber=number;
 function records(){try{return JSON.parse(localStorage.getItem('dashRestrictedServiceAddresses')||'{}')||{}}catch(e){return {}}}
 function lock(){var k=key(),x=records(),o=Array.prototype.find.call(r.options,function(a){return a.value==='no'});if(o)o.disabled=!!k&&!!x[k]&&x[k].status==='proof-required';if(o&&o.disabled&&r.value==='no'){r.value='unsure';alert('This service address previously triggered a Yes/Unsure restriction review. You cannot select No to bypass the required proof.')}}
 function proof(){if(!p)return;var old=document.getElementById('restrictionProofEmail');if(old)old.remove();var wrap=document.createElement('div');wrap.id='restrictionProofEmail';wrap.className='field full';wrap.style.marginTop='10px';wrap.innerHTML='<label>Proof Submission <span class="required">*</span></label><div class="note"><strong>Service Request #:</strong> '+number+'<br><strong>Email proof to:</strong> <a href="mailto:'+email+'">'+email+'</a><br>The button opens an email with the required recipient and subject. Attach your proof before sending.</div><button type="button" class="continue" id="emailRestrictionProof">Email Proof of Service Location Allowed</button><label class="contact-check"><input type="checkbox" id="restrictionProofEmailed"><span>I confirm I emailed the required proof to '+email+'. <span class="required">*</span></span></label>';p.appendChild(wrap);document.getElementById('emailRestrictionProof').onclick=function(){var subject='Proof of Service Location Allowed - '+number,body='Service Request #: '+number+'\nService: '+(document.getElementById('service')?.selectedOptions?.[0]?.text||'')+'\nService Location: '+['locationStreet','locationCity','locationState','locationZip'].map(function(id){return document.getElementById(id)?.value||''}).join(', ')+'\n\nProof/authorization that DASH Services is permitted to complete service at this address is attached.';location.href='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}}
@@ -13,14 +13,15 @@ if(p){var f=document.getElementById('restrictionProof');if(f)f.remove();var l=p.
 r.addEventListener('change',function(){lock();if(r.value==='yes'||r.value==='unsure'){var x=records();x[key()]={status:'proof-required',requestNumber:number,createdAt:new Date().toISOString()};localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(x))}if(p)p.classList.toggle('hidden',r.value!=='yes'&&r.value!=='unsure')});['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('input',lock)});lock();
 var ce=window.calculateEstimate;if(typeof ce==='function'&&!ce.__dashSafe){var w=function(){return validate()?ce.apply(this,arguments):undefined};w.__dashSafe=true;window.calculateEstimate=w}var rb=window.reviewBooking;if(typeof rb==='function'&&!rb.__dashSafe){var w2=function(){return validate()?rb.apply(this,arguments):undefined};w2.__dashSafe=true;window.reviewBooking=w2}}
 function start(){
-  /* Use the existing expanded vehicle database as the single source for
-     Year -> Make -> Model -> Trim -> Engine. It combines DASH's local catalog,
-     customer-supplied vehicle data, NHTSA vPIC models, and NHTSA SafetyRatings
-     variants instead of inventing placeholder Engine/Trim values. */
-  load('./vehicle-database-expanded.js?v=20260819v2',function(){
-    restrictions();
-    window.DASHVehicleDatabaseLoaded=true;
-    document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
+  /* Load the catalog FIRST. The expanded selector reads DASH_VEHICLE_CATALOG
+     synchronously when Model/Trim changes. Without this dependency being loaded
+     first, real local Engine/Trim data cannot be resolved and only fallbacks can appear. */
+  load('./vehicle-catalog.js?v=20260819v3',function(){
+    load('./vehicle-database-expanded.js?v=20260819v3',function(){
+      restrictions();
+      window.DASHVehicleDatabaseLoaded=true;
+      document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
+    });
   });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
