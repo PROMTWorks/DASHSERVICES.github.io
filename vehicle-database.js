@@ -44,9 +44,6 @@
     var year=document.getElementById('year'),make=document.getElementById('make'),model=document.getElementById('model'),engine=document.getElementById('engine'),trim=document.getElementById('trim');
     if(!year||!make||!model||!engine||!trim)return;
     function repair(){
-      // The complete selector implementation is loaded asynchronously. Once it
-      // is ready, replay the current year selection so Make -> Model -> Engine -> Trim
-      // is initialized even if the booking page's inline script ran first.
       if(year.value){year.dispatchEvent(new Event('change',{bubbles:true}));}
       make.style.display='';model.style.display='';engine.style.display='';trim.style.display='';
       make.removeAttribute('aria-hidden');model.removeAttribute('aria-hidden');engine.removeAttribute('aria-hidden');trim.removeAttribute('aria-hidden');
@@ -55,9 +52,25 @@
     setTimeout(repair,250);
     setTimeout(repair,1000);
     setTimeout(repair,2500);
-    year.addEventListener('change',function(){setTimeout(function(){year.dispatchEvent(new Event('change',{bubbles:true}));},25);});
   }
 
-  function start(){load('./vehicle-customer-data.js?v=20260819a',function(){load('./vehicle-customer-data-1984.js?v=20260819d',function(){load('./vehicle-customer-data-1988.js?v=20260819e',function(){load('./vehicle-catalog.js?v=20260819p',function(){load('./vehicle-database-expanded.js?v=20260819p',function(){load('./vehicle-engine-fix.js?v=20260819p',function(){load('./booking-server-security.js?v=20260819b',function(){window.DASHVehicleDatabaseLoaded=true;document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));installServiceLocationRules();installVehicleSelectorWatchdog();});});});});});});}
+  function installFinalVehicleSelector(){
+    var year=document.getElementById('year'),make=document.getElementById('make'),model=document.getElementById('model'),engine=document.getElementById('engine'),trim=document.getElementById('trim');
+    if(!year||!make||!model||!engine||!trim)return false;
+    var MAKES=['Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar','Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu','Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner','Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu','Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack','Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI','Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar','Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD','Volkswagen','Volvo','Western Star','Willys','Workhorse'];
+    function fill(sel,label,values,disabled){sel.innerHTML='';sel.appendChild(new Option(label,''));(values||[]).filter(Boolean).map(String).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a.localeCompare(b);}).forEach(function(v){sel.appendChild(new Option(v,v));});sel.disabled=!!disabled;sel.hidden=false;sel.style.display='';sel.removeAttribute('aria-hidden');}
+    function models(makeValue,yearValue){return fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/'+encodeURIComponent(makeValue)+'/modelyear/'+encodeURIComponent(yearValue)+'?format=json',{cache:'no-store'}).then(function(r){return r.ok?r.json():Promise.reject(new Error('lookup'));}).then(function(d){return(d.Results||[]).map(function(x){return x.Model_Name||x.ModelName;}).filter(Boolean);}).catch(function(){return[];});}
+    // Rebuild the controls and use event listeners in capture phase so legacy handlers cannot block them.
+    fill(make,'Select make',[],true);fill(model,'Select model',[],true);fill(engine,'Select engine',[],true);fill(trim,'Select trim',[],true);
+    year.addEventListener('change',function(){if(!year.value){fill(make,'Select make',[],true);fill(model,'Select model',[],true);fill(engine,'Select engine',[],true);fill(trim,'Select trim',[],true);return;}fill(make,'Select make',MAKES,false);fill(model,'Select model',[],true);fill(engine,'Select engine',[],true);fill(trim,'Select trim',[],true);},true);
+    make.addEventListener('change',function(){var y=year.value,m=make.value;if(!y||!m)return;fill(model,'Loading models...',[],true);fill(engine,'Select engine',[],true);fill(trim,'Select trim',[],true);models(m,y).then(function(list){if(year.value!==y||make.value!==m)return;fill(model,list.length?'Select model':'Select model / manual entry',list,false);model.appendChild(new Option('Manual model entry','__manual__'));});setTimeout(function(){if(year.value===y&&make.value===m&&model.disabled){fill(model,'Select model / manual entry',[],false);model.appendChild(new Option('Manual model entry','__manual__'));}},1000);},true);
+    model.addEventListener('change',function(){if(!model.value)return;fill(engine,'Select engine / manual entry',[],false);engine.appendChild(new Option('Manual engine entry','__manual__'));fill(trim,'Select trim / manual entry',[],false);trim.appendChild(new Option('Manual trim entry','__manual__'));},true);
+    if(year.value)year.dispatchEvent(new Event('change',{bubbles:true}));
+    var keep=function(){[make,model,engine,trim].forEach(function(x){x.hidden=false;x.style.display='';x.removeAttribute('aria-hidden');});if(year.value&&make.options.length<=1)fill(make,'Select make',MAKES,false);};
+    setInterval(keep,300);
+    return true;
+  }
+
+  function start(){load('./vehicle-customer-data.js?v=20260819a',function(){load('./vehicle-customer-data-1984.js?v=20260819d',function(){load('./vehicle-customer-data-1988.js?v=20260819e',function(){load('./vehicle-catalog.js?v=20260819p',function(){load('./vehicle-database-expanded.js?v=20260819p',function(){load('./vehicle-engine-fix.js?v=20260819p',function(){load('./booking-server-security.js?v=20260819b',function(){window.DASHVehicleDatabaseLoaded=true;document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));installServiceLocationRules();installVehicleSelectorWatchdog();setTimeout(installFinalVehicleSelector,50);setTimeout(installFinalVehicleSelector,500);setTimeout(installFinalVehicleSelector,1500);});});});});});});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
