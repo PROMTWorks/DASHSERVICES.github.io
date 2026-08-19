@@ -13,11 +13,9 @@ if(p){var f=document.getElementById('restrictionProof');if(f)f.remove();var l=p.
 r.addEventListener('change',function(){lock();if(r.value==='yes'||r.value==='unsure'){var x=records();x[key()]={status:'proof-required',requestNumber:number,createdAt:new Date().toISOString()};localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(x))}if(p)p.classList.toggle('hidden',r.value!=='yes'&&r.value!=='unsure')});['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('input',lock)});lock();
 var ce=window.calculateEstimate;if(typeof ce==='function'&&!ce.__dashSafe){var w=function(){return validate()?ce.apply(this,arguments):undefined};w.__dashSafe=true;window.calculateEstimate=w}var rb=window.reviewBooking;if(typeof rb==='function'&&!rb.__dashSafe){var w2=function(){return validate()?rb.apply(this,arguments):undefined};w2.__dashSafe=true;window.reviewBooking=w2}}
 function start(){
-  /* The customer page has one vehicle controller: vehicle-engine-fix.js.
-     Do not gate it behind the legacy catalog/data scripts. If those files fail,
-     the selector must still work. The fix itself provides the fallback make list
-     and manual model/engine/trim paths. */
-  load('./vehicle-engine-fix.js?v=20260819v6',function(){
+  /* Single vehicle controller. Load v7 directly so the customer page receives
+     the same controller that owns Year -> Make -> Model -> Engine -> Trim. */
+  load('./vehicle-engine-fix.js?v=20260819v7',function(){
     restrictions();
     window.DASHVehicleDatabaseLoaded=true;
     document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
