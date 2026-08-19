@@ -14,57 +14,37 @@
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const status=document.getElementById('status');
-const frame=document.getElementById('portal');
-const signOut=document.getElementById('signOut');
-function wireTopLevelNavigation(){
+const status=document.getElementById('status');const frame=document.getElementById('portal');const signOut=document.getElementById('signOut');
+function installBookingDelete(){
   try{
-    const doc=frame.contentDocument;
-    if(!doc)return;
-    doc.addEventListener('click',event=>{
-      const el=event.target?.closest?.('button,a');
-      if(!el)return;
-      const text=(el.textContent||'').trim().toLowerCase();
-      const href=(el.getAttribute('href')||'').toLowerCase();
-      if(text==='communications'||href.includes('admin-communications.html')){
-        event.preventDefault();
-        event.stopPropagation();
-        window.location.assign('admin-communications.html');
-      }
-    },true);
-    [...doc.querySelectorAll('button')].forEach(btn=>{
-      if((btn.textContent||'').trim().toLowerCase()==='communications'){
-        btn.onclick=event=>{
-          event.preventDefault();
-          window.location.assign('admin-communications.html');
-        };
-      }
-    });
-  }catch(e){console.warn('Unable to wire admin navigation',e)}
+    const doc=frame.contentDocument;if(!doc||doc.__dashDeleteInstalled)return;doc.__dashDeleteInstalled=true;
+    const style=doc.createElement('style');style.textContent='.dash-delete-btn{margin-left:8px!important;border:1px solid #b91c1c!important;background:#fff!important;color:#b91c1c!important;border-radius:7px!important;padding:7px 10px!important;font-weight:800!important;cursor:pointer!important}.dash-delete-btn:hover{background:#fef2f2!important}.dash-confirm-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:2147483647}.dash-confirm{width:min(420px,calc(100vw - 32px));background:#fff;border-radius:14px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Arial,sans-serif}.dash-confirm h3{margin:0 0 8px;font-size:21px}.dash-confirm p{color:#475569;line-height:1.5}.dash-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.dash-confirm-actions button{border:0;border-radius:8px;padding:10px 15px;font-weight:800;cursor:pointer}.dash-cancel{background:#e5e7eb;color:#111827}.dash-confirm-delete{background:#b91c1c;color:#fff}';doc.head.appendChild(style);
+    async function deleteBooking(requestNumber){
+      const found=await client.from('service_requests').select('id,request_number').eq('request_number',requestNumber).maybeSingle();
+      if(found.error)throw found.error;if(!found.data)throw new Error('Booking could not be found.');
+      const result=await client.rpc('admin_delete_service_request',{p_request_id:found.data.id});if(result.error)throw result.error;
+      return true;
+    }
+    function confirmDelete(requestNumber){return new Promise(resolve=>{
+      const back=doc.createElement('div');back.className='dash-confirm-backdrop';back.innerHTML='<div class="dash-confirm" role="dialog" aria-modal="true"><h3>Are you sure?</h3><p>Are you sure you want to erase booking <strong>'+requestNumber.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</strong>? This will permanently remove the booking from DASH.</p><div class="dash-confirm-actions"><button class="dash-cancel">Cancel</button><button class="dash-confirm-delete">Erase Booking</button></div></div>';doc.body.appendChild(back);back.querySelector('.dash-cancel').onclick=()=>{back.remove();resolve(false)};back.querySelector('.dash-confirm-delete').onclick=async()=>{const b=back.querySelector('.dash-confirm-delete');b.disabled=true;b.textContent='Erasing…';try{await deleteBooking(requestNumber);back.remove();resolve(true)}catch(e){b.disabled=false;b.textContent='Erase Booking';alert('Could not erase booking: '+(e.message||e))}};back.addEventListener('click',e=>{if(e.target===back){back.remove();resolve(false)}});
+    })}
+    function addButtons(){
+      const elements=[...doc.querySelectorAll('*')];
+      elements.forEach(el=>{
+        if(el.children.length>8)return;const text=(el.textContent||'').trim();const match=text.match(/DASH-[0-9]{10,}-[0-9]+/);if(!match)return;
+        if(el.querySelector('.dash-delete-btn'))return;
+        const buttons=[...el.querySelectorAll('button')];if(!buttons.length)return;
+        const row=el;const btn=doc.createElement('button');btn.type='button';btn.className='dash-delete-btn';btn.textContent='Erase Booking';btn.onclick=async ev=>{ev.preventDefault();ev.stopPropagation();if(await confirmDelete(match[0])){row.remove();setTimeout(()=>{const refresh=[...doc.querySelectorAll('button')].find(x=>/refresh|reload/i.test(x.textContent||''));if(refresh)refresh.click()},150)}};buttons[buttons.length-1].parentElement?.appendChild(btn);
+      });
+    }
+    doc.addEventListener('click',e=>{const btn=e.target?.closest?.('.dash-delete-btn');if(btn){e.preventDefault();e.stopPropagation()}},true);
+    addButtons();new MutationObserver(addButtons).observe(doc.body,{childList:true,subtree:true});
+  }catch(e){console.warn('Unable to install booking delete controls',e)}
 }
-async function loadPortal(){
-  const {data,error}=await client.auth.getUser();
-  if(error||!data?.user){window.location.replace('admin-login.html');return;}
-  const {data:sessionData}=await client.auth.getSession();
-  const token=sessionData?.session?.access_token;
-  if(!token){window.location.replace('admin-login.html');return;}
-  const response=await fetch('https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});
-  if(!response.ok)throw new Error('Protected admin portal could not be loaded.');
-  frame.srcdoc=await response.text();
-  frame.addEventListener('load',wireTopLevelNavigation,{once:true});
-  status.style.display='none';
-  frame.style.display='block';
-  signOut.style.display='block';
-}
-signOut.addEventListener('click',async()=>{
-  signOut.disabled=true;
-  signOut.textContent='Signing Out…';
-  const {error}=await client.auth.signOut();
-  if(error){signOut.disabled=false;signOut.textContent='Sign Out';return;}
-  window.location.replace('admin-login.html');
-});
-loadPortal().catch(error=>{status.textContent=error?.message||'Unable to verify administrator access.'});
-client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
+function wireTopLevelNavigation(){try{const doc=frame.contentDocument;if(!doc)return;doc.addEventListener('click',event=>{const el=event.target?.closest?.('button,a');if(!el)return;const text=(el.textContent||'').trim().toLowerCase();const href=(el.getAttribute('href')||'').toLowerCase();if(text==='communications'||href.includes('admin-communications.html')){event.preventDefault();event.stopPropagation();window.location.assign('admin-communications.html')}},true);[...doc.querySelectorAll('button')].forEach(btn=>{if((btn.textContent||'').trim().toLowerCase()==='communications')btn.onclick=event=>{event.preventDefault();window.location.assign('admin-communications.html')}});installBookingDelete()}catch(e){console.warn('Unable to wire admin navigation',e)}}
+async function loadPortal(){const {data,error}=await client.auth.getUser();if(error||!data?.user){window.location.replace('admin-login.html');return}const {data:sessionData}=await client.auth.getSession();const token=sessionData?.session?.access_token;if(!token){window.location.replace('admin-login.html');return}const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});if(!response.ok)throw new Error('Protected admin portal could not be loaded.');frame.srcdoc=await response.text();frame.addEventListener('load',wireTopLevelNavigation,{once:true});status.style.display='none';frame.style.display='block';signOut.style.display='block'}
+signOut.addEventListener('click',async()=>{signOut.disabled=true;signOut.textContent='Signing Out…';const {error}=await client.auth.signOut();if(error){signOut.disabled=false;signOut.textContent='Sign Out';return}window.location.replace('admin-login.html')});
+loadPortal().catch(error=>{status.textContent=error?.message||'Unable to verify administrator access.'});client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
 </script>
 </body>
 </html>
