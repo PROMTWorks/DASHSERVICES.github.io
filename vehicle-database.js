@@ -15,9 +15,9 @@
     load('./vehicle-customer-data.js?v=20260819a',function(){
       load('./vehicle-customer-data-1984.js?v=20260819d',function(){
         load('./vehicle-customer-data-1988.js?v=20260819e',function(){
-          load('./vehicle-catalog.js?v=20260819o',function(){
-            load('./vehicle-database-expanded.js?v=20260819o',function(){
-              load('./vehicle-engine-selector-fix.js?v=20260819a',function(){
+          load('./vehicle-catalog.js?v=20260819p',function(){
+            load('./vehicle-database-expanded.js?v=20260819p',function(){
+              load('./vehicle-engine-fix.js?v=20260819p',function(){
                 window.DASHVehicleDatabaseLoaded=true;
                 document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
               });
