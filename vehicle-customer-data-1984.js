@@ -30,7 +30,7 @@
     'Mercury':['Capri','Colony Park','Cougar','Grand Marquis','LN7','Lynx','Marquis','Monarch','Sable','Topaz'],
     'Mitsubishi':['Cordia','Galant','Mirage','Montero','Tredia'],
     'Nissan':['200','200SX','300ZX','720','Datsun','Maxima','Nissan','Pickup','Pulsar','Sentra','Stanza'],
-    'Oldsmobile':['88','98','Calais','Ciera','Custom Cruiser','Cutlass','Cutlass Ciera','Firenze','Oldsmobile','Omega','Supreme','Toronado'],
+    'Oldsmobile':['88','98','Calais','Ciera','Custom Cruiser','Cutlass','Cutlass Ciera','FIRENZA','Oldsmobile','Omega','Supreme','Toronado'],
     'Plymouth':['Arrow','B100','B200','B300','B350','Colt','Colt Vista','Conquest','Fury','Grand Voyager','Horizon','Laser','Plymouth','Plymouth Truck','Reliant','Trailbuster','Turismo','Voyager'],
     'Pontiac':['1000','2000','6000','Bonneville','Fiero','Firebird','Grand Am','Grand Prix','J2000','Parisienne','Phoenix','Pontiac','Sunbird','T1000','Trans Am','Trans Sport'],
     'Porsche':['911','928','944'],
