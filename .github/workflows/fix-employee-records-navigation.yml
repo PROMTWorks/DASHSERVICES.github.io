@@ -1,0 +1,36 @@
+name: Fix Employee Records Navigation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-admin:
+    if: ${{ !contains(github.event.head_commit.message, 'Fix Employee Records Navigation [bot]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Employee Records button
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('admin-production.html')
+          s = p.read_text(encoding='utf-8')
+          old = '<button onclick="show(\'employees\',this);loadAdminEmployees()">Employee Records</button>'
+          new = '<button onclick="location.href=\'employee-management.html\'">Employee Records</button>'
+          if old not in s:
+              raise SystemExit('Target Employee Records button was not found; no changes made.')
+          p.write_text(s.replace(old,new,1), encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          git diff --cached --quiet || git commit -m "Fix Employee Records Navigation [bot]"
+          git push
