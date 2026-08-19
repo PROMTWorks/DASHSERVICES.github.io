@@ -1,4 +1,4 @@
-/* DASH booking runtime: expanded vehicle database + service-location authorization. */
+/* DASH booking runtime: local vehicle database + service-location authorization. */
 (function(){
 'use strict';
 function load(src,done){var s=document.createElement('script');s.src=src;s.async=false;s.onload=done;s.onerror=function(){console.error('DASH script failed:',src);done&&done()};document.head.appendChild(s)}
@@ -13,8 +13,8 @@ if(p){var f=document.getElementById('restrictionProof');if(f)f.remove();var l=p.
 r.addEventListener('change',function(){lock();if(r.value==='yes'||r.value==='unsure'){var x=records();x[key()]={status:'proof-required',requestNumber:number,createdAt:new Date().toISOString()};localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(x))}if(p)p.classList.toggle('hidden',r.value!=='yes'&&r.value!=='unsure')});['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('input',lock)});lock();
 var ce=window.calculateEstimate;if(typeof ce==='function'&&!ce.__dashSafe){var w=function(){return validate()?ce.apply(this,arguments):undefined};w.__dashSafe=true;window.calculateEstimate=w}var rb=window.reviewBooking;if(typeof rb==='function'&&!rb.__dashSafe){var w2=function(){return validate()?rb.apply(this,arguments):undefined};w2.__dashSafe=true;window.reviewBooking=w2}}
 function start(){
-  load('./vehicle-catalog.js?v=20260819v5',function(){
-    load('./vehicle-database-expanded.js?v=20260819v9',function(){
+  load('./vehicle-catalog.js?v=20260819v6',function(){
+    load('./vehicle-database-expanded.js?v=20260819v10',function(){
       restrictions();
       window.DASHVehicleDatabaseLoaded=true;
       document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
