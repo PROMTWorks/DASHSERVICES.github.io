@@ -10,8 +10,9 @@
    4. The local DASH catalog is merged as a fallback, with year-specific
       entries taking priority over generic model entries.
 
-   The file owns the selector UI. vehicle-catalog.js is data-only so duplicate
-   event handlers cannot reset the Trim dropdown after it has been populated.
+   IMPORTANT: Catalog lookups are case-insensitive because NHTSA/vPIC may
+   return DODGE/CARAVAN while local catalog keys are Dodge/Caravan. This keeps
+   the entire existing vehicle list connected to the trim/engine catalog.
 */
 (function(){
 'use strict';
@@ -32,6 +33,7 @@ function init(){
   const fallbackMakes=['Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar','Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu','Datsun','DeLorean','Dodge','Eagle','Edsel','Ferrari','FIAT','Fisker','Ford','Freightliner','Genesis','Geo','GMC','Honda','Hummer','Hyundai','INEOS','INFINITI','International','Isuzu','Jaguar','Jeep','Karma','Kia','Lamborghini','Land Rover','Lexus','Lincoln','Lucid','Mack','Maserati','Maybach','Mazda','McLaren','Mercedes-Benz','Mercury','Merkur','MG','MINI','Mitsubishi','Nissan','Oldsmobile','Opel','Packard','Panoz','Peterbilt','Plymouth','Polestar','Pontiac','Porsche','RAM','Rivian','Rolls-Royce','Rover','Saab','Saturn','Scion','Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD','Volkswagen','Volvo','Western Star','Willys','Workhorse'];
 
   const uniq=a=>[...new Set((a||[]).filter(Boolean).map(v=>String(v).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const norm=v=>String(v||'').trim().toLowerCase().replace(/[\s_]+/g,' ');
   const options=(el,label,values,disabled)=>{
     el.innerHTML='';
     el.add(new Option(label,''));
@@ -46,16 +48,46 @@ function init(){
   };
 
   const suppliedMakes=y=>Object.keys(suppliedVehicles[String(y)]||{});
-  const suppliedModels=(y,m)=>(suppliedVehicles[String(y)]||{})[m]||[];
+  const suppliedModels=(y,m)=>{
+    const bucket=suppliedVehicles[String(y)]||{};
+    const key=Object.keys(bucket).find(k=>norm(k)===norm(m));
+    return key?bucket[key]:[];
+  };
   const nhtsaYearSupported=y=>Number(y)>=1996;
+
+  // Resolve local catalog entries case-insensitively and support both the
+  // year-specific and generic make/model keys already present in DASH.
+  function findCatalogObject(catalog,key){
+    if(!catalog||typeof catalog!=='object')return null;
+    const wanted=norm(key);
+    const exact=Object.keys(catalog).find(k=>norm(k)===wanted);
+    return exact?catalog[exact]:null;
+  }
 
   function catalogEntry(y,m,mo){
     const catalog=(window.DASH_VEHICLE_CATALOG&&window.DASH_VEHICLE_CATALOG.CATALOG)||{};
-    return catalog[[String(y),m,mo].join('|')]
-      ||catalog[[m,mo].join('|')]
-      ||(catalog[String(y)]&&catalog[String(y)][m]&&catalog[String(y)][m][mo])
-      ||(catalog[m]&&catalog[m][mo])
-      ||null;
+    const yearKey=[String(y),m,mo].join('|');
+    const makeModel=[m,mo].join('|');
+    const direct=findCatalogObject(catalog,yearKey);
+    if(direct)return direct;
+    const generic=findCatalogObject(catalog,makeModel);
+    if(generic)return generic;
+
+    const yearBucket=findCatalogObject(catalog,String(y));
+    if(yearBucket){
+      const makeBucket=findCatalogObject(yearBucket,m);
+      if(makeBucket){
+        const modelEntry=findCatalogObject(makeBucket,mo);
+        if(modelEntry)return modelEntry;
+      }
+    }
+
+    const makeBucket=findCatalogObject(catalog,m);
+    if(makeBucket){
+      const modelEntry=findCatalogObject(makeBucket,mo);
+      if(modelEntry)return modelEntry;
+    }
+    return null;
   }
 
   function addCustomModel(){
@@ -216,6 +248,7 @@ function init(){
     suppliedVehicles:suppliedVehicles,
     trimBehavior:'Year-specific local trims are merged with NHTSA SafetyRatings vehicle variants for 1996+. Historic customer-supplied years use the supplied vehicle list and local catalog where available.',
     engineBehavior:'Year/model-specific local engine data is used when available; otherwise the customer can enter the exact factory engine.',
+    lookupBehavior:'Make/model/catalog matching is case-insensitive so NHTSA values such as DODGE/CARAVAN resolve to the existing Dodge/Caravan catalog entry.',
     deduplication:'Trim and engine values are deduplicated while the selected model year remains part of the lookup context.'
   };
 }
