@@ -27,9 +27,9 @@
 <script>
 const supabaseClient=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const button=document.getElementById('connect'),status=document.getElementById('status'),errorBox=document.getElementById('error');
-(async()=>{const {data,error}=await supabaseClient.auth.getUser();if(error||!data?.user){window.location.replace('admin-login.html');return}})();
-supabaseClient.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
-button.addEventListener('click',async()=>{button.disabled=true;button.textContent='Starting secure Google connection...';errorBox.style.display='none';try{const {data,error}=await supabaseClient.functions.invoke('dash-gmail-oauth-replace-start');if(error)throw error;if(!data?.auth_url)throw new Error(data?.error||'Google authorization URL was not returned.');window.location.href=data.auth_url}catch(e){status.textContent='Unable to start the Gmail connection.';errorBox.textContent=e?.message||'Please sign in again and try again.';errorBox.style.display='block';button.disabled=false;button.textContent='Connect / Replace Gmail Account'}});
+(async()=>{const {data,error}=await supabaseClient.auth.getUser();if(error||!data?.user){window.top.location.replace('admin-login.html');return}})();
+supabaseClient.auth.onAuthStateChange((_event,session)=>{if(!session)window.top.location.replace('admin-login.html')});
+button.addEventListener('click',async()=>{button.disabled=true;button.textContent='Starting secure Google connection...';errorBox.style.display='none';try{const {data,error}=await supabaseClient.functions.invoke('dash-gmail-oauth-replace-start');if(error)throw error;if(!data?.auth_url)throw new Error(data?.error||'Google authorization URL was not returned.');status.textContent='Opening Google authorization in the main browser window…';window.top.location.assign(data.auth_url)}catch(e){status.textContent='Unable to start the Gmail connection.';errorBox.textContent=e?.message||'Please sign in again and try again.';errorBox.style.display='block';button.disabled=false;button.textContent='Connect / Replace Gmail Account'}});
 </script>
 </body>
 </html>
