@@ -8,7 +8,10 @@
     load('./vehicle-customer-data.js?v=20260819a',function(){
       load('./vehicle-customer-data-1984.js?v=20260819d',function(){
         load('./vehicle-database-expanded.js?v=20260819c',function(){
-          load('./vehicle-catalog.js?v=20260816b',function(){window.DASHVehicleDatabaseLoaded=true;});
+          load('./vehicle-catalog.js?v=20260816b',function(){
+            window.DASHVehicleDatabaseLoaded=true;
+            load('./vehicle-service-policy.js?v=20260819a',function(){});
+          });
         });
       });
     });
