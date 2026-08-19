@@ -1,7 +1,6 @@
 /* DASH vehicle database entrypoint.
-   Loads customer-supplied vehicle data first, then the catalog/selector layer.
-   Also installs the shared service-location authorization workflow used by
-   every service booking on the shared booking form.
+   Loads vehicle data/catalogs and installs the shared service-location
+   authorization workflow used by every booking service.
 */
 (function(){
   'use strict';
@@ -15,14 +14,29 @@
   }
 
   function makeRequestNumber(){
-    var existing=sessionStorage.getItem('dashServiceRequestNumber');
-    if(existing)return existing;
     var now=new Date();
     var stamp=now.getFullYear().toString()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
     var random=Math.floor(1000+Math.random()*9000);
-    var id='DASH-'+stamp+'-'+random;
-    sessionStorage.setItem('dashServiceRequestNumber',id);
-    return id;
+    return 'DASH-'+stamp+'-'+random;
+  }
+
+  function normalizeAddress(){
+    var ids=['locationStreet','locationCity','locationState','locationZip'];
+    return ids.map(function(id){
+      var el=document.getElementById(id);
+      return el&&el.value?el.value.trim().toLowerCase().replace(/[^a-z0-9]/g,''):'';
+    }).join('|');
+  }
+
+  function getRestrictedAddresses(){
+    try{return JSON.parse(localStorage.getItem('dashRestrictedServiceAddresses')||'{}')||{};}catch(e){return {};}
+  }
+
+  function saveRestrictedAddress(addressKey,requestNumber){
+    if(!addressKey)return;
+    var records=getRestrictedAddresses();
+    records[addressKey]={status:'proof-required',requestNumber:requestNumber,createdAt:new Date().toISOString()};
+    try{localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(records));}catch(e){console.warn('DASH could not save address restriction record.',e);}
   }
 
   function installServiceLocationRules(){
@@ -32,13 +46,14 @@
     if(!restrictions)return;
 
     var requestNumber=makeRequestNumber();
+    window.DASHServiceRequestNumber=requestNumber;
     restrictions.setAttribute('required','required');
 
-    /* Shared booking requirement: applies to automotive and non-automotive
-       services that use the site's booking form. */
+    /* Shared requirement: automotive and non-automotive services using this
+       booking form receive the same address/restriction workflow. */
     if(proofSection){
-      var file=document.getElementById('restrictionProof');
-      if(file)file.remove();
+      var oldFile=document.getElementById('restrictionProof');
+      if(oldFile)oldFile.remove();
       var oldLabel=proofSection.querySelector('label[for="restrictionProof"]');
       if(oldLabel)oldLabel.remove();
 
@@ -55,7 +70,7 @@
       wrap.id='restrictionProofEmail';
       wrap.style.marginTop='10px';
       wrap.innerHTML='<label>Proof Submission <span class="required">*</span></label>'+
-        '<div class="note"><strong>Service Request #:</strong> '+requestNumber+'<br><strong>Email proof to:</strong> <a href="mailto:'+email+'" style="color:#c62828;font-weight:800">'+email+'</a><br>Use the button below to open your email with the required subject line and service request number already filled in. Attach your proof/authorization to the email before sending it.</div>'+
+        '<div class="note"><strong>Service Request #:</strong> '+requestNumber+'<br><strong>Email proof to:</strong> <a href="mailto:'+email+'" style="color:#c62828;font-weight:800">'+email+'</a><br>Click the button below to open your email. The recipient, required subject, request number, service, and service address are filled in automatically. Attach your proof/authorization before sending.</div>'+
         '<button type="button" class="continue" id="emailRestrictionProof">Email Proof of Service Location Allowed</button>'+
         '<label class="contact-check" style="margin-top:10px"><input type="checkbox" id="restrictionProofEmailed"><span>I confirm that I have emailed the required proof/authorization to DASH Services at '+email+'. <span class="required">*</span></span></label>';
       proofSection.appendChild(wrap);
@@ -73,6 +88,27 @@
       });
     }
 
+    function updateAddressRestrictionState(){
+      var key=normalizeAddress();
+      var records=getRestrictedAddresses();
+      var locked=!!key && !!records[key] && records[key].status==='proof-required';
+      var noOption=Array.prototype.find.call(restrictions.options,function(o){return o.value==='no';});
+      if(noOption)noOption.disabled=locked;
+
+      if(locked && restrictions.value==='no'){
+        restrictions.value='unsure';
+        alert('This service address previously triggered a Yes/Unsure restriction review. You cannot change this address to No to bypass the required proof. Please provide the required proof/authorization for this address.');
+      }
+      return locked;
+    }
+
+    function updateProofVisibility(){
+      var choice=restrictions.value;
+      var locked=updateAddressRestrictionState();
+      if(locked && choice==='no')choice='unsure';
+      if(proofSection)proofSection.classList.toggle('hidden',choice!=='yes' && choice!=='unsure');
+    }
+
     function validateServiceLocation(){
       var ids=['locationStreet','locationCity','locationState','locationZip'];
       for(var i=0;i<ids.length;i++){
@@ -84,7 +120,18 @@
         }
       }
 
+      var addressKey=normalizeAddress();
+      var records=getRestrictedAddresses();
+      var locked=!!records[addressKey] && records[addressKey].status==='proof-required';
       var choice=restrictions.value;
+
+      if(locked && choice==='no'){
+        restrictions.value='unsure';
+        updateProofVisibility();
+        alert('This address requires proof based on a previous Yes/Unsure restriction response. A new service request cannot be used to bypass that requirement.');
+        return false;
+      }
+
       if(!choice){
         alert('Please answer the service-location restrictions question by selecting Yes, No, or Unsure.');
         restrictions.focus();
@@ -92,6 +139,7 @@
       }
 
       if(choice==='yes' || choice==='unsure'){
+        saveRestrictedAddress(addressKey,requestNumber);
         var details=document.getElementById('restrictionDetails');
         var confirmed=document.getElementById('restrictionProofEmailed');
         if(!details || !details.value.trim()){
@@ -100,13 +148,25 @@
           return false;
         }
         if(!confirmed || !confirmed.checked){
-          alert('Please email the required proof/authorization using the Email Proof of Service Location Allowed button and confirm that you have sent it before continuing.');
+          alert('Please click Email Proof of Service Location Allowed, send the required proof/authorization to '+email+', and confirm that you sent it before continuing.');
           if(confirmed)confirmed.focus();
           return false;
         }
       }
       return true;
     }
+
+    ['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.addEventListener('input',updateAddressRestrictionState);
+    });
+    restrictions.addEventListener('change',function(){
+      var key=normalizeAddress();
+      var records=getRestrictedAddresses();
+      if(restrictions.value==='yes' || restrictions.value==='unsure')saveRestrictedAddress(key,requestNumber);
+      updateProofVisibility();
+    });
+    updateProofVisibility();
 
     var originalCalculate=window.calculateEstimate;
     if(typeof originalCalculate==='function' && !originalCalculate.__dashAddressWrapped){
@@ -127,13 +187,6 @@
       wrappedReview.__dashAddressWrapped=true;
       window.reviewBooking=wrappedReview;
     }
-
-    function updateProofVisibility(){
-      var choice=restrictions.value;
-      if(proofSection)proofSection.classList.toggle('hidden',choice!=='yes' && choice!=='unsure');
-    }
-    restrictions.addEventListener('change',updateProofVisibility);
-    updateProofVisibility();
   }
 
   function start(){
