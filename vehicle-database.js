@@ -1,7 +1,5 @@
 /* DASH vehicle database entrypoint.
    Loads customer-supplied vehicle data first, then the catalog/selector layer.
-   The catalog must load BEFORE the expanded selector so the trim field exists
-   when the expanded Year -> Make -> Model -> Trim -> Engine handlers initialize.
 */
 (function(){
   'use strict';
@@ -17,10 +15,8 @@
     load('./vehicle-customer-data.js?v=20260819a',function(){
       load('./vehicle-customer-data-1984.js?v=20260819d',function(){
         load('./vehicle-customer-data-1988.js?v=20260819e',function(){
-          /* Create the trim selector and expose the local catalog first. */
-          load('./vehicle-catalog.js?v=20260819k',function(){
-            /* Then initialize the expanded year/make/model/trim/engine layer. */
-            load('./vehicle-database-expanded.js?v=20260819k',function(){
+          load('./vehicle-catalog.js?v=20260819m',function(){
+            load('./vehicle-database-expanded.js?v=20260819m',function(){
               window.DASHVehicleDatabaseLoaded=true;
               load('./vehicle-service-policy.js?v=20260819b',function(){
                 load('./vehicle-booking.js?v=20260819h',function(){
