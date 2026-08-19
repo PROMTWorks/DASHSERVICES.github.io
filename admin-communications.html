@@ -8,8 +8,8 @@
 <body>
 <header><div class="brand">DASH <span>Services · Admin Portal</span></div><div class="tag">SUPER ADMIN · COMMUNICATIONS</div></header>
 <main class="wrap">
-<div class="title"><div><h1>Communications</h1><p>Automated customer email and notification controls.</p></div><a class="back" href="admin.html">← Back to Admin Portal</a></div>
-<div class="connect"><h2>Gmail Connection</h2><p>Connect the dedicated DASH Services Gmail account through the protected Google OAuth workflow. Customers will be configured to see <strong>support@dashservices.net</strong> rather than the underlying Gmail account.</p><a class="btn" href="admin-gmail-connection.html">Open Gmail Connection</a></div>
+<div class="title"><div><h1>Communications</h1><p>Automated customer email and notification controls.</p></div><a class="back" href="admin.html" target="_top">← Back to Admin Portal</a></div>
+<div class="connect"><h2>Gmail Connection</h2><p>Connect the dedicated DASH Services Gmail account through the protected Google OAuth workflow. Customers will be configured to see <strong>support@dashservices.net</strong> rather than the underlying Gmail account.</p><a class="btn" href="admin-gmail-connection.html" target="_top" rel="noopener">Open Gmail Connection</a></div>
 <div class="notice"><strong>Business email setup:</strong> The intended connected Gmail account is <b>supportdashservices@gmail.com</b>. The customer-facing address is <b>support@dashservices.net</b>.</div>
 <div class="warning"><strong>Secure connection required before sending:</strong> Automated sending remains disabled until the secure provider connection is configured. This prevents the website from exposing Gmail credentials or pretending that an email was sent when no sending service is connected.</div>
 <div class="grid">
@@ -34,8 +34,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const client=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-(async()=>{const {data,error}=await client.auth.getUser();if(error||!data?.user){window.location.replace('admin-login.html');return}})();
-client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
+(async()=>{const {data,error}=await client.auth.getUser();if(error||!data?.user){window.top.location.replace('admin-login.html');return}})();
+client.auth.onAuthStateChange((_event,session)=>{if(!session)window.top.location.replace('admin-login.html')});
 </script>
 </body>
 </html>
