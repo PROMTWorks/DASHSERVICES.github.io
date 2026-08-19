@@ -15,6 +15,7 @@ const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const status=document.getElementById('status');const frame=document.getElementById('portal');const signOut=document.getElementById('signOut');
+const escHtml=x=>String(x??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 function installBookingDelete(){
   try{
     const doc=frame.contentDocument;if(!doc)return;
@@ -50,7 +51,35 @@ function installBookingDelete(){
     addButtons();new MutationObserver(addButtons).observe(doc.body,{childList:true,subtree:true});
   }catch(e){console.warn('Unable to install booking delete controls',e)}
 }
-function wireTopLevelNavigation(){try{const doc=frame.contentDocument;if(!doc)return;doc.addEventListener('click',event=>{const el=event.target?.closest?.('button,a');if(!el)return;const text=(el.textContent||'').trim().toLowerCase();const href=(el.getAttribute('href')||'').toLowerCase();if(text==='communications'||href.includes('admin-communications.html')){event.preventDefault();event.stopPropagation();window.location.assign('admin-communications.html')}},true);installBookingDelete()}catch(e){console.warn('Unable to wire admin navigation',e)}}
+function renderBookingRows(bookings){
+  const doc=frame.contentDocument;if(!doc)return;
+  const list=doc.querySelector('#bookingList');if(!list)return;
+  if(!bookings.length){list.innerHTML='<div class="empty"><strong>No bookings yet</strong>No service requests have been submitted.</div>';return;}
+  list.innerHTML=bookings.map(r=>{
+    const customer=[r.first_name,r.last_name].filter(Boolean).join(' ');
+    const vehicle=[r.vehicle_year,r.vehicle_make,r.vehicle_model,r.vehicle_trim].filter(Boolean).join(' ');
+    const engine=r.vehicle_engine?` · Engine: ${escHtml(r.vehicle_engine)}`:'';
+    const vehicleLine=vehicle?`<span class="mini"><b>Vehicle:</b> ${escHtml(vehicle)}${engine}</span>`:'';
+    return `<div class="row"><div><strong>${escHtml(r.request_number||r.client_request_number||'DASH Request')}</strong><span class="mini">${escHtml(customer)} · ${escHtml(r.email||'—')} · ${escHtml(r.phone||'—')}</span><span class="mini"><b>Service:</b> ${escHtml(r.service_name||r.service_key||'Service')} · ${escHtml([r.preferred_date,r.preferred_time].filter(Boolean).join(' ')||'No preferred time')}</span>${vehicleLine}<span class="mini">${escHtml([r.city,r.state,r.postal_code].filter(Boolean).join(', '))}</span><span class="mini">${escHtml(r.full_address||'—')}</span></div><div class="toolbar"><span class="pill">${escHtml(r.request_status||'submitted')}</span><span class="pill">Proof: ${escHtml(r.proof_status||'not_required')}</span></div></div>`;
+  }).join('');
+  installBookingDelete();
+}
+async function loadLiveBookings(){
+  try{
+    const session=(await client.auth.getSession()).data.session;if(!session)return;
+    const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-bookings',{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to load bookings.');
+    const doc=frame.contentDocument;if(!doc)return;
+    const nav=[...doc.querySelectorAll('aside button')].find(b=>b.textContent.trim().replace(/\s*\(\d+\)$/,'')==='Bookings');
+    if(nav)nav.textContent='Bookings ('+Number(data.count||0)+')';
+    const count=doc.querySelector('#bookingCount');if(count)count.textContent=String(data.count||0);
+    const pending=doc.querySelector('#pendingCount');if(pending)pending.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='submitted').length);
+    const scheduled=doc.querySelector('#scheduledCount');if(scheduled)scheduled.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='approved').length);
+    const completed=doc.querySelector('#completedCount');if(completed)completed.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='completed').length);
+    renderBookingRows(data.bookings||[]);
+  }catch(e){console.warn('Unable to load live bookings',e)}
+}
+function wireTopLevelNavigation(){try{const doc=frame.contentDocument;if(!doc)return;doc.addEventListener('click',event=>{const el=event.target?.closest?.('button,a');if(!el)return;const text=(el.textContent||'').trim().toLowerCase();const href=(el.getAttribute('href')||'').toLowerCase();if(text==='communications'||href.includes('admin-communications.html')){event.preventDefault();event.stopPropagation();window.location.assign('admin-communications.html')}},true);installBookingDelete();loadLiveBookings();}catch(e){console.warn('Unable to wire admin navigation',e)}}
 async function loadPortal(){const {data,error}=await client.auth.getUser();if(error||!data?.user){window.location.replace('admin-login.html');return}const {data:sessionData}=await client.auth.getSession();const token=sessionData?.session?.access_token;if(!token){window.location.replace('admin-login.html');return}const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});if(!response.ok)throw new Error('Protected admin portal could not be loaded.');frame.srcdoc=await response.text();frame.addEventListener('load',wireTopLevelNavigation,{once:true});status.style.display='none';frame.style.display='block';signOut.style.display='block'}
 signOut.addEventListener('click',async()=>{signOut.disabled=true;signOut.textContent='Signing Out…';const {error}=await client.auth.signOut();if(error){signOut.disabled=false;signOut.textContent='Sign Out';return}window.location.replace('admin-login.html')});
 loadPortal().catch(error=>{status.textContent=error?.message||'Unable to verify administrator access.'});client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
