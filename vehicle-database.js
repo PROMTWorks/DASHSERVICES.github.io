@@ -13,11 +13,8 @@ if(p){var f=document.getElementById('restrictionProof');if(f)f.remove();var l=p.
 r.addEventListener('change',function(){lock();if(r.value==='yes'||r.value==='unsure'){var x=records();x[key()]={status:'proof-required',requestNumber:number,createdAt:new Date().toISOString()};localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(x))}if(p)p.classList.toggle('hidden',r.value!=='yes'&&r.value!=='unsure')});['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('input',lock)});lock();
 var ce=window.calculateEstimate;if(typeof ce==='function'&&!ce.__dashSafe){var w=function(){return validate()?ce.apply(this,arguments):undefined};w.__dashSafe=true;window.calculateEstimate=w}var rb=window.reviewBooking;if(typeof rb==='function'&&!rb.__dashSafe){var w2=function(){return validate()?rb.apply(this,arguments):undefined};w2.__dashSafe=true;window.reviewBooking=w2}}
 function start(){
-  /* Load the catalog FIRST. The expanded selector reads DASH_VEHICLE_CATALOG
-     synchronously when Model/Trim changes. Without this dependency being loaded
-     first, real local Engine/Trim data cannot be resolved and only fallbacks can appear. */
-  load('./vehicle-catalog.js?v=20260819v3',function(){
-    load('./vehicle-database-expanded.js?v=20260819v3',function(){
+  load('./vehicle-catalog.js?v=20260819v4',function(){
+    load('./vehicle-database-expanded.js?v=20260819v8',function(){
       restrictions();
       window.DASHVehicleDatabaseLoaded=true;
       document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
