@@ -10,13 +10,14 @@
 <a class="back" href="admin-v2.html">← Back to Admin Portal</a>
 <section class="panel">
 <h1>Gmail Connection</h1>
-<p class="muted">Secure DASH Services business email connection. Your personal Gmail account should not be used for DASH automated proof matching.</p>
+<p class="muted">Secure DASH Services business email connection. The dedicated company Gmail account is used for both incoming proof matching and DASH automated customer emails.</p>
 <div class="row"><div class="label">Required Gmail account</div><div class="value">supportdashservices@gmail.com</div></div>
 <div class="row"><div class="label">OAuth callback</div><div class="value">roywoofgypiyoobdcrwx.supabase.co/functions/v1/dash-gmail-oauth-callback</div></div>
 <div class="success"><strong>Automatic proof matching:</strong> Once <strong>supportdashservices@gmail.com</strong> is connected through Google OAuth, DASH checks the inbox automatically for messages containing a DASH service-request number. Matching proof emails are linked to the pending service request in Supabase. A matching email marks proof as received; it does <strong>not</strong> automatically approve the proof.</div>
+<div class="success"><strong>Automated customer email:</strong> The same connected company Gmail account is authorized for DASH to send booking confirmations, approved/denied service notifications, proof/restriction notifications, and other authorized transactional messages to customers.</div>
 <div class="status" id="status"><strong>Ready:</strong> Connect the dedicated Gmail account through Google's secure OAuth authorization.</div>
-<div class="warning"><strong>If Google shows “403 Access Denied”:</strong> the OAuth client itself must allow <strong>supportdashservices@gmail.com</strong>. In Google Cloud Console, add that exact address under the OAuth consent screen's <strong>Test users</strong> if the app is still in Testing, and make sure the exact callback above is listed under the OAuth client's <strong>Authorized redirect URIs</strong>.</div>
-<div class="steps"><strong>The DASH code now requests the correct permission for automatic inbox matching:</strong><ol><li>Gmail read-only access</li><li>Google account email identity</li><li>Offline access for the background matcher</li></ol>The matcher never uses the Gmail password and does not automatically approve customer proof.</div>
+<div class="warning"><strong>If Google shows “403 Access Denied”:</strong> make sure <strong>supportdashservices@gmail.com</strong> is listed as a Test user while the Google OAuth app is in Testing, the Gmail scopes used by DASH are declared in Google Auth Platform → Data Access, Gmail API is enabled, and this exact callback is listed under the OAuth client's Authorized redirect URIs.</div>
+<div class="steps"><strong>DASH requests the Gmail capabilities needed for the current integration:</strong><ol><li>Gmail read/compose/send access for automatic proof matching and authorized DASH customer emails</li><li>Google account email identity so DASH can verify the required company account</li><li>Offline access so the background proof matcher and scheduled customer emails can continue without requiring an administrator to remain signed in</li></ol>The matcher never uses the Gmail password and does not automatically approve customer proof.</div>
 <div class="error" id="error"></div>
 <button class="btn" id="connect" type="button">Connect / Replace Gmail Account</button>
 <a class="btn secondary" href="admin-communications.html" style="margin-left:8px">Communications</a>
