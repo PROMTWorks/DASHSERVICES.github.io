@@ -1660,6 +1660,7 @@ function closeSetupModal(){
    REMOVE EMPLOYEE
 -------------------------------- */
 
+async function sendSetup(id){try{await api('invite',{employee_id:id});await loadEmployees();msg('success','Setup email sent. The employee will create their own password.');}catch(e){msg('error',e.message||'Unable to send setup email.')}}
 async function removeEmployee(id){
 
     const confirmed =
