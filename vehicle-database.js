@@ -1,5 +1,7 @@
 /* DASH vehicle database entrypoint.
    Loads customer-supplied vehicle data first, then the catalog/selector layer.
+   Also installs the shared service-location authorization workflow used by
+   every service booking on the shared booking form.
 */
 (function(){
   'use strict';
@@ -12,48 +14,64 @@
     document.head.appendChild(s);
   }
 
+  function makeRequestNumber(){
+    var existing=sessionStorage.getItem('dashServiceRequestNumber');
+    if(existing)return existing;
+    var now=new Date();
+    var stamp=now.getFullYear().toString()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+    var random=Math.floor(1000+Math.random()*9000);
+    var id='DASH-'+stamp+'-'+random;
+    sessionStorage.setItem('dashServiceRequestNumber',id);
+    return id;
+  }
+
   function installServiceLocationRules(){
     var email='davidroyemployment@gmail.com';
     var restrictions=document.getElementById('addressRestrictions');
     var proofSection=document.getElementById('restrictionProofSection');
     if(!restrictions)return;
 
-    /* The booking page uses one shared booking form for every service, so these
-       rules automatically apply to every automotive service in the list. */
+    var requestNumber=makeRequestNumber();
     restrictions.setAttribute('required','required');
 
+    /* This is intentionally shared by the booking form rather than being tied
+       to automotive fields. Any service using this booking form receives the
+       same required address/restriction workflow. */
     if(proofSection){
       var file=document.getElementById('restrictionProof');
       if(file)file.remove();
-
       var oldLabel=proofSection.querySelector('label[for="restrictionProof"]');
       if(oldLabel)oldLabel.remove();
 
       var note=proofSection.querySelector('.note');
       if(note){
-        note.innerHTML='<strong>Proof Required:</strong> Because you selected Yes or Unsure, you must provide documentation showing that the service address has no applicable restrictions and that DASH Services is permitted to complete the requested service at this address. <strong>Email the proof to '+email+'</strong> before DASH can approve the service request.';
+        note.innerHTML='<strong>Proof Required:</strong> Because you selected Yes or Unsure, you must provide documentation showing that the service location has no applicable restrictions and that DASH Services is permitted to complete the requested service at this address. <strong>Email the proof to '+email+'</strong> before DASH can approve the service request.';
       }
 
-      if(!document.getElementById('restrictionProofEmail')){
-        var wrap=document.createElement('div');
-        wrap.className='field full';
-        wrap.style.marginTop='10px';
-        wrap.innerHTML='<label>Proof Submission <span class="required">*</span></label>'+
-          '<div class="note"><strong>Email your proof to:</strong> <a href="mailto:'+email+'?subject=DASH%20Service%20Address%20Proof" style="color:#c62828;font-weight:800">'+email+'</a><br>Attach the authorization/documentation to your email. Include the service address and customer name in the email so DASH can match the proof to the booking.</div>'+
-          '<button type="button" class="continue" id="emailRestrictionProof">Email Proof to DASH Services</button>'+
-          '<label class="contact-check" style="margin-top:10px"><input type="checkbox" id="restrictionProofEmailed"><span>I confirm that I have emailed the required proof/authorization to DASH Services at '+email+'. <span class="required">*</span></span></label>';
-        proofSection.appendChild(wrap);
+      var oldEmailBox=document.getElementById('restrictionProofEmail');
+      if(oldEmailBox)oldEmailBox.remove();
 
-        document.getElementById('emailRestrictionProof').addEventListener('click',function(){
-          var street=(document.getElementById('locationStreet')||{}).value||'';
-          var city=(document.getElementById('locationCity')||{}).value||'';
-          var state=(document.getElementById('locationState')||{}).value||'';
-          var zip=(document.getElementById('locationZip')||{}).value||'';
-          var subject=encodeURIComponent('DASH Service Address Proof');
-          var body=encodeURIComponent('DASH Service Address Proof\n\nService address:\n'+street+'\n'+city+', '+state+' '+zip+'\n\nPlease attach the required authorization/proof showing that DASH Services is permitted to complete the requested service at this address.');
-          window.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
-        });
-      }
+      var wrap=document.createElement('div');
+      wrap.className='field full';
+      wrap.id='restrictionProofEmail';
+      wrap.style.marginTop='10px';
+      wrap.innerHTML='<label>Proof Submission <span class="required">*</span></label>'+
+        '<div class="note"><strong>Service Request #:</strong> '+requestNumber+'<br><strong>Email proof to:</strong> <a href="mailto:'+email+'" style="color:#c62828;font-weight:800">'+email+'</a><br>Use the button below to open your email with the required subject line and service request number already filled in. Attach your proof/authorization to the email before sending it.</div>'+
+        '<button type="button" class="continue" id="emailRestrictionProof">Email Proof of Service Location Allowed</button>'+
+        '<label class="contact-check" style="margin-top:10px"><input type="checkbox" id="restrictionProofEmailed"><span>I confirm that I have emailed the required proof/authorization to DASH Services at '+email+'. <span class="required">*</span></span></label>';
+      proofSection.appendChild(wrap);
+
+      document.getElementById('emailRestrictionProof').addEventListener('click',function(){
+        var street=(document.getElementById('locationStreet')||{}).value||'';
+        var city=(document.getElementById('locationCity')||{}).value||'';
+        var state=(document.getElementById('locationState')||{}).value||'';
+        var zip=(document.getElementById('locationZip')||{}).value||'';
+        var serviceEl=document.getElementById('service');
+        var serviceName=serviceEl&&serviceEl.options[serviceEl.selectedIndex]?serviceEl.options[serviceEl.selectedIndex].text:'Requested Service';
+        var subject=encodeURIComponent('Proof of Service Location Allowed, Service Request #'+requestNumber);
+        var body=encodeURIComponent('DASH Services - Proof of Service Location Allowed\n\nService Request #: '+requestNumber+'\nService: '+serviceName+'\n\nService Location:\n'+street+'\n'+city+', '+state+' '+zip+'\n\nPlease attach the documentation/proof showing that DASH Services is permitted to complete the requested service at this location.');
+        window.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
+      });
     }
 
     function validateServiceLocation(){
@@ -69,7 +87,7 @@
 
       var choice=restrictions.value;
       if(!choice){
-        alert('Please answer the service-address restrictions question by selecting Yes, No, or Unsure.');
+        alert('Please answer the service-location restrictions question by selecting Yes, No, or Unsure.');
         restrictions.focus();
         return false;
       }
@@ -83,7 +101,7 @@
           return false;
         }
         if(!confirmed || !confirmed.checked){
-          alert('Please email the required proof/authorization to '+email+' and confirm that you have emailed it before continuing.');
+          alert('Please email the required proof/authorization using the Email Proof of Service Location Allowed button and confirm that you have sent it before continuing.');
           if(confirmed)confirmed.focus();
           return false;
         }
@@ -91,7 +109,6 @@
       return true;
     }
 
-    /* Run before the existing estimate/review flow. */
     var originalCalculate=window.calculateEstimate;
     if(typeof originalCalculate==='function' && !originalCalculate.__dashAddressWrapped){
       function wrappedCalculate(){
