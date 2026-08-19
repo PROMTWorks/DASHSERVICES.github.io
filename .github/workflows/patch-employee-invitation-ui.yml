@@ -1,0 +1,38 @@
+name: Finish Employee Invitation UI
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[employee-invite-patched]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch employee management UI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('employee-management.html')
+          s=p.read_text()
+          old="const login=e.user_id?'Login connected':'No login connected';const actions=status==='active'?"
+          new="const login=e.user_id?'Login active':'Setup email required';const setup=e.user_id?'':'<button class=\"small pay\" onclick=\"sendSetup('+JSON.stringify(e.employee_id)+')\">Send Setup Email</button>';const actions=status==='active'?"
+          if old in s:
+              s=s.replace(old,new,1)
+          s=s.replace("'<div class=\"actions\">'+actions+'</div>'","'<div class=\"actions\">'+setup+actions+'</div>'",1)
+          marker="async function removeEmployee(id){"
+          if 'async function sendSetup(id)' not in s and marker in s:
+              fn="async function sendSetup(id){try{await api('invite',{employee_id:id});await loadEmployees();msg('success','Setup email sent. The employee will create their own password.');}catch(e){msg('error',e.message||'Unable to send setup email.')}}\n"
+              s=s.replace(marker,fn+marker,1)
+          p.write_text(s)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add employee-management.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Finish employee invitation UI [employee-invite-patched]'
+          git push
