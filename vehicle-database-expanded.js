@@ -1,10 +1,10 @@
-/* DASH vehicle selector: real trim/engine data */
+/* DASH vehicle selector: real trim/engine data v8 */
 (function(){
 'use strict';
 function init(){
  const year=document.getElementById('year'),make=document.getElementById('make'),model=document.getElementById('model'),engine=document.getElementById('engine'),trim=document.getElementById('trim');
- if(!year||!make||!model||!engine||!trim||year.dataset.dashVehicleInit==='real-data')return;
- year.dataset.dashVehicleInit='real-data';
+ if(!year||!make||!model||!engine||!trim||year.dataset.dashVehicleInit==='real-data-v8')return;
+ year.dataset.dashVehicleInit='real-data-v8';
  const norm=v=>String(v||'').trim().toLowerCase().replace(/[\s_]+/g,' ');
  const uniq=a=>[...new Set((a||[]).filter(Boolean).map(String).map(v=>v.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
  const catalog=()=>window.DASH_VEHICLE_CATALOG&&window.DASH_VEHICLE_CATALOG.CATALOG||{};
@@ -15,7 +15,25 @@ function init(){
  function custom(id,label,placeholder,after){let w=document.getElementById(id);if(!w){w=document.createElement('div');w.id=id;w.className='field full';w.innerHTML='<label>'+label+'</label><input placeholder="'+placeholder+'">';after.parentNode.insertBefore(w,after.nextSibling)}return w}
  async function nhtsaTrims(){if(Number(year.value)<1996)return[];try{const u='https://api.nhtsa.gov/SafetyRatings/modelyear/'+encodeURIComponent(year.value)+'/make/'+encodeURIComponent(make.value)+'/model/'+encodeURIComponent(model.value);const r=await fetch(u,{cache:'no-store'});if(!r.ok)return[];const d=await r.json();return(d.Results||[]).map(x=>x.VehicleDescription||x.Description||x.SubModel||x.Trim||'').filter(Boolean)}catch{return[]}}
  function resetAfterModel(){fill(trim,'Select trim',[],true);fill(engine,'Select engine',[],true);const a=document.getElementById('dashCustomTrimWrap'),b=document.getElementById('dashCustomEngineWrap');if(a)a.classList.add('hidden');if(b)b.classList.add('hidden')}
- function loadRealData(){if(!year.value||!make.value||!model.value)return;resetAfterModel();const e=entry();const localTrims=e&&Array.isArray(e.trims)?e.trims:[];const localEngines=e&&Array.isArray(e.engines)?e.engines:[];Promise.resolve(nhtsaTrims()).then(v=>{const trims=uniq(localTrims.concat(v));if(trims.length){fill(trim,'Select trim',trims,false)}else{fill(trim,'Trim not available — enter exact trim',[],false);custom('dashCustomTrimWrap','Exact factory trim','Example: XLT, EX, SE, Limited',trim).classList.remove('hidden')}if(localEngines.length){fill(engine,'Select engine',localEngines,false)}else{fill(engine,'Engine not available for this model — enter exact engine',[],false);custom('dashCustomEngineWrap','Exact factory engine','Example: 3.5L EcoBoost V6',engine).classList.remove('hidden')}})}
+ function loadRealData(){
+   if(!year.value||!make.value||!model.value)return;
+   resetAfterModel();
+   const e=entry();
+   const localTrims=e&&Array.isArray(e.trims)?e.trims:[];
+   const localEngines=e&&Array.isArray(e.engines)?e.engines:[];
+   /* Populate local DASH data immediately. Do NOT wait for NHTSA. */
+   if(localTrims.length) fill(trim,'Select trim',localTrims,false);
+   else { fill(trim,'Loading actual trims...',[],false); }
+   if(localEngines.length) fill(engine,'Select engine',localEngines,false);
+   else { fill(engine,'Engine data unavailable for this vehicle',[],false);custom('dashCustomEngineWrap','Exact factory engine','Example: 3.5L EcoBoost V6',engine).classList.remove('hidden'); }
+   /* NHTSA is only an additional trim source and can never block Engine. */
+   nhtsaTrims().then(v=>{
+      if(!model.value)return;
+      const trims=uniq(localTrims.concat(v));
+      if(trims.length) fill(trim,'Select trim',trims,false);
+      else {fill(trim,'Trim data unavailable for this vehicle',[],false);custom('dashCustomTrimWrap','Exact factory trim','Example: XLT, EX, SE, Limited',trim).classList.remove('hidden');}
+   });
+ }
  fill(year,'Select year',years(),false);fill(make,'Select make',[],true);fill(model,'Select model',[],true);fill(trim,'Select trim',[],true);fill(engine,'Select engine',[],true);
  year.onchange=()=>{fill(make,'Select make',[],false);fill(model,'Select model',[],true);fill(trim,'Select trim',[],true);fill(engine,'Select engine',[],true);const makes=Object.keys(catalog()).map(k=>k.split('|')[0]);uniq(makes).forEach(v=>make.add(new Option(v,v)));};
  make.onchange=async()=>{fill(model,'Loading models...',[],true);fill(trim,'Select trim',[],true);fill(engine,'Select engine',[],true);let names=[];try{if(Number(year.value)>=1996){const r=await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/'+encodeURIComponent(make.value)+'/modelyear/'+encodeURIComponent(year.value)+'?format=json',{cache:'no-store'});if(r.ok){const d=await r.json();names=(d.Results||[]).map(x=>x.Model_Name||x.ModelName)}}}catch{}Object.keys(catalog()).forEach(k=>{const p=k.split('|');if(norm(p[0])===norm(make.value))names.push(p[1])});fill(model,'Select model',uniq(names),false)};
