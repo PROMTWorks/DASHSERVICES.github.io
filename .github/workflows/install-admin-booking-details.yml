@@ -12,21 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add booking details script to production admin source
+      - name: Install versioned booking details client
         shell: python
         run: |
           from pathlib import Path
           p=Path('admin-production.html')
           s=p.read_text(encoding='utf-8')
-          tag='<script src="admin-booking-details.js?v=20260819v1" defer></script>'
+          import re
+          tag='<script src="admin-booking-details.js?v=20260819v2" defer></script>'
+          s=re.sub(r'<script src="admin-booking-details\.js\?v=[^"]+" defer></script>','',s)
           if tag not in s:
               s=s.replace('</body>',tag+'\n</body>',1)
-              p.write_text(s,encoding='utf-8')
+          p.write_text(s,encoding='utf-8')
       - name: Commit installation
         run: |
           git config user.name 'DASH Services Automation'
           git config user.email 'actions@github.com'
           git add admin-production.html
           git diff --cached --quiet && exit 0
-          git commit -m 'Install clickable live booking details viewer'
+          git commit -m 'Refresh admin booking details client'
           git push
