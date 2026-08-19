@@ -11,7 +11,13 @@
           load('./vehicle-database-expanded.js?v=20260819c',function(){
             load('./vehicle-catalog.js?v=20260816b',function(){
               window.DASHVehicleDatabaseLoaded=true;
-              load('./vehicle-service-policy.js?v=20260819a',function(){});
+              load('./vehicle-service-policy.js?v=20260819a',function(){
+                // Start the live year/make/model selector after the database
+                // data and catalog have finished loading.
+                load('./vehicle-booking.js?v=20260819f',function(){
+                  window.DASHVehicleBookingLoaded=true;
+                });
+              });
             });
           });
         });
