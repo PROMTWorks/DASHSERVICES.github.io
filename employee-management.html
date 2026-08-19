@@ -1,187 +1,569 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>DASH Services | Employee Management</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f3f5f8;color:#17202a}
-header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
-.brand{font-size:22px;font-weight:800;letter-spacing:2px}
-.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}
-main{max-width:1400px;margin:auto;padding:28px}
-.title{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:20px}
-.title h1{margin:0}
-.title p{color:#64748b;font-size:13px}
-.btn,.small{border:0;border-radius:8px;padding:10px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer}
-.small{padding:7px 9px;font-size:11px}
-.light{background:#fff;color:#17202a;border:1px solid #d7dde5}
-.danger{color:#b91c1c;background:#fff;border:1px solid #fecaca}
-.actions{display:flex;gap:7px;flex-wrap:wrap}
-.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;overflow:hidden}
-.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between}
-.body{padding:20px}
-.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}
-.msg{padding:12px;border-radius:8px;margin-bottom:15px;display:none}
-.ok{display:block;background:#ecfdf5;color:#065f46}
-.err{display:block;background:#fef2f2;color:#991b1b}
-.table{width:100%;border-collapse:collapse;min-width:900px}
-.wrap{overflow:auto}
-.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid #e2e7ed;font-size:13px}
-.table th{font-size:11px;color:#64748b;text-transform:uppercase;background:#f8fafc}
-.mini{display:block;font-size:11px;color:#64748b;margin-top:3px}
-.pill{font-size:11px;padding:5px 8px;border-radius:20px;background:#f1f5f9}
-.active{background:#dcfce7;color:#166534}
-.inactive{background:#fee2e2;color:#991b1b}
-.modal{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;padding:20px}
-.modal.show{display:flex}
-.box{background:#fff;width:min(720px,100%);border-radius:14px;padding:24px;max-height:90vh;overflow:auto}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px}
-.full{grid-column:1/-1}
-.setup{background:#f8fafc;border:1px solid #dbe3ec;border-radius:9px;padding:14px;margin-top:15px}
-.setup input{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;margin-top:7px}
-.loading{text-align:center;padding:35px;color:#64748b}
-@media(max-width:800px){
-main{padding:18px}
-.title{flex-direction:column;align-items:flex-start}
-.form{grid-template-columns:1fr}
-.full{grid-column:auto}
+
+*{
+    box-sizing:border-box;
 }
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f5f8;
+    color:#17202a;
+}
+
+header{
+    height:70px;
+    background:#111827;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
+}
+
+.brand{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+
+.tag{
+    font-size:12px;
+    background:#26364a;
+    padding:7px 12px;
+    border-radius:20px;
+}
+
+main{
+    max-width:1400px;
+    margin:auto;
+    padding:28px;
+}
+
+.title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+}
+
+.title h1{
+    margin:0;
+}
+
+.title p{
+    color:#64748b;
+    font-size:13px;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:10px 14px;
+    background:#111827;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.light{
+    background:white;
+    color:#17202a;
+    border:1px solid #d7dde5;
+}
+
+.danger{
+    background:white;
+    color:#b91c1c;
+    border:1px solid #fecaca;
+}
+
+.panel{
+    background:white;
+    border:1px solid #e2e7ed;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.panel-head{
+    padding:18px 20px;
+    border-bottom:1px solid #e2e7ed;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.panel-head h2{
+    margin:0;
+}
+
+.panel-body{
+    padding:20px;
+}
+
+.notice{
+    background:#eff6ff;
+    border-left:4px solid #3b82f6;
+    padding:14px;
+    border-radius:7px;
+    font-size:13px;
+    margin-bottom:20px;
+}
+
+.message{
+    display:none;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+
+.message.success{
+    display:block;
+    background:#ecfdf5;
+    color:#065f46;
+}
+
+.message.error{
+    display:block;
+    background:#fef2f2;
+    color:#991b1b;
+}
+
+.loading{
+    text-align:center;
+    padding:40px;
+    color:#64748b;
+}
+
+.empty{
+    text-align:center;
+    padding:40px;
+    color:#64748b;
+}
+
+.table-wrap{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:950px;
+}
+
+th,
+td{
+    text-align:left;
+    padding:12px;
+    border-bottom:1px solid #e2e7ed;
+    font-size:13px;
+}
+
+th{
+    font-size:11px;
+    color:#64748b;
+    text-transform:uppercase;
+    background:#f8fafc;
+}
+
+.small-text{
+    display:block;
+    font-size:11px;
+    color:#64748b;
+    margin-top:3px;
+}
+
+.pill{
+    font-size:11px;
+    padding:5px 8px;
+    border-radius:20px;
+    background:#f1f5f9;
+}
+
+.active{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.inactive{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:#0f172a99;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-box{
+    background:white;
+    width:min(720px,100%);
+    border-radius:14px;
+    padding:24px;
+    max-height:90vh;
+    overflow:auto;
+}
+
+.form{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.field input,
+.field select,
+.field textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccd4de;
+    border-radius:7px;
+    font-size:14px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:20px;
+}
+
+.setup-box{
+    background:#f8fafc;
+    border:1px solid #dbe3ec;
+    border-radius:9px;
+    padding:14px;
+    margin-top:15px;
+}
+
+.setup-box input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccd4de;
+    border-radius:7px;
+    margin-top:7px;
+}
+
+@media(max-width:800px){
+
+    main{
+        padding:18px;
+    }
+
+    .title{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .form{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
+
 <div class="brand">
 DASH
-<span style="font-size:13px;letter-spacing:0;font-weight:400">
+<span style="font-size:13px;letter-spacing:0;font-weight:400;">
 Services · Employee Management
 </span>
 </div>
-<div class="tag">SUPER ADMIN</div>
+
+<div class="tag">
+SUPER ADMIN
+</div>
+
 </header>
+
 
 <main>
 
 <div class="title">
+
 <div>
+
 <h1>Employee Records</h1>
+
 <p>
-Employee IDs start at EDS0001. Employees create their own private passwords.
+Employee IDs start at EDS0001.
+Employees create their own private passwords.
 </p>
+
 </div>
 
 <div class="actions">
-<button class="btn light" onclick="location.href='admin-v2.html'">
+
+<button
+class="light"
+onclick="location.href='admin-v2.html'">
 ← Admin Portal
 </button>
 
-<button class="btn" onclick="openAdd()">
+<button onclick="openAddEmployee()">
 + Add Employee
 </button>
 
-<button class="btn light" onclick="load()">
+<button
+class="light"
+onclick="loadEmployees()">
 Refresh
 </button>
+
 </div>
+
 </div>
+
 
 <div class="notice">
+
 <b>Employee login:</b>
-Each employee receives a unique ID such as <b>EDS0001</b>.
+
+Each employee receives a unique ID such as
+<b>EDS0001</b>.
+
 No employee email is required.
-After adding an employee, the administrator can generate a one-time password setup link.
-The employee opens that link and creates their own password.
+
+Employees create their own password using a
+one-time setup link.
+
+Password reset links are also one-time links
+and expire after 24 hours.
+
 </div>
 
-<div id="msg" class="msg"></div>
+
+<div id="message" class="message"></div>
+
 
 <div class="panel">
 
-<div class="head">
+<div class="panel-head">
+
 <h2>Employee Directory</h2>
-<span id="count">0</span>
+
+<span id="employeeCount">
+0 employees
+</span>
+
 </div>
 
-<div class="body" id="list">
-<div class="loading">Loading employee records...</div>
+<div
+class="panel-body"
+id="employeeList">
+
+<div class="loading">
+Loading employee records...
+</div>
+
 </div>
 
 </div>
 
 </main>
 
-<div id="modal" class="modal">
 
-<div class="box">
+<!-- ADD / EDIT EMPLOYEE -->
 
-<h2 id="mt">Add Employee</h2>
+<div
+id="employeeModal"
+class="modal">
+
+<div class="modal-box">
+
+<h2 id="modalTitle">
+Add Employee
+</h2>
 
 <div class="form">
 
 <div class="field">
-<label>Employee ID</label>
-<input id="id" readonly>
+
+<label>
+Employee ID
+</label>
+
+<input
+id="employeeId"
+readonly>
+
 </div>
 
+
 <div class="field">
-<label>Status</label>
-<select id="status">
-<option value="active">Active</option>
-<option value="inactive">Inactive</option>
+
+<label>
+Status
+</label>
+
+<select id="employmentStatus">
+
+<option value="active">
+Active
+</option>
+
+<option value="inactive">
+Inactive
+</option>
+
 </select>
+
 </div>
 
-<div class="field">
-<label>First Name</label>
-<input id="first">
-</div>
 
 <div class="field">
-<label>Last Name</label>
-<input id="last">
+
+<label>
+First Name
+</label>
+
+<input id="firstName">
+
 </div>
 
+
 <div class="field">
-<label>Phone</label>
+
+<label>
+Last Name
+</label>
+
+<input id="lastName">
+
+</div>
+
+
+<div class="field">
+
+<label>
+Phone
+</label>
+
 <input id="phone">
+
 </div>
 
-<div class="field">
-<label>Position</label>
-<input id="position" placeholder="Lube Technician">
-</div>
 
 <div class="field">
-<label>Hire Date</label>
-<input id="hire" type="date">
+
+<label>
+Position
+</label>
+
+<input
+id="position"
+placeholder="Lube Technician">
+
 </div>
 
+
 <div class="field">
-<label>Hourly Pay</label>
-<input id="pay" type="number" min="0" step="0.01">
+
+<label>
+Hire Date
+</label>
+
+<input
+id="hireDate"
+type="date">
+
 </div>
+
+
+<div class="field">
+
+<label>
+Hourly Pay
+</label>
+
+<input
+id="hourlyPay"
+type="number"
+min="0"
+step="0.01">
+
+</div>
+
 
 <div class="field full">
-<label>Notes</label>
+
+<label>
+Notes
+</label>
+
 <textarea id="notes"></textarea>
-</div>
 
 </div>
 
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+</div>
 
-<button class="btn light" onclick="closeModal()">
+
+<div class="modal-actions">
+
+<button
+class="light"
+onclick="closeEmployeeModal()">
+
 Cancel
+
 </button>
 
-<button class="btn" id="save" onclick="save()">
+<button
+id="saveEmployeeButton"
+onclick="saveEmployee()">
+
 Add Employee
+
 </button>
 
 </div>
@@ -190,33 +572,58 @@ Add Employee
 
 </div>
 
-<div id="setupModal" class="modal">
 
-<div class="box">
+<!-- PASSWORD SETUP MODAL -->
 
-<h2>Employee Password Setup</h2>
+<div
+id="setupModal"
+class="modal">
+
+<div class="modal-box">
+
+<h2>
+Employee Password Setup
+</h2>
 
 <p>
-Give this one-time setup link to the employee.
-It expires in 24 hours and can only be used once.
+
+Give this link to the employee.
+
+They can open it on their phone and create
+their own password.
+
+The link expires in 24 hours and can only
+be used once.
+
 </p>
 
-<div class="setup">
 
-<b id="setupId"></b>
+<div class="setup-box">
 
-<input id="setupLink" readonly>
+<b id="setupEmployeeId"></b>
 
-<button class="btn" style="margin-top:9px" onclick="copyLink()">
+<input
+id="setupLink"
+readonly>
+
+<button
+style="margin-top:10px;"
+onclick="copySetupLink()">
+
 Copy Setup Link
+
 </button>
 
 </div>
 
-<div style="text-align:right;margin-top:20px">
 
-<button class="btn" onclick="$('setupModal').classList.remove('show')">
+<div class="modal-actions">
+
+<button
+onclick="closeSetupModal()">
+
 Done
+
 </button>
 
 </div>
@@ -225,736 +632,1124 @@ Done
 
 </div>
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
 const SUPABASE_URL =
-'https://roywoofgypiyoobdcrwx.supabase.co';
+"https://roywoofgypiyoobdcrwx.supabase.co";
 
 const SUPABASE_KEY =
-'sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+"sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_";
 
-const EDGE_FUNCTION =
-SUPABASE_URL + '/functions/v1/employee-id-management';
+const EMPLOYEE_FUNCTION =
+SUPABASE_URL +
+"/functions/v1/employee-id-management";
 
-const db =
-window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY,
-{
-auth:{
-persistSession:true,
-autoRefreshToken:true,
-detectSessionInUrl:true
+
+let supabaseClient = null;
+
+let employees = [];
+
+let editingEmployeeId = null;
+
+
+/* --------------------------------
+   INITIALIZE SUPABASE
+-------------------------------- */
+
+function initializeSupabase(){
+
+    if(
+        typeof window.supabase === "undefined"
+    ){
+
+        showMessage(
+            "The Supabase library could not be loaded. Please refresh the page.",
+            false
+        );
+
+        document.getElementById(
+            "employeeList"
+        ).innerHTML = `
+            <div class="empty">
+                Supabase could not be loaded.
+                <br><br>
+                Please refresh the page.
+            </div>
+        `;
+
+        return false;
+    }
+
+
+    supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY,
+            {
+                auth:{
+                    persistSession:true,
+                    autoRefreshToken:true,
+                    detectSessionInUrl:true
+                }
+            }
+        );
+
+
+    return true;
 }
-}
-);
-
-const $ = id => document.getElementById(id);
-
-let rows = [];
-let edit = null;
 
 
-/* -----------------------------
+/* --------------------------------
    MESSAGE
------------------------------ */
-
-function message(text, ok=true){
-
-$('msg').textContent = text;
-
-$('msg').className =
-'msg ' + (ok ? 'ok' : 'err');
-
-}
-
-
-/* -----------------------------
-   ESCAPE HTML
------------------------------ */
-
-function esc(value){
-
-return String(value ?? '')
-.replace(/[&<>"']/g,function(c){
-
-return {
-'&':'&amp;',
-'<':'&lt;',
-'>':'&gt;',
-'"':'&quot;',
-"'":'&#39;'
-
-}[c];
-
-});
-
-}
-
-
-/* -----------------------------
-   SUPABASE API
------------------------------ */
-
-async function api(action, params={}){
-
-const {data,error} =
-await db.auth.getSession();
-
-if(error){
-throw Error(error.message);
-}
-
-if(!data.session){
-
-throw Error(
-'Please sign in to the Admin Portal first.'
-);
-
-}
-
-const response =
-await fetch(
-EDGE_FUNCTION,
-{
-method:'POST',
-
-headers:{
-'apikey':SUPABASE_KEY,
-'Authorization':
-'Bearer ' +
-data.session.access_token,
-'Content-Type':
-'application/json'
-},
-
-body:JSON.stringify({
-action,
-...params
-})
-
-}
-);
-
-const result =
-await response.json();
-
-if(!response.ok || result.error){
-
-throw Error(
-result.error ||
-'Request failed.'
-);
-
-}
-
-return result.data;
-
-}
-
-
-/* -----------------------------
-   LOAD EMPLOYEES
------------------------------ */
-
-async function load(){
-
-$('list').innerHTML =
-'<div class="loading">Loading employee records...</div>';
-
-try{
-
-rows =
-await api('list') || [];
-
-$('count').textContent =
-rows.length + ' employees';
-
-if(!rows.length){
-
-$('list').innerHTML =
-'<div style="text-align:center;padding:35px;color:#64748b">No employees yet.</div>';
-
-return;
-
-}
-
-$('list').innerHTML =
-
-'<div class="wrap">' +
-
-'<table class="table">' +
-
-'<thead>' +
-
-'<tr>' +
-
-'<th>Employee</th>' +
-'<th>ID</th>' +
-'<th>Position</th>' +
-'<th>Pay</th>' +
-'<th>Login</th>' +
-'<th>Status</th>' +
-'<th>Actions</th>' +
-
-'</tr>' +
-
-'</thead>' +
-
-'<tbody>' +
-
-rows.map(function(e){
-
-const name =
-[
-e.first_name,
-e.last_name
-]
-.filter(Boolean)
-.join(' ') ||
-'Unnamed';
-
-return `
-
-<tr>
-
-<td>
-
-<b>${esc(name)}</b>
-
-<span class="mini">
-${esc(e.phone || 'No phone')}
-</span>
-
-</td>
-
-<td>
-<b>${esc(e.employee_id)}</b>
-</td>
-
-<td>
-${esc(e.position || '—')}
-</td>
-
-<td>
-
-${
-e.hourly_pay_rate == null
-? '—'
-: '$' +
-Number(e.hourly_pay_rate).toFixed(2) +
-'/hr'
-}
-
-</td>
-
-<td>
-
-${
-e.password_initialized
-? 'Password set'
-: 'Setup required'
-}
-
-</td>
-
-<td>
-
-<span class="pill ${
-e.employment_status === 'active'
-? 'active'
-: 'inactive'
-}">
-
-${esc(e.employment_status)}
-
-</span>
-
-</td>
-
-<td>
-
-<div class="actions">
-
-<button
-class="small"
-onclick="editRow('${e.employee_id}')">
-
-Edit
-
-</button>
-
-<button
-class="small"
-onclick="setup('${e.employee_id}')">
-
-Set/Reset Password
-
-</button>
-
-${
-e.employment_status === 'active'
-
-?
-
-`<button
-class="small danger"
-onclick="removeRow('${e.employee_id}')">
-
-Remove
-
-</button>`
-
-:
-
-`<button
-class="small"
-onclick="restore('${e.employee_id}')">
-
-Reactivate
-
-</button>`
-}
-
-</div>
-
-</td>
-
-</tr>
-
-`;
-
-}).join('') +
-
-'</tbody>' +
-
-'</table>' +
-
-'</div>';
-
-}
-
-catch(error){
-
-$('list').innerHTML =
-'<div style="text-align:center;padding:35px;color:#991b1b">' +
-'Unable to load employee records.' +
-'</div>';
-
-message(
-error.message,
-false
-);
-
-}
-
-}
-
-
-/* -----------------------------
-   ADD EMPLOYEE
------------------------------ */
-
-async function openAdd(){
-
-edit = null;
-
-$('mt').textContent =
-'Add Employee';
-
-$('save').textContent =
-'Add Employee';
-
-[
-'first',
-'last',
-'phone',
-'position',
-'hire',
-'pay',
-'notes'
-].forEach(function(id){
-
-$(id).value='';
-
-});
-
-$('status').value='active';
-
-try{
-
-const result =
-await api('next_id');
-
-$('id').value =
-result.employee_id;
-
-$('modal')
-.classList.add('show');
-
-}
-
-catch(error){
-
-message(
-error.message,
-false
-);
-
-}
-
-}
-
-
-/* -----------------------------
-   EDIT EMPLOYEE
------------------------------ */
-
-function editRow(id){
-
-const employee =
-rows.find(
-x => x.employee_id === id
-);
-
-if(!employee)return;
-
-edit=id;
-
-$('mt').textContent =
-'Edit Employee';
-
-$('save').textContent =
-'Save Changes';
-
-$('id').value =
-employee.employee_id;
-
-$('first').value =
-employee.first_name || '';
-
-$('last').value =
-employee.last_name || '';
-
-$('phone').value =
-employee.phone || '';
-
-$('position').value =
-employee.position || '';
-
-$('hire').value =
-employee.hire_date || '';
-
-$('pay').value =
-employee.hourly_pay_rate ?? '';
-
-$('notes').value =
-employee.notes || '';
-
-$('status').value =
-employee.employment_status || 'active';
-
-$('modal')
-.classList.add('show');
-
-}
-
-
-/* -----------------------------
-   CLOSE MODAL
------------------------------ */
-
-function closeModal(){
-
-$('modal')
-.classList.remove('show');
-
-}
-
-
-/* -----------------------------
-   SAVE EMPLOYEE
------------------------------ */
-
-async function save(){
-
-try{
-
-const employee = {
-
-employee_id:
-$('id').value,
-
-first_name:
-$('first').value.trim(),
-
-last_name:
-$('last').value.trim() || null,
-
-phone:
-$('phone').value.trim() || null,
-
-position:
-$('position').value.trim() || null,
-
-hire_date:
-$('hire').value || null,
-
-hourly_pay:
-$('pay').value === ''
-? null
-: Number($('pay').value),
-
-notes:
-$('notes').value.trim() || null,
-
-employment_status:
-$('status').value
-
-};
-
-if(!employee.first_name){
-
-throw Error(
-'First name is required.'
-);
-
-}
-
-let result;
-
-if(edit){
-
-result =
-await api(
-'update',
-{
-old_employee_id:edit,
-...employee
-}
-);
-
-}else{
-
-result =
-await api(
-'add',
-employee
-);
-
-}
-
-closeModal();
-
-await load();
-
-if(!edit && result.setup_url){
-
-showSetup(
-result.setup_url,
-employee.employee_id
-);
-
-}else{
-
-message(
-'Employee record saved.'
-);
-
-}
-
-}
-
-catch(error){
-
-message(
-error.message,
-false
-);
-
-}
-
-}
-
-
-/* -----------------------------
-   PASSWORD SETUP / RESET
------------------------------ */
-
-async function setup(id){
-
-try{
-
-const result =
-await api(
-'setup_link',
-{
-employee_id:id
-}
-);
-
-showSetup(
-result.setup_url,
-id
-);
-
-}
-
-catch(error){
-
-message(
-error.message,
-false
-);
-
-}
-
-}
-
-
-/* -----------------------------
-   SHOW SETUP LINK
------------------------------ */
-
-function showSetup(url,id){
-
-$('setupId').textContent =
-'Employee ID: ' + id;
-
-$('setupLink').value =
-url;
-
-$('setupModal')
-.classList.add('show');
-
-}
-
-
-/* -----------------------------
-   COPY SETUP LINK
------------------------------ */
-
-async function copyLink(){
-
-try{
-
-await navigator.clipboard.writeText(
-$('setupLink').value
-);
-
-message(
-'Setup link copied to clipboard.'
-);
-
-}
-
-catch(error){
-
-$('setupLink').select();
-
-document.execCommand('copy');
-
-message(
-'Setup link copied to clipboard.'
-);
-
-}
-
-}
-
-
-/* -----------------------------
-   REMOVE EMPLOYEE
------------------------------ */
-
-async function removeRow(id){
-
-if(
-!confirm(
-'Remove ' +
-id +
-'? The employee will be marked inactive and their time history will be preserved.'
-)
+-------------------------------- */
+
+function showMessage(
+    text,
+    success=true
 ){
 
-return;
+    const box =
+        document.getElementById(
+            "message"
+        );
 
-}
+    box.textContent = text;
 
-try{
-
-await api(
-'remove',
-{
-employee_id:id
-}
-);
-
-await load();
-
-message(
-id +
-' marked inactive.'
-);
-
-}
-
-catch(error){
-
-message(
-error.message,
-false
-);
-
-}
+    box.className =
+        "message " +
+        (
+            success
+            ? "success"
+            : "error"
+        );
 
 }
 
 
-/* -----------------------------
-   REACTIVATE EMPLOYEE
------------------------------ */
+/* --------------------------------
+   ESCAPE HTML
+-------------------------------- */
 
-async function restore(id){
+function escapeHtml(value){
 
-try{
+    return String(
+        value ?? ""
+    ).replace(
+        /[&<>"']/g,
+        function(character){
 
-await api(
-'restore',
-{
-employee_id:id
-}
-);
+            return {
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#39;"
+            }[character];
 
-await load();
-
-message(
-id +
-' reactivated.'
-);
-
-}
-
-catch(error){
-
-message(
-error.message,
-false
-);
-
-}
+        }
+    );
 
 }
 
 
-/* -----------------------------
-   INITIAL LOAD
------------------------------ */
+/* --------------------------------
+   GET ADMIN SESSION
+-------------------------------- */
 
-load();
+async function getAdminSession(){
+
+    if(!supabaseClient){
+
+        throw new Error(
+            "Supabase is not initialized."
+        );
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+        .auth
+        .getSession();
+
+
+    if(error){
+
+        throw new Error(
+            error.message
+        );
+
+    }
+
+
+    if(
+        !data ||
+        !data.session
+    ){
+
+        throw new Error(
+            "Please sign in to the Admin Portal first."
+        );
+
+    }
+
+
+    return data.session;
+
+}
+
+
+/* --------------------------------
+   CALL EMPLOYEE EDGE FUNCTION
+-------------------------------- */
+
+async function employeeApi(
+    action,
+    parameters={}
+){
+
+    const session =
+        await getAdminSession();
+
+
+    const response =
+        await fetch(
+            EMPLOYEE_FUNCTION,
+            {
+                method:"POST",
+
+                headers:{
+                    "apikey":
+                        SUPABASE_KEY,
+
+                    "Authorization":
+                        "Bearer " +
+                        session.access_token,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify({
+                        action,
+                        ...parameters
+                    })
+            }
+        );
+
+
+    let result;
+
+    try{
+
+        result =
+            await response.json();
+
+    }catch(error){
+
+        throw new Error(
+            "The employee service returned an invalid response."
+        );
+
+    }
+
+
+    if(
+        !response.ok ||
+        result.error
+    ){
+
+        throw new Error(
+            result.error ||
+            "Employee request failed."
+        );
+
+    }
+
+
+    return result.data;
+
+}
+
+
+/* --------------------------------
+   LOAD EMPLOYEES
+-------------------------------- */
+
+async function loadEmployees(){
+
+    document.getElementById(
+        "employeeList"
+    ).innerHTML = `
+        <div class="loading">
+            Loading employee records...
+        </div>
+    `;
+
+
+    try{
+
+        employees =
+            await employeeApi(
+                "list"
+            ) || [];
+
+
+        document.getElementById(
+            "employeeCount"
+        ).textContent =
+            employees.length +
+            (
+                employees.length === 1
+                ? " employee"
+                : " employees"
+            );
+
+
+        renderEmployees();
+
+
+    }catch(error){
+
+        document.getElementById(
+            "employeeList"
+        ).innerHTML = `
+            <div class="empty">
+                Unable to load employee records.
+                <br><br>
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   RENDER EMPLOYEES
+-------------------------------- */
+
+function renderEmployees(){
+
+    if(!employees.length){
+
+        document.getElementById(
+            "employeeList"
+        ).innerHTML = `
+            <div class="empty">
+                No employees yet.
+                <br><br>
+                Click "+ Add Employee" to create EDS0001.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    let html = `
+
+        <div class="table-wrap">
+
+        <table>
+
+        <thead>
+
+        <tr>
+
+        <th>
+        Employee
+        </th>
+
+        <th>
+        Employee ID
+        </th>
+
+        <th>
+        Position
+        </th>
+
+        <th>
+        Pay
+        </th>
+
+        <th>
+        Password
+        </th>
+
+        <th>
+        Status
+        </th>
+
+        <th>
+        Actions
+        </th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+    `;
+
+
+    employees.forEach(
+        function(employee){
+
+            const name =
+                [
+                    employee.first_name,
+                    employee.last_name
+                ]
+                .filter(Boolean)
+                .join(" ") ||
+                "Unnamed";
+
+
+            html += `
+
+            <tr>
+
+            <td>
+
+            <b>
+            ${escapeHtml(name)}
+            </b>
+
+            <span class="small-text">
+            ${escapeHtml(
+                employee.phone ||
+                "No phone"
+            )}
+            </span>
+
+            </td>
+
+
+            <td>
+
+            <b>
+            ${escapeHtml(
+                employee.employee_id
+            )}
+            </b>
+
+            </td>
+
+
+            <td>
+
+            ${escapeHtml(
+                employee.position ||
+                "—"
+            )}
+
+            </td>
+
+
+            <td>
+
+            ${
+                employee.hourly_pay_rate == null
+                ? "—"
+                :
+                "$" +
+                Number(
+                    employee.hourly_pay_rate
+                ).toFixed(2) +
+                "/hr"
+            }
+
+            </td>
+
+
+            <td>
+
+            ${
+                employee.password_initialized
+                ? "Password set"
+                : "Setup required"
+            }
+
+            </td>
+
+
+            <td>
+
+            <span class="pill ${
+                employee.employment_status === "active"
+                ? "active"
+                : "inactive"
+            }">
+
+            ${escapeHtml(
+                employee.employment_status
+            )}
+
+            </span>
+
+            </td>
+
+
+            <td>
+
+            <div class="actions">
+
+            <button
+            onclick="editEmployee(
+                '${escapeHtml(
+                    employee.employee_id
+                )}'
+            )">
+
+            Edit
+
+            </button>
+
+
+            <button
+            onclick="resetEmployeePassword(
+                '${escapeHtml(
+                    employee.employee_id
+                )}'
+            )">
+
+            Set/Reset Password
+
+            </button>
+
+
+            ${
+                employee.employment_status === "active"
+
+                ?
+
+                `<button
+                class="danger"
+                onclick="removeEmployee(
+                    '${escapeHtml(
+                        employee.employee_id
+                    )}'
+                )">
+
+                Remove
+
+                </button>`
+
+                :
+
+                `<button
+                onclick="restoreEmployee(
+                    '${escapeHtml(
+                        employee.employee_id
+                    )}'
+                )">
+
+                Reactivate
+
+                </button>`
+            }
+
+            </div>
+
+            </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+        </tbody>
+
+        </table>
+
+        </div>
+
+    `;
+
+
+    document.getElementById(
+        "employeeList"
+    ).innerHTML = html;
+
+}
+
+
+/* --------------------------------
+   OPEN ADD EMPLOYEE
+-------------------------------- */
+
+async function openAddEmployee(){
+
+    editingEmployeeId = null;
+
+
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
+        "Add Employee";
+
+
+    document.getElementById(
+        "saveEmployeeButton"
+    ).textContent =
+        "Add Employee";
+
+
+    [
+        "firstName",
+        "lastName",
+        "phone",
+        "position",
+        "hireDate",
+        "hourlyPay",
+        "notes"
+    ]
+    .forEach(
+        function(id){
+
+            document.getElementById(
+                id
+            ).value = "";
+
+        }
+    );
+
+
+    document.getElementById(
+        "employmentStatus"
+    ).value =
+        "active";
+
+
+    try{
+
+        const result =
+            await employeeApi(
+                "next_id"
+            );
+
+
+        document.getElementById(
+            "employeeId"
+        ).value =
+            result.employee_id;
+
+
+        document.getElementById(
+            "employeeModal"
+        ).classList.add(
+            "show"
+        );
+
+
+    }catch(error){
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   EDIT EMPLOYEE
+-------------------------------- */
+
+function editEmployee(id){
+
+    const employee =
+        employees.find(
+            function(item){
+
+                return (
+                    item.employee_id === id
+                );
+
+            }
+        );
+
+
+    if(!employee)return;
+
+
+    editingEmployeeId = id;
+
+
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
+        "Edit Employee";
+
+
+    document.getElementById(
+        "saveEmployeeButton"
+    ).textContent =
+        "Save Changes";
+
+
+    document.getElementById(
+        "employeeId"
+    ).value =
+        employee.employee_id;
+
+
+    document.getElementById(
+        "firstName"
+    ).value =
+        employee.first_name || "";
+
+
+    document.getElementById(
+        "lastName"
+    ).value =
+        employee.last_name || "";
+
+
+    document.getElementById(
+        "phone"
+    ).value =
+        employee.phone || "";
+
+
+    document.getElementById(
+        "position"
+    ).value =
+        employee.position || "";
+
+
+    document.getElementById(
+        "hireDate"
+    ).value =
+        employee.hire_date || "";
+
+
+    document.getElementById(
+        "hourlyPay"
+    ).value =
+        employee.hourly_pay_rate ?? "";
+
+
+    document.getElementById(
+        "notes"
+    ).value =
+        employee.notes || "";
+
+
+    document.getElementById(
+        "employmentStatus"
+    ).value =
+        employee.employment_status ||
+        "active";
+
+
+    document.getElementById(
+        "employeeModal"
+    ).classList.add(
+        "show"
+    );
+
+}
+
+
+/* --------------------------------
+   CLOSE EMPLOYEE MODAL
+-------------------------------- */
+
+function closeEmployeeModal(){
+
+    document.getElementById(
+        "employeeModal"
+    ).classList.remove(
+        "show"
+    );
+
+}
+
+
+/* --------------------------------
+   SAVE EMPLOYEE
+-------------------------------- */
+
+async function saveEmployee(){
+
+    try{
+
+        const employee = {
+
+            employee_id:
+                document.getElementById(
+                    "employeeId"
+                ).value,
+
+            first_name:
+                document.getElementById(
+                    "firstName"
+                ).value.trim(),
+
+            last_name:
+                document.getElementById(
+                    "lastName"
+                ).value.trim() ||
+                null,
+
+            phone:
+                document.getElementById(
+                    "phone"
+                ).value.trim() ||
+                null,
+
+            position:
+                document.getElementById(
+                    "position"
+                ).value.trim() ||
+                null,
+
+            hire_date:
+                document.getElementById(
+                    "hireDate"
+                ).value ||
+                null,
+
+            hourly_pay:
+                document.getElementById(
+                    "hourlyPay"
+                ).value === ""
+                ? null
+                :
+                Number(
+                    document.getElementById(
+                        "hourlyPay"
+                    ).value
+                ),
+
+            notes:
+                document.getElementById(
+                    "notes"
+                ).value.trim() ||
+                null,
+
+            employment_status:
+                document.getElementById(
+                    "employmentStatus"
+                ).value
+
+        };
+
+
+        if(!employee.first_name){
+
+            throw new Error(
+                "First name is required."
+            );
+
+        }
+
+
+        let result;
+
+
+        if(editingEmployeeId){
+
+            result =
+                await employeeApi(
+                    "update",
+                    {
+                        old_employee_id:
+                            editingEmployeeId,
+
+                        ...employee
+                    }
+                );
+
+        }else{
+
+            result =
+                await employeeApi(
+                    "add",
+                    employee
+                );
+
+        }
+
+
+        closeEmployeeModal();
+
+
+        await loadEmployees();
+
+
+        if(
+            !editingEmployeeId &&
+            result &&
+            result.setup_url
+        ){
+
+            showSetupLink(
+                result.setup_url,
+                employee.employee_id
+            );
+
+        }else{
+
+            showMessage(
+                "Employee record saved."
+            );
+
+        }
+
+    }catch(error){
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   PASSWORD SETUP / RESET
+-------------------------------- */
+
+async function resetEmployeePassword(id){
+
+    try{
+
+        const result =
+            await employeeApi(
+                "setup_link",
+                {
+                    employee_id:id
+                }
+            );
+
+
+        showSetupLink(
+            result.setup_url,
+            id
+        );
+
+
+    }catch(error){
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   SHOW SETUP LINK
+-------------------------------- */
+
+function showSetupLink(
+    url,
+    employeeId
+){
+
+    document.getElementById(
+        "setupEmployeeId"
+    ).textContent =
+        "Employee ID: " +
+        employeeId;
+
+
+    document.getElementById(
+        "setupLink"
+    ).value =
+        url;
+
+
+    document.getElementById(
+        "setupModal"
+    ).classList.add(
+        "show"
+    );
+
+}
+
+
+/* --------------------------------
+   COPY LINK
+-------------------------------- */
+
+async function copySetupLink(){
+
+    const link =
+        document.getElementById(
+            "setupLink"
+        ).value;
+
+
+    try{
+
+        await navigator.clipboard.writeText(
+            link
+        );
+
+        showMessage(
+            "Setup link copied to clipboard."
+        );
+
+    }catch(error){
+
+        const input =
+            document.getElementById(
+                "setupLink"
+            );
+
+        input.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+        showMessage(
+            "Setup link copied to clipboard."
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   CLOSE SETUP
+-------------------------------- */
+
+function closeSetupModal(){
+
+    document.getElementById(
+        "setupModal"
+    ).classList.remove(
+        "show"
+    );
+
+}
+
+
+/* --------------------------------
+   REMOVE EMPLOYEE
+-------------------------------- */
+
+async function removeEmployee(id){
+
+    const confirmed =
+        confirm(
+            "Remove " +
+            id +
+            "? The employee will be marked inactive and their time history will be preserved."
+        );
+
+
+    if(!confirmed)return;
+
+
+    try{
+
+        await employeeApi(
+            "remove",
+            {
+                employee_id:id
+            }
+        );
+
+
+        await loadEmployees();
+
+
+        showMessage(
+            id +
+            " marked inactive."
+        );
+
+    }catch(error){
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   RESTORE EMPLOYEE
+-------------------------------- */
+
+async function restoreEmployee(id){
+
+    try{
+
+        await employeeApi(
+            "restore",
+            {
+                employee_id:id
+            }
+        );
+
+
+        await loadEmployees();
+
+
+        showMessage(
+            id +
+            " reactivated."
+        );
+
+    }catch(error){
+
+        showMessage(
+            error.message,
+            false
+        );
+
+    }
+
+}
+
+
+/* --------------------------------
+   START
+-------------------------------- */
+
+if(
+    initializeSupabase()
+){
+
+    loadEmployees();
+
+}
 
 </script>
 
