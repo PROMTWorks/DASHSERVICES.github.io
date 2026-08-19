@@ -1,1 +1,962 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DASH Services | Employee Management</title><style>*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f3f5f8;color:#17202a}header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px}.brand{font-size:22px;font-weight:800;letter-spacing:2px}.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}main{max-width:1400px;margin:auto;padding:28px}.title{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:20px}.title h1{margin:0}.title p{color:#64748b;font-size:13px}.btn,.small{border:0;border-radius:8px;padding:10px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.small{padding:7px 9px;font-size:11px}.light{background:#fff;color:#17202a;border:1px solid #d7dde5}.danger{color:#b91c1c;background:#fff;border:1px solid #fecaca}.actions{display:flex;gap:7px;flex-wrap:wrap}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between}.body{padding:20px}.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}.msg{padding:12px;border-radius:8px;margin-bottom:15px;display:none}.ok{display:block;background:#ecfdf5;color:#065f46}.err{display:block;background:#fef2f2;color:#991b1b}.table{width:100%;border-collapse:collapse;min-width:900px}.wrap{overflow:auto}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid #e2e7ed;font-size:13px}.table th{font-size:11px;color:#64748b;text-transform:uppercase;background:#f8fafc}.mini{display:block;font-size:11px;color:#64748b;margin-top:3px}.pill{font-size:11px;padding:5px 8px;border-radius:20px;background:#f1f5f9}.active{background:#dcfce7;color:#166534}.inactive{background:#fee2e2;color:#991b1b}.modal{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.box{background:#fff;width:min(720px,100%);border-radius:14px;padding:24px;max-height:90vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px}.full{grid-column:1/-1}.setup{background:#f8fafc;border:1px solid #dbe3ec;border-radius:9px;padding:14px;margin-top:15px}.setup input{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;margin-top:7px}@media(max-width:800px){main{padding:18px}.title{flex-direction:column;align-items:flex-start}.form{grid-template-columns:1fr}.full{grid-column:auto}}</style></head><body><header><div class="brand">DASH <span style="font-size:13px;letter-spacing:0;font-weight:400">Services · Employee Management</span></div><div class="tag">SUPER ADMIN</div></header><main><div class="title"><div><h1>Employee Records</h1><p>Employee IDs start at EDS0001. Employees create their own private passwords.</p></div><div class="actions"><button class="btn light" onclick="location.href='admin-v2.html'">← Admin Portal</button><button class="btn" onclick="openAdd()">+ Add Employee</button><button class="btn light" onclick="load()">Refresh</button></div></div><div class="notice"><b>Employee login:</b> Each employee receives a unique ID such as <b>EDS0001</b>. No employee email is required. After adding an employee, the administrator can generate a one-time password setup link. The employee opens that link and creates their own password.</div><div id="msg" class="msg"></div><div class="panel"><div class="head"><h2>Employee Directory</h2><span id="count">0</span></div><div class="body" id="list">Loading…</div></div></main><div id="modal" class="modal"><div class="box"><h2 id="mt">Add Employee</h2><div class="form"><div class="field"><label>Employee ID</label><input id="id" readonly></div><div class="field"><label>Status</label><select id="status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div><div class="field"><label>First Name</label><input id="first"></div><div class="field"><label>Last Name</label><input id="last"></div><div class="field"><label>Phone</label><input id="phone"></div><div class="field"><label>Position</label><input id="position" placeholder="Lube Technician"></div><div class="field"><label>Hire Date</label><input id="hire" type="date"></div><div class="field"><label>Hourly Pay</label><input id="pay" type="number" min="0" step="0.01"></div><div class="field full"><label>Notes</label><textarea id="notes"></textarea></div></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px"><button class="btn light" onclick="closeModal()">Cancel</button><button class="btn" id="save" onclick="save()">Add Employee</button></div></div></div><div id="setupModal" class="modal"><div class="box"><h2>Employee Password Setup</h2><p>Give this one-time setup link to the employee. It expires in 24 hours and can only be used once.</p><div class="setup"><b id="setupId"></b><input id="setupLink" readonly><button class="btn" style="margin-top:9px" onclick="copyLink()">Copy Setup Link</button></div><div style="text-align:right;margin-top:20px"><button class="btn" onclick="$('setupModal').classList.remove('show')">Done</button></div></div></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',E=U+'/functions/v1/employee-id-management',db=supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}}),$=x=>document.getElementById(x);let rows=[],edit=null;function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}async function api(action,p={}){const {data}=await db.auth.getSession();if(!data.session)throw Error('Please sign in to the Admin Portal first.');const r=await fetch(E,{method:'POST',headers:{apikey:K,Authorization:'Bearer '+data.session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action,...p})});const j=await r.json();if(!r.ok||j.error)throw Error(j.error||'Request failed');return j.data}function message(t,ok=true){$('msg').textContent=t;$('msg').className='msg '+(ok?'ok':'err')}async function load(){try{rows=await api('list')||[];$('count').textContent=rows.length+' employees';$('list').innerHTML=rows.length?'<div class="wrap"><table class="table"><thead><tr><th>Employee</th><th>ID</th><th>Position</th><th>Pay</th><th>Login</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+rows.map(e=>{const n=[e.first_name,e.last_name].filter(Boolean).join(' ')||'Unnamed';return `<tr><td><b>${esc(n)}</b><span class="mini">${esc(e.phone||'No phone')}</span></td><td><b>${esc(e.employee_id)}</b></td><td>${esc(e.position||'—')}</td><td>${e.hourly_pay_rate==null?'—':'$'+Number(e.hourly_pay_rate).toFixed(2)+'/hr'}</td><td>${e.password_initialized?'Password set':'Setup required'}</td><td><span class="pill ${e.employment_status==='active'?'active':'inactive'}">${esc(e.employment_status)}</span></td><td><div class="actions"><button class="small" onclick="editRow('${e.employee_id}')">Edit</button><button class="small" onclick="setup('${e.employee_id}')">Set/Reset Password</button>${e.employment_status==='active'?`<button class="small danger" onclick="removeRow('${e.employee_id}')">Remove</button>`:`<button class="small" onclick="restore('${e.employee_id}')">Reactivate</button>`}</div></td></tr>`}).join('')+'</tbody></table></div>':'<div style="text-align:center;padding:35px;color:#64748b">No employees yet.</div>'}catch(e){message(e.message,false)}}async function openAdd(){edit=null;$('mt').textContent='Add Employee';$('save').textContent='Add Employee';['first','last','phone','position','hire','pay','notes'].forEach(x=>$(x).value='');$('status').value='active';try{$('id').value=(await api('next_id')).employee_id;$('modal').classList.add('show')}catch(e){message(e.message,false)}}function editRow(id){const e=rows.find(x=>x.employee_id===id);if(!e)return;edit=id;$('mt').textContent='Edit Employee';$('save').textContent='Save Changes';$('id').value=e.employee_id;$('first').value=e.first_name||'';$('last').value=e.last_name||'';$('phone').value=e.phone||'';$('position').value=e.position||'';$('hire').value=e.hire_date||'';$('pay').value=e.hourly_pay_rate??'';$('notes').value=e.notes||'';$('status').value=e.employment_status||'active';$('modal').classList.add('show')}function closeModal(){$('modal').classList.remove('show')}async function save(){try{const p={employee_id:$('id').value,first_name:$('first').value.trim(),last_name:$('last').value.trim()||null,phone:$('phone').value.trim()||null,position:$('position').value.trim()||null,hire_date:$('hire').value||null,hourly_pay:$('pay').value===''?null:Number($('pay').value),notes:$('notes').value.trim()||null,employment_status:$('status').value};if(!p.first_name)throw Error('First name is required.');const j=edit?await api('update',{old_employee_id:edit,...p}):await api('add',p);closeModal();await load();if(!edit&&j.setup_url)showSetup(j.setup_url,p.employee_id);else message('Employee record saved.')}catch(e){message(e.message,false)}}async function setup(id){try{const j=await api('setup_link',{employee_id:id});showSetup(j.setup_url,id)}catch(e){message(e.message,false)}}function showSetup(url,id){$('setupId').textContent='Employee ID: '+id;$('setupLink').value=url;$('setupModal').classList.add('show')}async function copyLink(){try{await navigator.clipboard.writeText($('setupLink').value);message('Setup link copied to clipboard.')}catch(e){$('setupLink').select();document.execCommand('copy');message('Setup link copied to clipboard.')}}async function removeRow(id){if(!confirm('Remove '+id+'? The employee will be marked inactive and their time history will be preserved.'))return;try{await api('remove',{employee_id:id});await load();message(id+' marked inactive.')}catch(e){message(e.message,false)}}async function restore(id){try{await api('restore',{employee_id:id});await load();message(id+' reactivated.')}catch(e){message(e.message,false)}}load();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DASH Services | Employee Management</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5f8;color:#17202a}
+header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.brand{font-size:22px;font-weight:800;letter-spacing:2px}
+.tag{font-size:12px;background:#26364a;padding:7px 11px;border-radius:20px}
+main{max-width:1400px;margin:auto;padding:28px}
+.title{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:20px}
+.title h1{margin:0}
+.title p{color:#64748b;font-size:13px}
+.btn,.small{border:0;border-radius:8px;padding:10px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer}
+.small{padding:7px 9px;font-size:11px}
+.light{background:#fff;color:#17202a;border:1px solid #d7dde5}
+.danger{color:#b91c1c;background:#fff;border:1px solid #fecaca}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;overflow:hidden}
+.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between}
+.body{padding:20px}
+.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}
+.msg{padding:12px;border-radius:8px;margin-bottom:15px;display:none}
+.ok{display:block;background:#ecfdf5;color:#065f46}
+.err{display:block;background:#fef2f2;color:#991b1b}
+.table{width:100%;border-collapse:collapse;min-width:900px}
+.wrap{overflow:auto}
+.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid #e2e7ed;font-size:13px}
+.table th{font-size:11px;color:#64748b;text-transform:uppercase;background:#f8fafc}
+.mini{display:block;font-size:11px;color:#64748b;margin-top:3px}
+.pill{font-size:11px;padding:5px 8px;border-radius:20px;background:#f1f5f9}
+.active{background:#dcfce7;color:#166534}
+.inactive{background:#fee2e2;color:#991b1b}
+.modal{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.box{background:#fff;width:min(720px,100%);border-radius:14px;padding:24px;max-height:90vh;overflow:auto}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px}
+.full{grid-column:1/-1}
+.setup{background:#f8fafc;border:1px solid #dbe3ec;border-radius:9px;padding:14px;margin-top:15px}
+.setup input{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;margin-top:7px}
+.loading{text-align:center;padding:35px;color:#64748b}
+@media(max-width:800px){
+main{padding:18px}
+.title{flex-direction:column;align-items:flex-start}
+.form{grid-template-columns:1fr}
+.full{grid-column:auto}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="brand">
+DASH
+<span style="font-size:13px;letter-spacing:0;font-weight:400">
+Services · Employee Management
+</span>
+</div>
+<div class="tag">SUPER ADMIN</div>
+</header>
+
+<main>
+
+<div class="title">
+<div>
+<h1>Employee Records</h1>
+<p>
+Employee IDs start at EDS0001. Employees create their own private passwords.
+</p>
+</div>
+
+<div class="actions">
+<button class="btn light" onclick="location.href='admin-v2.html'">
+← Admin Portal
+</button>
+
+<button class="btn" onclick="openAdd()">
++ Add Employee
+</button>
+
+<button class="btn light" onclick="load()">
+Refresh
+</button>
+</div>
+</div>
+
+<div class="notice">
+<b>Employee login:</b>
+Each employee receives a unique ID such as <b>EDS0001</b>.
+No employee email is required.
+After adding an employee, the administrator can generate a one-time password setup link.
+The employee opens that link and creates their own password.
+</div>
+
+<div id="msg" class="msg"></div>
+
+<div class="panel">
+
+<div class="head">
+<h2>Employee Directory</h2>
+<span id="count">0</span>
+</div>
+
+<div class="body" id="list">
+<div class="loading">Loading employee records...</div>
+</div>
+
+</div>
+
+</main>
+
+<div id="modal" class="modal">
+
+<div class="box">
+
+<h2 id="mt">Add Employee</h2>
+
+<div class="form">
+
+<div class="field">
+<label>Employee ID</label>
+<input id="id" readonly>
+</div>
+
+<div class="field">
+<label>Status</label>
+<select id="status">
+<option value="active">Active</option>
+<option value="inactive">Inactive</option>
+</select>
+</div>
+
+<div class="field">
+<label>First Name</label>
+<input id="first">
+</div>
+
+<div class="field">
+<label>Last Name</label>
+<input id="last">
+</div>
+
+<div class="field">
+<label>Phone</label>
+<input id="phone">
+</div>
+
+<div class="field">
+<label>Position</label>
+<input id="position" placeholder="Lube Technician">
+</div>
+
+<div class="field">
+<label>Hire Date</label>
+<input id="hire" type="date">
+</div>
+
+<div class="field">
+<label>Hourly Pay</label>
+<input id="pay" type="number" min="0" step="0.01">
+</div>
+
+<div class="field full">
+<label>Notes</label>
+<textarea id="notes"></textarea>
+</div>
+
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+
+<button class="btn light" onclick="closeModal()">
+Cancel
+</button>
+
+<button class="btn" id="save" onclick="save()">
+Add Employee
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="setupModal" class="modal">
+
+<div class="box">
+
+<h2>Employee Password Setup</h2>
+
+<p>
+Give this one-time setup link to the employee.
+It expires in 24 hours and can only be used once.
+</p>
+
+<div class="setup">
+
+<b id="setupId"></b>
+
+<input id="setupLink" readonly>
+
+<button class="btn" style="margin-top:9px" onclick="copyLink()">
+Copy Setup Link
+</button>
+
+</div>
+
+<div style="text-align:right;margin-top:20px">
+
+<button class="btn" onclick="$('setupModal').classList.remove('show')">
+Done
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+'https://roywoofgypiyoobdcrwx.supabase.co';
+
+const SUPABASE_KEY =
+'sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+
+const EDGE_FUNCTION =
+SUPABASE_URL + '/functions/v1/employee-id-management';
+
+const db =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY,
+{
+auth:{
+persistSession:true,
+autoRefreshToken:true,
+detectSessionInUrl:true
+}
+}
+);
+
+const $ = id => document.getElementById(id);
+
+let rows = [];
+let edit = null;
+
+
+/* -----------------------------
+   MESSAGE
+----------------------------- */
+
+function message(text, ok=true){
+
+$('msg').textContent = text;
+
+$('msg').className =
+'msg ' + (ok ? 'ok' : 'err');
+
+}
+
+
+/* -----------------------------
+   ESCAPE HTML
+----------------------------- */
+
+function esc(value){
+
+return String(value ?? '')
+.replace(/[&<>"']/g,function(c){
+
+return {
+'&':'&amp;',
+'<':'&lt;',
+'>':'&gt;',
+'"':'&quot;',
+"'":'&#39;'
+
+}[c];
+
+});
+
+}
+
+
+/* -----------------------------
+   SUPABASE API
+----------------------------- */
+
+async function api(action, params={}){
+
+const {data,error} =
+await db.auth.getSession();
+
+if(error){
+throw Error(error.message);
+}
+
+if(!data.session){
+
+throw Error(
+'Please sign in to the Admin Portal first.'
+);
+
+}
+
+const response =
+await fetch(
+EDGE_FUNCTION,
+{
+method:'POST',
+
+headers:{
+'apikey':SUPABASE_KEY,
+'Authorization':
+'Bearer ' +
+data.session.access_token,
+'Content-Type':
+'application/json'
+},
+
+body:JSON.stringify({
+action,
+...params
+})
+
+}
+);
+
+const result =
+await response.json();
+
+if(!response.ok || result.error){
+
+throw Error(
+result.error ||
+'Request failed.'
+);
+
+}
+
+return result.data;
+
+}
+
+
+/* -----------------------------
+   LOAD EMPLOYEES
+----------------------------- */
+
+async function load(){
+
+$('list').innerHTML =
+'<div class="loading">Loading employee records...</div>';
+
+try{
+
+rows =
+await api('list') || [];
+
+$('count').textContent =
+rows.length + ' employees';
+
+if(!rows.length){
+
+$('list').innerHTML =
+'<div style="text-align:center;padding:35px;color:#64748b">No employees yet.</div>';
+
+return;
+
+}
+
+$('list').innerHTML =
+
+'<div class="wrap">' +
+
+'<table class="table">' +
+
+'<thead>' +
+
+'<tr>' +
+
+'<th>Employee</th>' +
+'<th>ID</th>' +
+'<th>Position</th>' +
+'<th>Pay</th>' +
+'<th>Login</th>' +
+'<th>Status</th>' +
+'<th>Actions</th>' +
+
+'</tr>' +
+
+'</thead>' +
+
+'<tbody>' +
+
+rows.map(function(e){
+
+const name =
+[
+e.first_name,
+e.last_name
+]
+.filter(Boolean)
+.join(' ') ||
+'Unnamed';
+
+return `
+
+<tr>
+
+<td>
+
+<b>${esc(name)}</b>
+
+<span class="mini">
+${esc(e.phone || 'No phone')}
+</span>
+
+</td>
+
+<td>
+<b>${esc(e.employee_id)}</b>
+</td>
+
+<td>
+${esc(e.position || '—')}
+</td>
+
+<td>
+
+${
+e.hourly_pay_rate == null
+? '—'
+: '$' +
+Number(e.hourly_pay_rate).toFixed(2) +
+'/hr'
+}
+
+</td>
+
+<td>
+
+${
+e.password_initialized
+? 'Password set'
+: 'Setup required'
+}
+
+</td>
+
+<td>
+
+<span class="pill ${
+e.employment_status === 'active'
+? 'active'
+: 'inactive'
+}">
+
+${esc(e.employment_status)}
+
+</span>
+
+</td>
+
+<td>
+
+<div class="actions">
+
+<button
+class="small"
+onclick="editRow('${e.employee_id}')">
+
+Edit
+
+</button>
+
+<button
+class="small"
+onclick="setup('${e.employee_id}')">
+
+Set/Reset Password
+
+</button>
+
+${
+e.employment_status === 'active'
+
+?
+
+`<button
+class="small danger"
+onclick="removeRow('${e.employee_id}')">
+
+Remove
+
+</button>`
+
+:
+
+`<button
+class="small"
+onclick="restore('${e.employee_id}')">
+
+Reactivate
+
+</button>`
+}
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+}).join('') +
+
+'</tbody>' +
+
+'</table>' +
+
+'</div>';
+
+}
+
+catch(error){
+
+$('list').innerHTML =
+'<div style="text-align:center;padding:35px;color:#991b1b">' +
+'Unable to load employee records.' +
+'</div>';
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   ADD EMPLOYEE
+----------------------------- */
+
+async function openAdd(){
+
+edit = null;
+
+$('mt').textContent =
+'Add Employee';
+
+$('save').textContent =
+'Add Employee';
+
+[
+'first',
+'last',
+'phone',
+'position',
+'hire',
+'pay',
+'notes'
+].forEach(function(id){
+
+$(id).value='';
+
+});
+
+$('status').value='active';
+
+try{
+
+const result =
+await api('next_id');
+
+$('id').value =
+result.employee_id;
+
+$('modal')
+.classList.add('show');
+
+}
+
+catch(error){
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   EDIT EMPLOYEE
+----------------------------- */
+
+function editRow(id){
+
+const employee =
+rows.find(
+x => x.employee_id === id
+);
+
+if(!employee)return;
+
+edit=id;
+
+$('mt').textContent =
+'Edit Employee';
+
+$('save').textContent =
+'Save Changes';
+
+$('id').value =
+employee.employee_id;
+
+$('first').value =
+employee.first_name || '';
+
+$('last').value =
+employee.last_name || '';
+
+$('phone').value =
+employee.phone || '';
+
+$('position').value =
+employee.position || '';
+
+$('hire').value =
+employee.hire_date || '';
+
+$('pay').value =
+employee.hourly_pay_rate ?? '';
+
+$('notes').value =
+employee.notes || '';
+
+$('status').value =
+employee.employment_status || 'active';
+
+$('modal')
+.classList.add('show');
+
+}
+
+
+/* -----------------------------
+   CLOSE MODAL
+----------------------------- */
+
+function closeModal(){
+
+$('modal')
+.classList.remove('show');
+
+}
+
+
+/* -----------------------------
+   SAVE EMPLOYEE
+----------------------------- */
+
+async function save(){
+
+try{
+
+const employee = {
+
+employee_id:
+$('id').value,
+
+first_name:
+$('first').value.trim(),
+
+last_name:
+$('last').value.trim() || null,
+
+phone:
+$('phone').value.trim() || null,
+
+position:
+$('position').value.trim() || null,
+
+hire_date:
+$('hire').value || null,
+
+hourly_pay:
+$('pay').value === ''
+? null
+: Number($('pay').value),
+
+notes:
+$('notes').value.trim() || null,
+
+employment_status:
+$('status').value
+
+};
+
+if(!employee.first_name){
+
+throw Error(
+'First name is required.'
+);
+
+}
+
+let result;
+
+if(edit){
+
+result =
+await api(
+'update',
+{
+old_employee_id:edit,
+...employee
+}
+);
+
+}else{
+
+result =
+await api(
+'add',
+employee
+);
+
+}
+
+closeModal();
+
+await load();
+
+if(!edit && result.setup_url){
+
+showSetup(
+result.setup_url,
+employee.employee_id
+);
+
+}else{
+
+message(
+'Employee record saved.'
+);
+
+}
+
+}
+
+catch(error){
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   PASSWORD SETUP / RESET
+----------------------------- */
+
+async function setup(id){
+
+try{
+
+const result =
+await api(
+'setup_link',
+{
+employee_id:id
+}
+);
+
+showSetup(
+result.setup_url,
+id
+);
+
+}
+
+catch(error){
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   SHOW SETUP LINK
+----------------------------- */
+
+function showSetup(url,id){
+
+$('setupId').textContent =
+'Employee ID: ' + id;
+
+$('setupLink').value =
+url;
+
+$('setupModal')
+.classList.add('show');
+
+}
+
+
+/* -----------------------------
+   COPY SETUP LINK
+----------------------------- */
+
+async function copyLink(){
+
+try{
+
+await navigator.clipboard.writeText(
+$('setupLink').value
+);
+
+message(
+'Setup link copied to clipboard.'
+);
+
+}
+
+catch(error){
+
+$('setupLink').select();
+
+document.execCommand('copy');
+
+message(
+'Setup link copied to clipboard.'
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   REMOVE EMPLOYEE
+----------------------------- */
+
+async function removeRow(id){
+
+if(
+!confirm(
+'Remove ' +
+id +
+'? The employee will be marked inactive and their time history will be preserved.'
+)
+){
+
+return;
+
+}
+
+try{
+
+await api(
+'remove',
+{
+employee_id:id
+}
+);
+
+await load();
+
+message(
+id +
+' marked inactive.'
+);
+
+}
+
+catch(error){
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   REACTIVATE EMPLOYEE
+----------------------------- */
+
+async function restore(id){
+
+try{
+
+await api(
+'restore',
+{
+employee_id:id
+}
+);
+
+await load();
+
+message(
+id +
+' reactivated.'
+);
+
+}
+
+catch(error){
+
+message(
+error.message,
+false
+);
+
+}
+
+}
+
+
+/* -----------------------------
+   INITIAL LOAD
+----------------------------- */
+
+load();
+
+</script>
+
+</body>
+</html>
