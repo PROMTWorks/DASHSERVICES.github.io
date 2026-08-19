@@ -3,86 +3,39 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>DASH Services | Admin Portal</title>
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}iframe{display:none;width:100%;height:100%;border:0}#signOut{display:none;position:fixed;top:70px;right:18px;z-index:2147483647;border:1px solid #d1d5db;border-radius:8px;padding:9px 14px;background:#fff;color:#111827;font:700 13px Arial,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12)}#signOut:hover{background:#f8fafc}#signOut:disabled{opacity:.6;cursor:not-allowed}</style>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}iframe{display:none;width:100%;height:100%;border:0}#signOut{display:none;position:fixed;top:70px;right:18px;z-index:2147483647;border:1px solid #d1d5db;border-radius:8px;padding:9px 14px;background:#fff;color:#111827;font:700 13px Arial,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.12)}</style>
 </head>
 <body>
-<div id="status">Verifying your secure Supabase session…</div>
-<button id="signOut" type="button">Sign Out</button>
-<iframe id="portal" title="DASH Services Admin Portal"></iframe>
+<div id="status">Verifying your secure Supabase session…</div><button id="signOut" type="button">Sign Out</button><iframe id="portal" title="DASH Services Admin Portal"></iframe>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const status=document.getElementById('status');const frame=document.getElementById('portal');const signOut=document.getElementById('signOut');
-const escHtml=x=>String(x??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-function installBookingDelete(){
-  try{
-    const doc=frame.contentDocument;if(!doc)return;
-    if(doc.getElementById('dash-booking-delete-style'))return;
-    const style=doc.createElement('style');style.id='dash-booking-delete-style';style.textContent='.dash-delete-btn{border:1px solid #b91c1c!important;background:#fff!important;color:#b91c1c!important;border-radius:7px!important;padding:8px 12px!important;font:800 12px Arial,sans-serif!important;cursor:pointer!important;margin-left:8px!important}.dash-delete-btn:hover{background:#fef2f2!important}.dash-confirm-backdrop{position:fixed!important;inset:0!important;background:rgba(15,23,42,.60)!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:2147483647!important}.dash-confirm{width:min(440px,calc(100vw - 32px));background:#fff;border-radius:14px;padding:25px;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:Arial,sans-serif}.dash-confirm h3{margin:0 0 9px;font-size:22px}.dash-confirm p{margin:0;color:#475569;line-height:1.55}.dash-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}.dash-confirm-actions button{border:0;border-radius:8px;padding:11px 16px;font-weight:800;cursor:pointer}.dash-cancel{background:#e5e7eb;color:#111827}.dash-confirm-delete{background:#b91c1c;color:#fff}.dash-confirm-delete:disabled{opacity:.65;cursor:wait}';doc.head.appendChild(style);
-    async function deleteBooking(requestNumber){
-      const found=await client.from('service_requests').select('id,request_number,client_request_number').or('request_number.eq.'+requestNumber+',client_request_number.eq.'+requestNumber).maybeSingle();
-      if(found.error)throw found.error;if(!found.data)throw new Error('Booking could not be found.');
-      const result=await client.rpc('admin_delete_service_request',{p_request_id:found.data.id});if(result.error)throw result.error;return found.data.id;
-    }
-    function showConfirm(requestNumber,row){return new Promise(resolve=>{
-      const back=doc.createElement('div');back.className='dash-confirm-backdrop';
-      const box=doc.createElement('div');box.className='dash-confirm';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
-      box.innerHTML='<h3>Are you sure?</h3><p>Are you sure you want to erase booking <strong>'+String(requestNumber).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</strong>?<br><br>This permanently removes the booking from DASH.</p><div class="dash-confirm-actions"><button type="button" class="dash-cancel">Cancel</button><button type="button" class="dash-confirm-delete">Erase Booking</button></div>';
-      back.appendChild(box);doc.body.appendChild(back);
-      const close=v=>{back.remove();resolve(v)};
-      box.querySelector('.dash-cancel').onclick=()=>close(false);
-      box.querySelector('.dash-confirm-delete').onclick=async()=>{const b=box.querySelector('.dash-confirm-delete');b.disabled=true;b.textContent='Erasing…';try{await deleteBooking(requestNumber);row?.remove();close(true);setTimeout(()=>location.reload(),250)}catch(e){b.disabled=false;b.textContent='Erase Booking';alert('Could not erase booking: '+(e.message||e))}};
-      back.onclick=e=>{if(e.target===back)close(false)};
-      box.querySelector('.dash-cancel').focus();
-    })}
-    function addButtons(){
-      const list=doc.querySelector('#bookingList');if(!list)return;
-      list.querySelectorAll('.row').forEach(row=>{
-        if(row.querySelector('.dash-delete-btn'))return;
-        const text=row.textContent||'';const match=text.match(/DASH-[0-9]{8,}-[0-9]+/);if(!match)return;
-        const toolbar=row.querySelector('.toolbar')||row.lastElementChild||row;
-        const btn=doc.createElement('button');btn.type='button';btn.className='dash-delete-btn';btn.textContent='Erase Booking';btn.setAttribute('aria-label','Erase booking '+match[0]);
-        btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showConfirm(match[0],row)});
-        toolbar.appendChild(btn);
-      });
-    }
-    addButtons();new MutationObserver(addButtons).observe(doc.body,{childList:true,subtree:true});
-  }catch(e){console.warn('Unable to install booking delete controls',e)}
+const status=document.getElementById('status'),frame=document.getElementById('portal'),signOut=document.getElementById('signOut');
+const esc=x=>String(x??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+async function refreshBookings(){
+ try{
+  const session=(await client.auth.getSession()).data.session;if(!session||!frame.contentDocument)return;
+  const r=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-bookings',{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'});
+  const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to load bookings.');
+  const doc=frame.contentDocument;
+  const nav=[...doc.querySelectorAll('aside button')].find(b=>b.textContent.trim().replace(/\s*\(\d+\)$/,'')==='Bookings');
+  if(nav)nav.textContent='Bookings ('+Number(d.count||0)+')';
+  const list=doc.querySelector('#bookingList');
+  if(list&&Array.isArray(d.bookings)){
+   list.innerHTML=d.bookings.length?d.bookings.map(x=>{
+    const name=[x.first_name,x.last_name].filter(Boolean).join(' ');
+    const vehicle=[x.vehicle_year,x.vehicle_make,x.vehicle_model,x.vehicle_trim].filter(Boolean).join(' ');
+    return `<div class="row"><div><strong>${esc(x.request_number||x.client_request_number||'DASH Request')}</strong><span class="mini">${esc(name)} · ${esc(x.email||'—')} · ${esc(x.phone||'—')}</span><span class="mini"><b>Service:</b> ${esc(x.service_name||x.service_key||'Service')} · ${esc([x.preferred_date,x.preferred_time].filter(Boolean).join(' ')||'No preferred time')}</span>${vehicle?`<span class="mini"><b>Vehicle:</b> ${esc(vehicle)}</span>`:''}${x.vehicle_engine?`<span class="mini"><b>Engine:</b> ${esc(x.vehicle_engine)}</span>`:''}<span class="mini">${esc([x.city,x.state,x.postal_code].filter(Boolean).join(', '))}</span><span class="mini">${esc(x.full_address||'—')}</span></div><div class="toolbar"><span class="pill">${esc(x.request_status||'submitted')}</span><span class="pill">Proof: ${esc(x.proof_status||'not_required')}</span></div></div>`}).join(''):'<div class="empty"><strong>No bookings yet</strong>No service requests have been submitted.</div>';
+  }
+ }catch(e){console.warn('Booking refresh failed',e)}
 }
-function renderBookingRows(bookings){
-  const doc=frame.contentDocument;if(!doc)return;
-  const list=doc.querySelector('#bookingList');if(!list)return;
-  if(!bookings.length){list.innerHTML='<div class="empty"><strong>No bookings yet</strong>No service requests have been submitted.</div>';return;}
-  list.innerHTML=bookings.map(r=>{
-    const customer=[r.first_name,r.last_name].filter(Boolean).join(' ');
-    const vehicle=[r.vehicle_year,r.vehicle_make,r.vehicle_model,r.vehicle_trim].filter(Boolean).join(' ');
-    const engine=r.vehicle_engine?` · Engine: ${escHtml(r.vehicle_engine)}`:'';
-    const vehicleLine=vehicle?`<span class="mini"><b>Vehicle:</b> ${escHtml(vehicle)}${engine}</span>`:'';
-    return `<div class="row"><div><strong>${escHtml(r.request_number||r.client_request_number||'DASH Request')}</strong><span class="mini">${escHtml(customer)} · ${escHtml(r.email||'—')} · ${escHtml(r.phone||'—')}</span><span class="mini"><b>Service:</b> ${escHtml(r.service_name||r.service_key||'Service')} · ${escHtml([r.preferred_date,r.preferred_time].filter(Boolean).join(' ')||'No preferred time')}</span>${vehicleLine}<span class="mini">${escHtml([r.city,r.state,r.postal_code].filter(Boolean).join(', '))}</span><span class="mini">${escHtml(r.full_address||'—')}</span></div><div class="toolbar"><span class="pill">${escHtml(r.request_status||'submitted')}</span><span class="pill">Proof: ${escHtml(r.proof_status||'not_required')}</span></div></div>`;
-  }).join('');
-  installBookingDelete();
+async function loadPortal(){
+ const {data,error}=await client.auth.getUser();if(error||!data?.user){location.replace('admin-login.html');return}
+ const {data:s}=await client.auth.getSession();const token=s?.session?.access_token;if(!token){location.replace('admin-login.html');return}
+ const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});if(!response.ok)throw new Error('Protected admin portal could not be loaded.');
+ frame.srcdoc=await response.text();frame.addEventListener('load',()=>{status.style.display='none';frame.style.display='block';signOut.style.display='block';refreshBookings();setTimeout(refreshBookings,500);setTimeout(refreshBookings,1500)},{once:true});
 }
-async function loadLiveBookings(){
-  try{
-    const session=(await client.auth.getSession()).data.session;if(!session)return;
-    const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-bookings',{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'});
-    const data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to load bookings.');
-    const doc=frame.contentDocument;if(!doc)return;
-    const nav=[...doc.querySelectorAll('aside button')].find(b=>b.textContent.trim().replace(/\s*\(\d+\)$/,'')==='Bookings');
-    if(nav)nav.textContent='Bookings ('+Number(data.count||0)+')';
-    const count=doc.querySelector('#bookingCount');if(count)count.textContent=String(data.count||0);
-    const pending=doc.querySelector('#pendingCount');if(pending)pending.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='submitted').length);
-    const scheduled=doc.querySelector('#scheduledCount');if(scheduled)scheduled.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='approved').length);
-    const completed=doc.querySelector('#completedCount');if(completed)completed.textContent=String((data.bookings||[]).filter(x=>String(x.request_status)==='completed').length);
-    renderBookingRows(data.bookings||[]);
-  }catch(e){console.warn('Unable to load live bookings',e)}
-}
-function wireTopLevelNavigation(){try{const doc=frame.contentDocument;if(!doc)return;doc.addEventListener('click',event=>{const el=event.target?.closest?.('button,a');if(!el)return;const text=(el.textContent||'').trim().toLowerCase();const href=(el.getAttribute('href')||'').toLowerCase();if(text==='communications'||href.includes('admin-communications.html')){event.preventDefault();event.stopPropagation();window.location.assign('admin-communications.html')}},true);installBookingDelete();loadLiveBookings();}catch(e){console.warn('Unable to wire admin navigation',e)}}
-async function loadPortal(){const {data,error}=await client.auth.getUser();if(error||!data?.user){window.location.replace('admin-login.html');return}const {data:sessionData}=await client.auth.getSession();const token=sessionData?.session?.access_token;if(!token){window.location.replace('admin-login.html');return}const response=await fetch(SUPABASE_URL+'/functions/v1/dash-admin-portal',{headers:{Authorization:'Bearer '+token}});if(!response.ok)throw new Error('Protected admin portal could not be loaded.');frame.srcdoc=await response.text();frame.addEventListener('load',wireTopLevelNavigation,{once:true});status.style.display='none';frame.style.display='block';signOut.style.display='block'}
-signOut.addEventListener('click',async()=>{signOut.disabled=true;signOut.textContent='Signing Out…';const {error}=await client.auth.signOut();if(error){signOut.disabled=false;signOut.textContent='Sign Out';return}window.location.replace('admin-login.html')});
-loadPortal().catch(error=>{status.textContent=error?.message||'Unable to verify administrator access.'});client.auth.onAuthStateChange((_event,session)=>{if(!session)window.location.replace('admin-login.html')});
-</script>
-</body>
-</html>
+signOut.onclick=async()=>{await client.auth.signOut();location.replace('admin-login.html')};loadPortal().catch(e=>status.textContent=e.message||'Unable to verify administrator access.');client.auth.onAuthStateChange((_e,s)=>{if(!s)location.replace('admin-login.html')});
+</script></body></html>
