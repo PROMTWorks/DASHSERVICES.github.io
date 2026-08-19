@@ -1,6 +1,7 @@
-/* DASH booking runtime: vehicle selector + service-location authorization. */
-(function(){'use strict';
-function load(src,done){var s=document.createElement('script');s.src=src;s.async=false;s.onload=done;s.onerror=function(){console.error('DASH script failed:',src)};document.head.appendChild(s)}
+/* DASH booking runtime: single-owner vehicle selector + service-location authorization. */
+(function(){
+'use strict';
+function load(src,done){var s=document.createElement('script');s.src=src;s.async=false;s.onload=done;s.onerror=function(){console.error('DASH script failed:',src);done&&done()};document.head.appendChild(s)}
 function req(){var d=new Date();return 'DASH-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000)}
 function key(){return ['locationStreet','locationCity','locationState','locationZip'].map(function(id){var e=document.getElementById(id);return e&&e.value?e.value.trim().toLowerCase().replace(/[^a-z0-9]/g,''):''}).join('|')}
 function restrictions(){var r=document.getElementById('addressRestrictions'),p=document.getElementById('restrictionProofSection');if(!r)return;var email='supportdashservices@gmail.com',number=req();window.DASHServiceRequestNumber=number;r.required=true;
@@ -11,6 +12,16 @@ function validate(){var ids=['locationStreet','locationCity','locationState','lo
 if(p){var f=document.getElementById('restrictionProof');if(f)f.remove();var l=p.querySelector('label[for="restrictionProof"]');if(l)l.remove();var n=p.querySelector('.note');if(n)n.innerHTML='<strong>Proof Required:</strong> Because you selected Yes or Unsure, documentation is required showing that the service location has no applicable restrictions and that DASH Services is permitted to complete service there. <strong>Email proof to '+email+'</strong>.';proof()}
 r.addEventListener('change',function(){lock();if(r.value==='yes'||r.value==='unsure'){var x=records();x[key()]={status:'proof-required',requestNumber:number,createdAt:new Date().toISOString()};localStorage.setItem('dashRestrictedServiceAddresses',JSON.stringify(x))}if(p)p.classList.toggle('hidden',r.value!=='yes'&&r.value!=='unsure')});['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var e=document.getElementById(id);if(e)e.addEventListener('input',lock)});lock();
 var ce=window.calculateEstimate;if(typeof ce==='function'&&!ce.__dashSafe){var w=function(){return validate()?ce.apply(this,arguments):undefined};w.__dashSafe=true;window.calculateEstimate=w}var rb=window.reviewBooking;if(typeof rb==='function'&&!rb.__dashSafe){var w2=function(){return validate()?rb.apply(this,arguments):undefined};w2.__dashSafe=true;window.reviewBooking=w2}}
-function start(){load('./vehicle-customer-data.js?v=20260819a',function(){load('./vehicle-catalog.js?v=20260819q',function(){load('./vehicle-engine-fix.js?v=20260819v5',function(){restrictions();window.DASHVehicleDatabaseLoaded=true;document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'))})})})}
+function start(){
+  /* The customer page has one vehicle controller: vehicle-engine-fix.js.
+     Do not gate it behind the legacy catalog/data scripts. If those files fail,
+     the selector must still work. The fix itself provides the fallback make list
+     and manual model/engine/trim paths. */
+  load('./vehicle-engine-fix.js?v=20260819v6',function(){
+    restrictions();
+    window.DASHVehicleDatabaseLoaded=true;
+    document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
+  });
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
