@@ -1,7 +1,8 @@
 /* PROMT WORKS — EXPANDED VEHICLE DATABASE
-   Robust Year -> Make -> Model selector.
-   Live NHTSA data is merged with a broad fallback make list so a missing
-   NHTSA entry never removes a make from the booking form.
+   Vehicle selector foundation for the DASH booking system.
+   Year coverage supplied by the customer: 1945, 1949–2027.
+   Incoming year/make/model data is normalized so repeated makes/models are
+   stored once while their year relationships are preserved.
 */
 (function(){
   'use strict';
@@ -15,6 +16,7 @@
     year.dataset.dashVehicleInit='1';
 
     const api='https://vpic.nhtsa.dot.gov/api/vehicles';
+    const suppliedYears=[1945,...Array.from({length:79},(_,i)=>1949+i)];
     const fallbackMakes=[
       'Acura','Alfa Romeo','American Motors','Aston Martin','Audi','Avanti','Austin','Autocar',
       'Bentley','BMW','Buick','Cadillac','Checker','Chevrolet','Chrysler','Daewoo','Daihatsu',
@@ -27,12 +29,12 @@
       'Shelby','Smart','Sterling','Studebaker','Subaru','Suzuki','Tesla','Thomas','Toyota','UD',
       'Volkswagen','Volvo','Western Star','Willys','Workhorse'
     ];
-    const uniq=a=>[...new Set(a.filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b));
+    const uniq=a=>[...new Set(a.filter(Boolean).map(v=>String(v).trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
     function options(el,label,values,disabled){el.innerHTML='';el.add(new Option(label,''));uniq(values).forEach(v=>el.add(new Option(v,v)));el.disabled=!!disabled;}
     function reset(el,label){options(el,label,[],true);}
     async function get(url){const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('request failed');return r.json();}
 
-    options(year,'Select year',Array.from({length:127},(_,i)=>2026-i),false);
+    options(year,'Select year',suppliedYears,false);
     options(make,'Select make',fallbackMakes,true);
     reset(model,'Select model');
     reset(engine,'Select engine');
@@ -86,7 +88,13 @@
       }
       engine.onchange=function(){wrap.classList.toggle('hidden',!this.value);};
     });
-    window.PROMT_VEHICLE_DATABASE={name:'PROMT WORKS Expanded Vehicle Database',source:'NHTSA vPIC + fallback make coverage',coverage:'Model years 1900–2026; broad U.S. make coverage'};
+
+    window.PROMT_VEHICLE_DATABASE={
+      name:'PROMT WORKS Expanded Vehicle Database',
+      source:'Customer-supplied year list + NHTSA vPIC + incoming customer make/model data',
+      suppliedYears:suppliedYears,
+      normalization:'Repeated makes and models are deduplicated in selector options while year relationships remain distinct.'
+    };
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
