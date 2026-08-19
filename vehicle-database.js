@@ -26,7 +26,7 @@
   }
 
   function installServiceLocationRules(){
-    var email='davidroyemployment@gmail.com';
+    var email='supportdashservices@gmail.com';
     var restrictions=document.getElementById('addressRestrictions');
     var proofSection=document.getElementById('restrictionProofSection');
     if(!restrictions)return;
@@ -34,9 +34,8 @@
     var requestNumber=makeRequestNumber();
     restrictions.setAttribute('required','required');
 
-    /* This is intentionally shared by the booking form rather than being tied
-       to automotive fields. Any service using this booking form receives the
-       same required address/restriction workflow. */
+    /* Shared booking requirement: applies to automotive and non-automotive
+       services that use the site's booking form. */
     if(proofSection){
       var file=document.getElementById('restrictionProof');
       if(file)file.remove();
