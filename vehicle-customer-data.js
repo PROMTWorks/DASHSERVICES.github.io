@@ -19,5 +19,31 @@ window.DASH_CUSTOMER_VEHICLES={
     'Plymouth':['Barracuda','Belvedere','Fury','Plymouth','Satellite','Valiant'],'Pontiac':['Firebird','GTO','LeMans','Pontiac','Tempest'],
     'Rolls-Royce':['Bentley','Silver Shadow'],'SAAB':['95','96','97'],'Toyota':['Corona','Crown','Land Cruiser'],
     'Volkswagen':['115','Beetle','Karman Ghia','Type I','Type II','Type III','Volkswagen']
+  },
+  '1972':{
+    'Alfa Romeo':['GT Veloce 2000'],'AM General':['FJ8'],
+    'American Motors':['Ambassador','American Motors','Gremlin','Hornet','Javelin','Matador'],'Audi':['100'],
+    'Blue Bird':['All American','Blue Bird','Wanderlodge','Wonderlodge'],'BMW':['2002','2002A','2002TII','Bavaria 3.0'],
+    'Buick':['Centurion','Electra','Estate Wagon','LeSabre','Riviera'],
+    'Cadillac':['Brougham','Cadillac','Calais','DeVille','Fleetwood'],
+    'Chevrolet':['Astro','Belair','Biscayne','Blazer','Brookwood','C10','C20','C30','Caprice','CE60','Chevrolet','Chevrolet Truck','Corvette','HE9000','HI9000','HM81413','Impala','K10','K20','K30','Kingswood','Kingswood Estate','Light Truck','ME 60','Nova','Pickup','School Bus Series','Townsman','TV70','Vega'],
+    'Chrysler':['Chrysler','Imperial','New Yorker','Newport'],'Citroen':['DS21'],
+    'Dodge':['B100','B200','B300','Barracuda','CB300','CB400','Charger','CNT900','Colt','Coronet','CT800','CT900','D100','D200','D300','D400','D500','D600','D700','Dart','Demon','Dodge Truck','LT1000','M300','MB300','MB400','Monaco','P200','P400','Pickup','Polara','S400','S500','S600','W100','W200','W300','W600'],
+    'Fiat':['124','128','850'],
+    'Ford':['B Series','B500','B600','B700','B7000','B750','Bronco','C Series','C Series (Medium)','C600','C800','CL9000','CLT9000','Cortina','Country Esquire','Country Sedan','Country Squire','Courier','Custom','Custom Ranch','Econoline','F Series','F Series (Light)','F Series (Medium)','F100','F150','F250','F350','F500','F600','F700','F800','Ford','Ford Truck','Ford Truck and Van','G100','Galaxie','L Series','L Series (Heavy)','L800','L8000','L900','L9000','LN Series','LT-LTS Series','LT9000','LTD','Maverick','Montego','Mustang','Mustang II','P500','P550','P600','Pinto','Ranch Wagon','Ranchero','School Bus','Squire','Thunderbird','Torino','W9000','WT9000'],
+    'GMC':['C15','C1500','C25','C2500','C35','C3500','CE55013','CE6500','CG55013','CM6500','FH9500','FI9500','G Van','GMC','HI9500','HN9500','HV7500','Jimmy','Jimmys','K15','K1500','K25','K2500','K35','K3500','Light Truck','ME 65','MH9500','P8M4905A','PS15535','School Bus','TV7500'],
+    'Honda':['350','450','500','750'],'Jaguar':['XJ','XJ6','XKE','XKEV12'],'Jeep':['CJ5','CJ6','CJ7','Commando','Wagoneer'],
+    'Lincoln':['Mark IV'],'Mazda':['808'],
+    'Mercedes-Benz':['220','220D','250','250C','280','300','350','350SL','450','450SE','450SEL','L911','LP1113','LP1313'],
+    'Mercury':['Capri','Comet','Cougar','Montego','Monterey'],
+    'Nissan':['110','240Z','260Z','510','KL110','PL510'],
+    'Oldsmobile':['88','98'],
+    'Plymouth':['B100','B200','B300','Coronet','Cricket','Duster','Fury','Satellite','Valiant'],
+    'Pontiac':['Bonneville','Catalina','Firebird','Grand Prix','Grand Ville','Pontiac','Safari','Ventura'],
+    'Porsche':['911','911E','911T','914'],'Renault':['12','16'],
+    'Rolls-Royce':['Bentley','Corniche'],'SAAB':['95','96','99'],
+    'Skyline':['Aljo','Layton','Nomad'],'Subaru':['22','23','62','63'],'Suzuki':['GT550J'],
+    'Toyota':['Celica','Corolla','Corona','Mark II','Mark II Coupe'],
+    'Volkswagen':['411','Beetle','Karman Ghia','Type I','Type II','Type III','Type IV'],'Volvo':['145']
   }
 };
