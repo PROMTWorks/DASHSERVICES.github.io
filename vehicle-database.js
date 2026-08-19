@@ -49,8 +49,6 @@
     window.DASHServiceRequestNumber=requestNumber;
     restrictions.setAttribute('required','required');
 
-    /* Shared requirement: automotive and non-automotive services using this
-       booking form receive the same address/restriction workflow. */
     if(proofSection){
       var oldFile=document.getElementById('restrictionProof');
       if(oldFile)oldFile.remove();
@@ -94,7 +92,6 @@
       var locked=!!key && !!records[key] && records[key].status==='proof-required';
       var noOption=Array.prototype.find.call(restrictions.options,function(o){return o.value==='no';});
       if(noOption)noOption.disabled=locked;
-
       if(locked && restrictions.value==='no'){
         restrictions.value='unsure';
         alert('This service address previously triggered a Yes/Unsure restriction review. You cannot change this address to No to bypass the required proof. Please provide the required proof/authorization for this address.');
@@ -119,73 +116,40 @@
           return false;
         }
       }
-
       var addressKey=normalizeAddress();
       var records=getRestrictedAddresses();
       var locked=!!records[addressKey] && records[addressKey].status==='proof-required';
       var choice=restrictions.value;
-
       if(locked && choice==='no'){
         restrictions.value='unsure';
         updateProofVisibility();
         alert('This address requires proof based on a previous Yes/Unsure restriction response. A new service request cannot be used to bypass that requirement.');
         return false;
       }
-
-      if(!choice){
-        alert('Please answer the service-location restrictions question by selecting Yes, No, or Unsure.');
-        restrictions.focus();
-        return false;
-      }
-
+      if(!choice){alert('Please answer the service-location restrictions question by selecting Yes, No, or Unsure.');restrictions.focus();return false;}
       if(choice==='yes' || choice==='unsure'){
         saveRestrictedAddress(addressKey,requestNumber);
         var details=document.getElementById('restrictionDetails');
         var confirmed=document.getElementById('restrictionProofEmailed');
-        if(!details || !details.value.trim()){
-          alert('Please explain the restriction or why you are unsure.');
-          if(details)details.focus();
-          return false;
-        }
-        if(!confirmed || !confirmed.checked){
-          alert('Please click Email Proof of Service Location Allowed, send the required proof/authorization to '+email+', and confirm that you sent it before continuing.');
-          if(confirmed)confirmed.focus();
-          return false;
-        }
+        if(!details || !details.value.trim()){alert('Please explain the restriction or why you are unsure.');if(details)details.focus();return false;}
+        if(!confirmed || !confirmed.checked){alert('Please click Email Proof of Service Location Allowed, send the required proof/authorization to '+email+', and confirm that you sent it before continuing.');if(confirmed)confirmed.focus();return false;}
       }
       return true;
     }
 
-    ['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){
-      var el=document.getElementById(id);
-      if(el)el.addEventListener('input',updateAddressRestrictionState);
-    });
-    restrictions.addEventListener('change',function(){
-      var key=normalizeAddress();
-      var records=getRestrictedAddresses();
-      if(restrictions.value==='yes' || restrictions.value==='unsure')saveRestrictedAddress(key,requestNumber);
-      updateProofVisibility();
-    });
+    ['locationStreet','locationCity','locationState','locationZip'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',updateAddressRestrictionState);});
+    restrictions.addEventListener('change',function(){var key=normalizeAddress();if(restrictions.value==='yes'||restrictions.value==='unsure')saveRestrictedAddress(key,requestNumber);updateProofVisibility();});
     updateProofVisibility();
 
     var originalCalculate=window.calculateEstimate;
-    if(typeof originalCalculate==='function' && !originalCalculate.__dashAddressWrapped){
-      function wrappedCalculate(){
-        if(!validateServiceLocation())return;
-        return originalCalculate.apply(this,arguments);
-      }
-      wrappedCalculate.__dashAddressWrapped=true;
-      window.calculateEstimate=wrappedCalculate;
+    if(typeof originalCalculate==='function'&&!originalCalculate.__dashAddressWrapped){
+      function wrappedCalculate(){if(!validateServiceLocation())return;return originalCalculate.apply(this,arguments);}
+      wrappedCalculate.__dashAddressWrapped=true;window.calculateEstimate=wrappedCalculate;
     }
-
     var originalReview=window.reviewBooking;
-    if(typeof originalReview==='function' && !originalReview.__dashAddressWrapped){
-      function wrappedReview(){
-        if(!validateServiceLocation())return;
-        return originalReview.apply(this,arguments);
-      }
-      wrappedReview.__dashAddressWrapped=true;
-      window.reviewBooking=wrappedReview;
+    if(typeof originalReview==='function'&&!originalReview.__dashAddressWrapped){
+      function wrappedReview(){if(!validateServiceLocation())return;return originalReview.apply(this,arguments);}
+      wrappedReview.__dashAddressWrapped=true;window.reviewBooking=wrappedReview;
     }
   }
 
@@ -196,9 +160,11 @@
           load('./vehicle-catalog.js?v=20260819p',function(){
             load('./vehicle-database-expanded.js?v=20260819p',function(){
               load('./vehicle-engine-fix.js?v=20260819p',function(){
-                window.DASHVehicleDatabaseLoaded=true;
-                document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
-                installServiceLocationRules();
+                load('./booking-server-security.js?v=20260819a',function(){
+                  window.DASHVehicleDatabaseLoaded=true;
+                  document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
+                  installServiceLocationRules();
+                });
               });
             });
           });
