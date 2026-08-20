@@ -30,12 +30,23 @@
     var map=new google.maps.Map(mapEl,{center:{lat:33.78,lng:-79.00},zoom:10,mapTypeId:'terrain',streetViewControl:false,mapTypeControl:false,fullscreenControl:false,zoomControl:true,gestureHandling:'cooperative'});
     var serviceArea=[{lat:33.94,lng:-79.18},{lat:33.96,lng:-78.78},{lat:33.86,lng:-78.62},{lat:33.66,lng:-78.63},{lat:33.48,lng:-78.86},{lat:33.43,lng:-79.12},{lat:33.58,lng:-79.24},{lat:33.78,lng:-79.24}];
     new google.maps.Polygon({paths:serviceArea,strokeColor:'#c62828',strokeOpacity:.9,strokeWeight:2,fillColor:'#c62828',fillOpacity:.10,map:map});
-    var markerOptions={map:map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:7,fillColor:'#c62828',fillOpacity:1,strokeColor:'#fff',strokeWeight:3}};
-    var myrtle=new google.maps.Marker(Object.assign({},markerOptions,{position:{lat:33.6891,lng:-78.8867},title:'Myrtle Beach'}));
-    var conway=new google.maps.Marker(Object.assign({},markerOptions,{position:{lat:33.8360,lng:-79.0478},title:'Conway'}));
+
+    // Myrtle Beach is the DASH base location: use a star marker so it is visually distinct.
+    var baseStar={path:'M 0,-12 L 3.5,-3.8 L 12,-3.8 L 5.2,1.5 L 7.8,10 L 0,5.2 L -7.8,10 L -5.2,1.5 L -12,-3.8 L -3.5,-3.8 Z',fillColor:'#c62828',fillOpacity:1,strokeColor:'#fff',strokeWeight:2,scale:1.15,anchor:new google.maps.Point(0,0)};
+    var conwayIcon={path:google.maps.SymbolPath.CIRCLE,scale:7,fillColor:'#c62828',fillOpacity:1,strokeColor:'#fff',strokeWeight:3};
+    var myrtle=new google.maps.Marker({map:map,icon:baseStar,position:{lat:33.6891,lng:-78.8867},title:'DASH Services base — Myrtle Beach'});
+    var conway=new google.maps.Marker({map:map,icon:conwayIcon,position:{lat:33.8360,lng:-79.0478},title:'Conway'});
     var info=new google.maps.InfoWindow();
-    function wire(marker,name){marker.addListener('click',function(){info.setContent('<div style="font-family:Arial,sans-serif;font-weight:800;padding:4px 6px">'+name+'<br><span style="font-size:11px;font-weight:600;color:#526174">DASH Services area</span></div>');info.open({map:map,anchor:marker});});}
-    wire(myrtle,'Myrtle Beach'); wire(conway,'Conway');
+    function wire(marker,name,detail){marker.addListener('click',function(){info.setContent('<div style="font-family:Arial,sans-serif;font-weight:800;padding:5px 7px">'+name+'<br><span style="font-size:11px;font-weight:600;color:#526174">'+detail+'</span></div>');info.open({map:map,anchor:marker});});}
+    wire(myrtle,'DASH Services Base','Myrtle Beach');
+    wire(conway,'Conway','DASH Services area');
+
+    // Add a small permanent base label beside the star so customers don't have to click it.
+    var baseLabel=document.createElement('div');
+    baseLabel.className='dash-base-label';
+    baseLabel.innerHTML='<strong>DASH Services Base</strong><span>Myrtle Beach</span>';
+    host.appendChild(baseLabel);
+
     var section=host.closest('section')||host.parentElement;
     var old=section.querySelector('.service-area-travel-note'); if(old) old.remove();
     var note=document.createElement('div'); note.className='service-area-travel-note';
