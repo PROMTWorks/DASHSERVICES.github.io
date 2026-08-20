@@ -1691,6 +1691,7 @@ c=>({
 
 
 
+
 <script id="DASH_EMPLOYEE_ADMIN_V4">
 (()=>{
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
@@ -1756,7 +1757,7 @@ c=>({
     const h=document.getElementById('adminEmployeeRecords');
     if(!h)return;
     h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';
-    try{const employeeData=await api('list');rows=Array.isArray(employeeData)?employeeData:[];render();}
+    try{rows=Array.isArray(await api('list'))?await api('list'):[];render();}
     catch(e){h.innerHTML='<div class="empty"><strong>Employee records could not be loaded</strong><p>'+esc(e.message)+'</p><button class="btn" id="aeRetry">Try Again</button></div>';document.getElementById('aeRetry').onclick=load;}
   }
   function find(id){return rows.find(e=>String(e.employee_id)===String(id));}
