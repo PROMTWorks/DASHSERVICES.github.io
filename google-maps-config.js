@@ -1,5 +1,5 @@
 /* DASH Services Google Maps configuration.
-   Replace the placeholder below with the browser-restricted Maps JavaScript API key
-   from the DASH Services Google Cloud project. Do not share the key in chat.
+   This key is restricted in Google Cloud to the DASH GitHub Pages website
+   and the Maps JavaScript API.
 */
-window.DASH_GOOGLE_MAPS_KEY = AIzaSyDPvUqU7m-vk1lJzohE7myfNk8qNKrJ3OE
+window.DASH_GOOGLE_MAPS_KEY = 'AIzaSyDPvUqU7m-vk1lJzohE7myfNk8qNKrJ3OE';
