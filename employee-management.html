@@ -108,6 +108,7 @@ async function resetEmployeePassword(id){try{const result=await employeeApi('set
 function showSetupLink(url,id){document.getElementById('setupEmployeeId').textContent='Employee ID: '+id;document.getElementById('setupLink').value=url;document.getElementById('setupModal').classList.add('show')}
 async function copySetupLink(){const link=document.getElementById('setupLink').value;try{await navigator.clipboard.writeText(link)}catch(_){const i=document.getElementById('setupLink');i.select();document.execCommand('copy')}showMessage('Setup link copied to clipboard.')}
 function closeSetupModal(){document.getElementById('setupModal').classList.remove('show')}
+async function sendSetup(id){try{await api('invite',{employee_id:id});await loadEmployees();msg('success','Setup email sent. The employee will create their own password.');}catch(e){msg('error',e.message||'Unable to send setup email.')}}
 async function removeEmployee(id){if(!confirm('Remove '+id+'? The employee will be marked inactive and their time history will be preserved.'))return;try{await employeeApi('remove',{employee_id:id});await loadEmployees();showMessage(id+' marked inactive.')}catch(e){showMessage(e.message,false)}}
 async function restoreEmployee(id){try{await employeeApi('restore',{employee_id:id});await loadEmployees();showMessage(id+' reactivated.')}catch(e){showMessage(e.message,false)}}
 
