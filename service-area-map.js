@@ -45,13 +45,14 @@
     });
 
     var serviceArea=[
-      {lat:33.91,lng:-79.16},
-      {lat:33.92,lng:-78.82},
-      {lat:33.78,lng:-78.68},
-      {lat:33.60,lng:-78.72},
-      {lat:33.48,lng:-78.90},
-      {lat:33.52,lng:-79.17},
-      {lat:33.70,lng:-79.22}
+      {lat:33.94,lng:-79.18},
+      {lat:33.96,lng:-78.78},
+      {lat:33.86,lng:-78.62},
+      {lat:33.66,lng:-78.63},
+      {lat:33.48,lng:-78.86},
+      {lat:33.43,lng:-79.12},
+      {lat:33.58,lng:-79.24},
+      {lat:33.78,lng:-79.24}
     ];
 
     new google.maps.Polygon({
@@ -81,6 +82,12 @@
     }
     wire(myrtle,'Myrtle Beach');
     wire(conway,'Conway');
+
+    var note=document.createElement('div');
+    note.style.cssText='margin:26px auto 0;max-width:900px;padding:22px 24px;border:1px solid #ead6d2;border-radius:16px;background:linear-gradient(135deg,#fff8f6,#ffffff);color:#526174;font-family:Arial,Helvetica,sans-serif;line-height:1.6;box-shadow:0 10px 28px rgba(15,23,42,.05);';
+    note.innerHTML='<div style="font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:#c62828;margin-bottom:7px">Outside Our Standard Service Area</div><div style="font-size:14px;font-weight:600">DASH Services may be able to serve customers outside our standard service area. Locations requiring significant additional travel, including out-of-state or several-hours-away requests, may incur an additional travel/fuel fee. DASH Services will contact the customer to discuss any applicable fee before the service is confirmed.</div>';
+
+    host.parentElement.appendChild(note);
   }
 
   function start(){
