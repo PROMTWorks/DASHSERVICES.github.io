@@ -1,0 +1,179 @@
+name: Fix Employee Edit Save Validation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fix employee edit save and direct deposit integration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('employee-management.html')
+          s = p.read_text()
+
+          pattern = r'async function saveEmployee\(\)\{.*?\n\}\n\n\n/\* --------------------------------\n   PASSWORD SETUP / RESET'
+
+          replacement = r'''async function saveEmployee(){
+
+    try{
+
+        const employeeIdEl = document.getElementById("employeeId");
+        const firstNameEl = document.getElementById("firstName");
+        const lastNameEl = document.getElementById("lastName");
+        const phoneEl = document.getElementById("phone");
+        const positionEl = document.getElementById("position");
+        const hireDateEl = document.getElementById("hireDate");
+        const hourlyPayEl = document.getElementById("hourlyPay");
+        const notesEl = document.getElementById("notes");
+        const statusEl = document.getElementById("employmentStatus");
+
+        const employeeId = String(employeeIdEl?.value || editingEmployeeId || "").trim();
+        const existing = editingEmployeeId
+            ? employees.find(item => String(item.employee_id) === String(editingEmployeeId))
+            : null;
+
+        // Use the value currently in the form. When editing, fall back to the
+        // already-loaded employee record so a browser/autofill issue cannot
+        // incorrectly erase a valid first name.
+        const firstName = String(firstNameEl?.value ?? "").trim() ||
+            String(existing?.first_name ?? "").trim();
+        const lastName = String(lastNameEl?.value ?? "").trim() ||
+            (existing?.last_name ?? null);
+        const phone = String(phoneEl?.value ?? "").trim() ||
+            (existing?.phone ?? null);
+        const position = String(positionEl?.value ?? "").trim() ||
+            (existing?.position ?? null);
+        const hireDate = String(hireDateEl?.value ?? "").trim() ||
+            (existing?.hire_date ?? null);
+        const hourlyRaw = String(hourlyPayEl?.value ?? "").trim();
+        const hourlyPay = hourlyRaw === ""
+            ? (existing?.hourly_pay_rate ?? null)
+            : Number(hourlyRaw);
+        const notes = String(notesEl?.value ?? "").trim() ||
+            (existing?.notes ?? null);
+        const employmentStatus = statusEl?.value ||
+            existing?.employment_status || "active";
+
+        if(!employeeId){
+            throw new Error("Employee ID is required.");
+        }
+
+        if(!firstName){
+            throw new Error("First name is required. Please enter the employee's first name.");
+        }
+
+        if(hourlyPay !== null && (!Number.isFinite(Number(hourlyPay)) || Number(hourlyPay) < 0)){
+            throw new Error("Hourly pay must be a valid non-negative number.");
+        }
+
+        const employee = {
+            employee_id: employeeId,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone,
+            position: position,
+            hire_date: hireDate,
+            hourly_pay: hourlyPay,
+            notes: notes,
+            employment_status: employmentStatus
+        };
+
+        const wasEditing = !!editingEmployeeId;
+        let result;
+
+        if(wasEditing){
+            result = await employeeApi("update", {
+                old_employee_id: editingEmployeeId,
+                ...employee
+            });
+        }else{
+            result = await employeeApi("add", employee);
+        }
+
+        closeEmployeeModal();
+        await loadEmployees();
+
+        if(!wasEditing && result && result.setup_url){
+            showSetupLink(result.setup_url, employee.employee_id);
+        }else{
+            showMessage(wasEditing ? "Employee record updated." : "Employee record saved.");
+        }
+
+    }catch(error){
+        showMessage(error?.message || String(error) || "Unable to save employee record.", false);
+    }
+}
+
+
+/* --------------------------------
+   PASSWORD SETUP / RESET'''
+
+          new_s, count = re.subn(pattern, replacement, s, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Could not locate saveEmployee function')
+
+          s = new_s
+
+          # Make the direct-deposit controls reset cleanly for new employees.
+          marker = 'async function openAddEmployee(){'
+          insert = '''function resetEmployeeEditDirectDeposit(){
+    const values = {
+        ddPaymentMethod: "not_set_up",
+        ddStatus: "not_set_up",
+        ddBankName: "",
+        ddAccountType: "checking",
+        ddRoutingNumber: "",
+        ddAccountNumber: "",
+        ddAccountNumberConfirm: "",
+        ddAllocationType: "remaining",
+        ddAllocationValue: "100"
+    };
+    Object.entries(values).forEach(([id,value])=>{
+        const el=document.getElementById(id);
+        if(el) el.value=value;
+    });
+    const status=document.getElementById("ddSavedStatus");
+    if(status) status.textContent="No bank account is currently stored.";
+}
+
+'''
+          if 'function resetEmployeeEditDirectDeposit()' not in s:
+              if marker not in s:
+                  raise SystemExit('Could not find openAddEmployee marker')
+              s = s.replace(marker, insert + marker, 1)
+
+          # Reset DD state when starting a new employee.
+          target = '''async function openAddEmployee(){
+
+    editingEmployeeId = null;'''
+          repl = '''async function openAddEmployee(){
+
+    editingEmployeeId = null;
+    resetEmployeeEditDirectDeposit();'''
+          if target in s:
+              s = s.replace(target, repl, 1)
+
+          p.write_text(s)
+          print('Patched employee-management.html')
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add employee-management.html .github/workflows/fix-employee-edit-save.yml
+          git diff --cached --quiet || git commit -m 'Fix employee edit save validation and DD form reset'
+          git push
