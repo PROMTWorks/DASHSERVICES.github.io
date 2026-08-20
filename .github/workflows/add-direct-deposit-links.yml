@@ -1,0 +1,40 @@
+name: Add Direct Deposit Links
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch links
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('employee-portal.html'); s=p.read_text()
+          if 'employee-my-direct-deposit.html' not in s:
+              s=s.replace('<button class="btn" id="signout">Sign Out</button>','<div><button class="btn" onclick="location.href=\'employee-my-direct-deposit.html\'">Direct Deposit</button> <button class="btn" id="signout">Sign Out</button></div>',1)
+              p.write_text(s)
+          p=Path('employee-management.html'); s=p.read_text()
+          if 'Manage Direct Deposit' not in s:
+              marker='<div class="modal-actions">'
+              s=s.replace(marker,'<div style="margin-top:18px"><button class="light" type="button" onclick="location.href=\'employee-direct-deposit.html?employee=\'+encodeURIComponent(document.getElementById(\'employeeId\').value)">Manage Direct Deposit</button></div>\n\n'+marker,1)
+              p.write_text(s)
+          p=Path('employee-direct-deposit.html'); s=p.read_text()
+          if 'URLSearchParams' not in s:
+              old="employees.map(e=>'<option value=\"'+e.employee_id+'\">'+e.first_name+' '+(e.last_name||'')+' — '+e.employee_id+'</option>').join('')"
+              new=old+";let q=new URLSearchParams(location.search).get('employee');if(q){$('employee').value=q;loadEmployee()}"
+              s=s.replace(old,new,1)
+              p.write_text(s)
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add employee-portal.html employee-management.html employee-direct-deposit.html
+          git diff --cached --quiet || git commit -m 'Add direct deposit links'
+          git push
