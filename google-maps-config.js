@@ -1,5 +1,5 @@
 /* DASH Services Google Maps configuration.
-   This key is restricted in Google Cloud to the DASH GitHub Pages website
-   and the Maps JavaScript API.
+   Add a new Google Maps JavaScript API key here after rotating the previously
+   exposed key. Keep the key restricted to the DASH GitHub Pages domain.
 */
-window.DASH_GOOGLE_MAPS_KEY = 'AIzaSyDPvUqU7m-vk1lJzohE7myfNk8qNKrJ3OE';
+window.DASH_GOOGLE_MAPS_KEY = 'PASTE_YOUR_NEW_RESTRICTED_MAPS_JAVASCRIPT_API_KEY_HERE';
