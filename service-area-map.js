@@ -83,11 +83,12 @@
     wire(myrtle,'Myrtle Beach');
     wire(conway,'Conway');
 
+    // Keep the travel-fee notice outside the map grid so it renders as a full-width callout.
+    var section=host.closest('section') || host.parentElement;
     var note=document.createElement('div');
-    note.style.cssText='margin:26px auto 0;max-width:900px;padding:22px 24px;border:1px solid #ead6d2;border-radius:16px;background:linear-gradient(135deg,#fff8f6,#ffffff);color:#526174;font-family:Arial,Helvetica,sans-serif;line-height:1.6;box-shadow:0 10px 28px rgba(15,23,42,.05);';
-    note.innerHTML='<div style="font-size:12px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:#c62828;margin-bottom:7px">Outside Our Standard Service Area</div><div style="font-size:14px;font-weight:600">DASH Services may be able to serve customers outside our standard service area. Locations requiring significant additional travel, including out-of-state or several-hours-away requests, may incur an additional travel/fuel fee. DASH Services will contact the customer to discuss any applicable fee before the service is confirmed.</div>';
-
-    host.parentElement.appendChild(note);
+    note.className='service-area-travel-note';
+    note.innerHTML='<div class="service-area-travel-note-label">Outside Our Standard Service Area</div><div class="service-area-travel-note-text">DASH Services may be able to serve customers outside our standard service area. Locations requiring significant additional travel, including out-of-state or several-hours-away requests, may incur an additional travel/fuel fee. DASH Services will contact the customer to discuss any applicable fee before the service is confirmed.</div>';
+    section.appendChild(note);
   }
 
   function start(){
