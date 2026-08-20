@@ -74,7 +74,7 @@
 <div class="dd-full"><button class="light" type="button" id="ddSaveButton" onclick="saveEmployeeEditDirectDeposit()">Save Direct Deposit</button></div>
 </div>
 </div>
-<div class="modal-actions"><button class="light" onclick="closeEmployeeModal()">Cancel</button><button id="saveEmployeeButton" onclick="saveEmployee()">Add Employee</button></div>
+<div style="margin-top:18px"><button class="light" type="button" onclick="location.href='employee-direct-deposit.html?employee='+encodeURIComponent(document.getElementById('employeeId').value)">Manage Direct Deposit</button></div><div class="modal-actions"><button class="light" onclick="closeEmployeeModal()">Cancel</button><button id="saveEmployeeButton" onclick="saveEmployee()">Add Employee</button></div>
 </div></div>
 
 <div id="setupModal" class="modal"><div class="modal-box"><h2>Employee Password Setup</h2><p>Give this link to the employee. It expires in 24 hours and can only be used once.</p><div class="setup-box"><b id="setupEmployeeId"></b><input id="setupLink" readonly><button style="margin-top:10px" onclick="copySetupLink()">Copy Setup Link</button></div><div class="modal-actions"><button onclick="closeSetupModal()">Done</button></div></div></div>
