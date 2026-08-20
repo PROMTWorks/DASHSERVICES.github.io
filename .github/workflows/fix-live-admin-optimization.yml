@@ -1,0 +1,42 @@
+name: Fix Live Admin Business Optimization
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-live-admin-optimization.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch admin shell
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin-shell.html')
+          s=p.read_text(encoding='utf-8')
+          if 'function fixBusinessOptimization' not in s:
+              marker='async function loadPortal(){'
+              fn="""function fixBusinessOptimization(){try{const doc=frame.contentDocument;if(!doc)return;const buttons=[...doc.querySelectorAll('aside button')];const b=buttons.find(x=>x.textContent.trim().replace(/\\s*\\(\\d+\\)$/,'')==='Business Optimization');if(b){b.onclick=()=>{window.top.location.href='admin-business-optimization.html'};b.removeAttribute('data-optimization-old');}}catch(e){console.warn('Business Optimization navigation fix unavailable',e)}}\n"""
+              if marker not in s: raise SystemExit('loadPortal marker not found')
+              s=s.replace(marker,fn+marker,1)
+          needle='addUhaulInterestNav();setTimeout(refreshBookings,500);'
+          replacement='addUhaulInterestNav();fixBusinessOptimization();setTimeout(fixBusinessOptimization,500);setTimeout(fixBusinessOptimization,1500);setTimeout(refreshBookings,500);'
+          if needle in s:
+              s=s.replace(needle,replacement,1)
+          elif 'setTimeout(fixBusinessOptimization,500)' not in s:
+              raise SystemExit('Admin shell load callback marker not found')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-shell.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix live admin Business Optimization navigation"
+          git push
