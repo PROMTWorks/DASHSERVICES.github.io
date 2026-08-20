@@ -1,0 +1,131 @@
+name: Fix Employee Management First Name V2
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace broken employee edit save logic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('employee-management.html')
+          s=p.read_text()
+
+          # The current file contains two Direct Deposit forms with identical
+          # element IDs. Remove the obsolete first copy and retain the dedicated
+          # DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT form.
+          first=s.find('<div class="dd">\n<b>Direct Deposit</b>')
+          second=s.find('<div id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">')
+          if first >= 0 and second > first:
+              s=s[:first]+s[second:]
+
+          # There must be exactly one saveEmployee implementation. This version
+          # resolves the employee from the loaded records first, so a stale/blank
+          # DOM value cannot make an existing employee fail first-name validation.
+          new_save=r'''async function saveEmployee(){
+            try{
+              const isEditing=Boolean(editingEmployeeId);
+              const employeeId=String(editingEmployeeId || document.getElementById('employeeId')?.value || '').trim();
+              const existing=isEditing ? employees.find(function(e){return String(e.employee_id).trim()===employeeId;}) : null;
+
+              const firstInput=document.getElementById('firstName');
+              const lastInput=document.getElementById('lastName');
+              const phoneInput=document.getElementById('phone');
+              const positionInput=document.getElementById('position');
+              const hireInput=document.getElementById('hireDate');
+              const payInput=document.getElementById('hourlyPay');
+              const notesInput=document.getElementById('notes');
+              const statusInput=document.getElementById('employmentStatus');
+
+              const firstName=(String(firstInput?.value ?? '').trim() || String(existing?.first_name ?? '').trim());
+              if(!firstName){
+                throw new Error('First name is required.');
+              }
+
+              if(!employeeId && isEditing){
+                throw new Error('Employee ID is required.');
+              }
+
+              const employee={
+                employee_id:employeeId,
+                first_name:firstName,
+                last_name:String(lastInput?.value ?? '').trim() || (existing?.last_name || null),
+                phone:String(phoneInput?.value ?? '').trim() || (existing?.phone || null),
+                position:String(positionInput?.value ?? '').trim() || (existing?.position || null),
+                hire_date:String(hireInput?.value ?? '').trim() || (existing?.hire_date || null),
+                hourly_pay:payInput?.value === '' ? (existing?.hourly_pay_rate ?? null) : Number(payInput.value),
+                notes:String(notesInput?.value ?? '').trim() || (existing?.notes || null),
+                employment_status:statusInput?.value || existing?.employment_status || 'active'
+              };
+
+              let result;
+              if(isEditing){
+                result=await employeeApi('update',{old_employee_id:employeeId,...employee});
+              }else{
+                if(!employee.employee_id){
+                  throw new Error('Employee ID is required.');
+                }
+                result=await employeeApi('add',employee);
+              }
+
+              closeEmployeeModal();
+              await loadEmployees();
+
+              if(!isEditing && result?.setup_url){
+                showSetupLink(result.setup_url,employee.employee_id);
+              }else{
+                showMessage(isEditing ? 'Employee record updated.' : 'Employee record saved.',true);
+              }
+            }catch(error){
+              showMessage(error?.message || 'Unable to save employee record.',false);
+            }
+          }'''
+
+          pattern=r'async function saveEmployee\(\)\s*\{.*?\n\}\s*(?=\/\* --------------------------------\s*\n\s*PASSWORD SETUP / RESET)'
+          s,n=re.subn(pattern,new_save+'\n\n',s,count=1,flags=re.S)
+          if n != 1:
+              raise SystemExit('saveEmployee implementation was not found')
+
+          # Ensure editEmployee always loads the existing record into the form
+          # from the canonical employees array before saving.
+          edit=r'''function editEmployee(id){
+            const employee=employees.find(function(item){return String(item.employee_id).trim()===String(id).trim();});
+            if(!employee){showMessage('Employee record could not be found.',false);return;}
+            editingEmployeeId=String(employee.employee_id);
+            document.getElementById('modalTitle').textContent='Edit Employee';
+            document.getElementById('saveEmployeeButton').textContent='Save Changes';
+            document.getElementById('employeeId').value=employee.employee_id || '';
+            document.getElementById('firstName').value=employee.first_name || '';
+            document.getElementById('lastName').value=employee.last_name || '';
+            document.getElementById('phone').value=employee.phone || '';
+            document.getElementById('position').value=employee.position || '';
+            document.getElementById('hireDate').value=employee.hire_date || '';
+            document.getElementById('hourlyPay').value=employee.hourly_pay_rate ?? '';
+            document.getElementById('notes').value=employee.notes || '';
+            document.getElementById('employmentStatus').value=employee.employment_status || 'active';
+            document.getElementById('employeeModal').classList.add('show');
+            if(typeof loadEmployeeEditDirectDeposit==='function'){
+              loadEmployeeEditDirectDeposit(employee.employee_id);
+            }
+          }'''
+          s,n2=re.subn(r'function editEmployee\(id\)\s*\{.*?\n\}\s*(?=\/\* --------------------------------\s*\n\s*CLOSE EMPLOYEE MODAL)',edit+'\n\n',s,count=1,flags=re.S)
+          if n2 != 1:
+              raise SystemExit('editEmployee implementation was not found')
+
+          p.write_text(s)
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add employee-management.html
+          git diff --cached --quiet || git commit -m 'Fix employee management edit first name handling'
+          git push
