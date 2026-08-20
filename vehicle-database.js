@@ -30,9 +30,7 @@ function start(){
   load('./vehicle-catalog.js?v=20260819v6',function(){
     load('./vehicle-database-expanded.js?v=20260819v12',function(){
       restrictions();
-      if(location.pathname.endsWith('/index.html')||location.pathname==='/'){
-        var c=document.createElement('script');c.src='./google-maps-config.js?v=20260820';c.onload=setupServiceAreaMap;document.head.appendChild(c);
-      }
+      var c=document.createElement('script');c.src='./google-maps-config.js?v=20260820';c.onload=setupServiceAreaMap;document.head.appendChild(c);
       window.DASHVehicleDatabaseLoaded=true;
       document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
     });
