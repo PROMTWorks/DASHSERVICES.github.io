@@ -19,10 +19,15 @@
 <script>
 (function(){
   const params=new URLSearchParams(window.location.search);
-  const staff=params.get('staff')==='1';
   const links=document.getElementById('staffLinks');
-  if(staff && links){links.classList.add('show');sessionStorage.setItem('dashStaffView','1');}
-  else if(sessionStorage.getItem('dashStaffView')==='1' && params.get('staff')!=='0' && links){links.classList.add('show');}
+  const fromGithub=/github\.com$/i.test(window.location.hostname) || /github\.com/i.test(document.referrer);
+  const staff=params.get('staff')==='1';
+  const hide=params.get('staff')==='0';
+  const saved=sessionStorage.getItem('dashStaffView')==='1';
+  if(links && !hide && (staff || saved || fromGithub)){
+    links.classList.add('show');
+    if(staff || fromGithub) sessionStorage.setItem('dashStaffView','1');
+  }
 })();
 </script>
 </body></html>
