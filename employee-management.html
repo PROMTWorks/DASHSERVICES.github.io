@@ -307,6 +307,15 @@ th{
 }
 
 </style>
+<style id="DASH_EMPLOYEE_DD_STYLE">
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT{margin-top:18px;padding:16px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT input,#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT select{width:100%;padding:9px;border:1px solid #ccd4de;border-radius:7px;background:#fff}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-full{grid-column:1/-1}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-status{font-size:12px;color:#64748b;margin-top:8px}
+@media(max-width:800px){#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-grid{grid-template-columns:1fr}.dd-full{grid-column:auto}}
+</style>
 </head>
 
 <body>
@@ -548,7 +557,22 @@ Notes
 </div>
 
 
-<div style="margin-top:18px"><button class="light" type="button" onclick="location.href='employee-direct-deposit.html?employee='+encodeURIComponent(document.getElementById('employeeId').value)">Manage Direct Deposit</button></div>
+<div id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">
+<b>Direct Deposit</b>
+<div class="dd-status" id="ddSavedStatus">Loading direct deposit settings...</div>
+<div class="dd-grid">
+<div><label>Payment Method</label><select id="ddPaymentMethod"><option value="not_set_up">Not Set Up</option><option value="direct_deposit">Direct Deposit</option><option value="paper_check">Paper Check</option><option value="other">Other</option></select></div>
+<div><label>Status</label><select id="ddStatus"><option value="not_set_up">Not Set Up</option><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+<div><label>Bank Name</label><input id="ddBankName" autocomplete="off"></div>
+<div><label>Account Type</label><select id="ddAccountType"><option value="checking">Checking</option><option value="savings">Savings</option></select></div>
+<div><label>Routing Number</label><input id="ddRoutingNumber" inputmode="numeric" maxlength="9" autocomplete="off"></div>
+<div><label>Account Number</label><input id="ddAccountNumber" inputmode="numeric" maxlength="17" autocomplete="off"></div>
+<div><label>Confirm Account Number</label><input id="ddAccountNumberConfirm" inputmode="numeric" maxlength="17" autocomplete="off"></div>
+<div><label>Deposit Allocation</label><select id="ddAllocationType"><option value="remaining">Remaining balance</option><option value="percentage">Percentage</option><option value="fixed_amount">Fixed amount</option></select></div>
+<div><label>Allocation Value</label><input id="ddAllocationValue" type="number" min="0" step="0.01" value="100"></div>
+<div class="dd-full"><button class="light" type="button" id="ddSaveButton" onclick="saveEmployeeEditDirectDeposit()">Save Direct Deposit</button></div>
+</div>
+</div>
 
 <div class="modal-actions">
 
@@ -1756,5 +1780,68 @@ if(
 
 </script>
 
+<script id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">
+const DASH_DD_URL='https://roywoofgypiyoobdcrwx.supabase.co';
+const DASH_DD_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+async function dashDdApi(action,payload={}){
+  if(!supabaseClient) throw new Error('Supabase is not initialized.');
+  const session=await getAdminSession();
+  const r=await fetch(DASH_DD_URL+'/functions/v1/employee-payroll-admin',{method:'POST',headers:{apikey:DASH_DD_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.error) throw new Error(typeof j.error==='string'?j.error:'Direct deposit request failed.');
+  return j.data||{};
+}
+async function loadEmployeeEditDirectDeposit(id){
+  const status=document.getElementById('ddSavedStatus');
+  if(!status)return;
+  try{
+    status.textContent='Loading direct deposit settings...';
+    const d=await dashDdApi('list');
+    const x=(d.direct_deposit||{})[id]||{};
+    document.getElementById('ddPaymentMethod').value=x.payment_method||'not_set_up';
+    document.getElementById('ddStatus').value=x.status||'not_set_up';
+    document.getElementById('ddBankName').value=x.bank_name||'';
+    document.getElementById('ddAccountType').value=x.account_type||'checking';
+    document.getElementById('ddRoutingNumber').value='';
+    document.getElementById('ddAccountNumber').value='';
+    document.getElementById('ddAccountNumberConfirm').value='';
+    document.getElementById('ddAllocationType').value=x.allocation_type||'remaining';
+    document.getElementById('ddAllocationValue').value=x.allocation_value??100;
+    status.textContent=x.masked_account?'Saved account: '+x.masked_account+' · Full account information is hidden.':'No bank account is currently stored.';
+  }catch(e){status.textContent='Unable to load direct deposit settings: '+e.message;}
+}
+async function saveEmployeeEditDirectDeposit(){
+  const id=document.getElementById('employeeId')?.value;
+  if(!id) return alert('Select an employee first.');
+  const method=document.getElementById('ddPaymentMethod').value;
+  const account=document.getElementById('ddAccountNumber').value.trim();
+  const confirm=document.getElementById('ddAccountNumberConfirm').value.trim();
+  const routing=document.getElementById('ddRoutingNumber').value.trim();
+  if(method==='direct_deposit' && (account||confirm||routing)){
+    if(account!==confirm) return alert('Account numbers do not match.');
+    if(!/^\d{9}$/.test(routing)) return alert('Routing number must contain 9 digits.');
+    if(!/^\d{4,17}$/.test(account)) return alert('Account number must contain 4 to 17 digits.');
+  }
+  const allocation=Number(document.getElementById('ddAllocationValue').value||0);
+  if(document.getElementById('ddAllocationType').value==='percentage' && (allocation<0||allocation>100)) return alert('Percentage allocation must be between 0 and 100.');
+  const payload={employee_id:id,payment_method:method,status:document.getElementById('ddStatus').value,bank_name:document.getElementById('ddBankName').value.trim()||null,account_type:document.getElementById('ddAccountType').value,allocation_type:document.getElementById('ddAllocationType').value,allocation_value:allocation};
+  if(account||routing){payload.account_number=account;payload.routing_number=routing;}
+  try{
+    document.getElementById('ddSaveButton').disabled=true;
+    await dashDdApi('save_direct_deposit',payload);
+    await loadEmployeeEditDirectDeposit(id);
+    showMessage('Direct deposit settings saved.',true);
+  }catch(e){alert(e.message);}finally{document.getElementById('ddSaveButton').disabled=false;}
+}
+(function(){
+  const originalEdit=window.editEmployee;
+  if(typeof originalEdit==='function'){
+    window.editEmployee=function(id){
+      originalEdit(id);
+      setTimeout(function(){loadEmployeeEditDirectDeposit(id);},0);
+    };
+  }
+})();
+</script>
 </body>
 </html>
