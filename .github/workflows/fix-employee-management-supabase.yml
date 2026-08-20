@@ -11,13 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix Supabase browser loader
+      - name: Fix Supabase browser loader and add direct deposit edit link
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('employee-management.html')
           s=p.read_text()
           s=s.replace('https://unpkg.com/@supabase/supabase-js@2','https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2')
+          if 'Manage Direct Deposit' not in s:
+              s,n=re.subn(r'<div\s+class="modal-actions">','<div style="margin-top:18px"><button class="light" type="button" onclick="location.href=\'employee-direct-deposit.html?employee=\'+encodeURIComponent(document.getElementById(\'employeeId\').value)">Manage Direct Deposit</button></div>\n\n<div class="modal-actions">',s,count=1)
           p.write_text(s)
           PY
       - name: Commit fix
@@ -25,5 +28,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add employee-management.html
-          git diff --cached --quiet || git commit -m 'Fix Employee Management Supabase loader'
+          git diff --cached --quiet || git commit -m 'Add Manage Direct Deposit to employee edit'
           git push
