@@ -1,0 +1,34 @@
+name: Switch Admin Portal to v2
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/switch-admin-portal-v2.yml'
+permissions:
+  contents: write
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Switch admin portal endpoint
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin-shell.html')
+          s=p.read_text()
+          old="/functions/v1/dash-admin-portal"
+          new="/functions/v1/dash-admin-portal-v2"
+          if old in s:
+              s=s.replace(old,new)
+              p.write_text(s)
+          else:
+              print('No old endpoint found; leaving file unchanged.')
+          PY
+      - name: Commit endpoint switch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin-shell.html
+          git diff --cached --quiet || git commit -m 'Use clean dash-admin-portal-v2 endpoint'
+          git push
