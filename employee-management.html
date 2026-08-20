@@ -8,6 +8,15 @@
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}header{height:70px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 28px}.brand{font-size:22px;font-weight:800;letter-spacing:2px}.tag{font-size:12px;background:#26364a;padding:7px 12px;border-radius:20px}main{max-width:1400px;margin:auto;padding:28px}.title{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}.title h1{margin:0}.title p{color:#64748b;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:8px;padding:10px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer}button:hover{opacity:.9}.light{background:#fff;color:#17202a;border:1px solid #d7dde5}.danger{background:#fff;color:#b91c1c;border:1px solid #fecaca}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;overflow:hidden}.panel-head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center}.panel-body{padding:20px}.notice{background:#eff6ff;border-left:4px solid #3b82f6;padding:14px;border-radius:7px;font-size:13px;margin-bottom:20px}.message{display:none;padding:12px;border-radius:8px;margin-bottom:15px}.message.success{display:block;background:#ecfdf5;color:#065f46}.message.error{display:block;background:#fef2f2;color:#991b1b}.loading,.empty{text-align:center;padding:40px;color:#64748b}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:950px}th,td{text-align:left;padding:12px;border-bottom:1px solid #e2e7ed;font-size:13px}th{font-size:11px;color:#64748b;text-transform:uppercase;background:#f8fafc}.small-text{display:block;font-size:11px;color:#64748b;margin-top:3px}.pill{font-size:11px;padding:5px 8px;border-radius:20px;background:#f1f5f9}.active{background:#dcfce7;color:#166534}.inactive{background:#fee2e2;color:#991b1b}.modal{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}.modal.show{display:flex}.modal-box{background:#fff;width:min(760px,100%);border-radius:14px;padding:24px;max-height:90vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label,.dd label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input,.field select,.field textarea,.dd input,.dd select{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;font-size:14px;background:#fff}.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.setup-box{background:#f8fafc;border:1px solid #dbe3ec;border-radius:9px;padding:14px;margin-top:15px}.setup-box input{width:100%;padding:10px;border:1px solid #ccd4de;border-radius:7px;margin-top:7px}.dd-section{margin-top:18px;padding:16px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}.dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.dd-full{grid-column:1/-1}.dd-status{font-size:12px;color:#64748b;margin-top:8px}@media(max-width:800px){main{padding:18px}.title{flex-direction:column;align-items:flex-start}.form,.dd-grid{grid-template-columns:1fr}.full,.dd-full{grid-column:auto}}
 </style>
+<style id="DASH_EMPLOYEE_DD_STYLE">
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT{margin-top:18px;padding:16px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fafc}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT input,#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT select{width:100%;padding:9px;border:1px solid #ccd4de;border-radius:7px;background:#fff}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-full{grid-column:1/-1}
+#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-status{font-size:12px;color:#64748b;margin-top:8px}
+@media(max-width:800px){#DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT .dd-grid{grid-template-columns:1fr}.dd-full{grid-column:auto}}
+</style>
 </head>
 <body>
 <header><div class="brand">DASH <span style="font-size:13px;letter-spacing:0;font-weight:400">Services · Employee Management</span></div><div class="tag">SUPER ADMIN</div></header>
@@ -49,6 +58,22 @@
 </div>
 </div>
 <div style="margin-top:18px"><button class="light" type="button" onclick="openDirectDepositPage()">Manage Direct Deposit</button></div>
+<div id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">
+<b>Direct Deposit</b>
+<div class="dd-status" id="ddSavedStatus">Loading direct deposit settings...</div>
+<div class="dd-grid">
+<div><label>Payment Method</label><select id="ddPaymentMethod"><option value="not_set_up">Not Set Up</option><option value="direct_deposit">Direct Deposit</option><option value="paper_check">Paper Check</option><option value="other">Other</option></select></div>
+<div><label>Status</label><select id="ddStatus"><option value="not_set_up">Not Set Up</option><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+<div><label>Bank Name</label><input id="ddBankName" autocomplete="off"></div>
+<div><label>Account Type</label><select id="ddAccountType"><option value="checking">Checking</option><option value="savings">Savings</option></select></div>
+<div><label>Routing Number</label><input id="ddRoutingNumber" inputmode="numeric" maxlength="9" autocomplete="off"></div>
+<div><label>Account Number</label><input id="ddAccountNumber" inputmode="numeric" maxlength="17" autocomplete="off"></div>
+<div><label>Confirm Account Number</label><input id="ddAccountNumberConfirm" inputmode="numeric" maxlength="17" autocomplete="off"></div>
+<div><label>Deposit Allocation</label><select id="ddAllocationType"><option value="remaining">Remaining balance</option><option value="percentage">Percentage</option><option value="fixed_amount">Fixed amount</option></select></div>
+<div><label>Allocation Value</label><input id="ddAllocationValue" type="number" min="0" step="0.01" value="100"></div>
+<div class="dd-full"><button class="light" type="button" id="ddSaveButton" onclick="saveEmployeeEditDirectDeposit()">Save Direct Deposit</button></div>
+</div>
+</div>
 <div class="modal-actions"><button class="light" type="button" onclick="closeEmployeeModal()">Cancel</button><button id="saveEmployeeButton" type="button" onclick="saveEmployee()">Add Employee</button></div>
 </div></div>
 
@@ -275,6 +300,69 @@ async function removeEmployee(id){if(!confirm('Remove '+id+'? The employee will 
 async function restoreEmployee(id){try{await employeeApi('restore',{employee_id:id});await loadEmployees();showMessage(id+' reactivated.')}catch(e){showMessage(e.message,false)}}
 
 if(initializeSupabase())loadEmployees();
+</script>
+<script id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">
+const DASH_DD_URL='https://roywoofgypiyoobdcrwx.supabase.co';
+const DASH_DD_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
+async function dashDdApi(action,payload={}){
+  if(!supabaseClient) throw new Error('Supabase is not initialized.');
+  const session=await getAdminSession();
+  const r=await fetch(DASH_DD_URL+'/functions/v1/employee-payroll-admin',{method:'POST',headers:{apikey:DASH_DD_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.error) throw new Error(typeof j.error==='string'?j.error:'Direct deposit request failed.');
+  return j.data||{};
+}
+async function loadEmployeeEditDirectDeposit(id){
+  const status=document.getElementById('ddSavedStatus');
+  if(!status)return;
+  try{
+    status.textContent='Loading direct deposit settings...';
+    const d=await dashDdApi('list');
+    const x=(d.direct_deposit||{})[id]||{};
+    document.getElementById('ddPaymentMethod').value=x.payment_method||'not_set_up';
+    document.getElementById('ddStatus').value=x.status||'not_set_up';
+    document.getElementById('ddBankName').value=x.bank_name||'';
+    document.getElementById('ddAccountType').value=x.account_type||'checking';
+    document.getElementById('ddRoutingNumber').value='';
+    document.getElementById('ddAccountNumber').value='';
+    document.getElementById('ddAccountNumberConfirm').value='';
+    document.getElementById('ddAllocationType').value=x.allocation_type||'remaining';
+    document.getElementById('ddAllocationValue').value=x.allocation_value??100;
+    status.textContent=x.masked_account?'Saved account: '+x.masked_account+' · Full account information is hidden.':'No bank account is currently stored.';
+  }catch(e){status.textContent='Unable to load direct deposit settings: '+e.message;}
+}
+async function saveEmployeeEditDirectDeposit(){
+  const id=document.getElementById('employeeId')?.value;
+  if(!id) return alert('Select an employee first.');
+  const method=document.getElementById('ddPaymentMethod').value;
+  const account=document.getElementById('ddAccountNumber').value.trim();
+  const confirm=document.getElementById('ddAccountNumberConfirm').value.trim();
+  const routing=document.getElementById('ddRoutingNumber').value.trim();
+  if(method==='direct_deposit' && (account||confirm||routing)){
+    if(account!==confirm) return alert('Account numbers do not match.');
+    if(!/^\d{9}$/.test(routing)) return alert('Routing number must contain 9 digits.');
+    if(!/^\d{4,17}$/.test(account)) return alert('Account number must contain 4 to 17 digits.');
+  }
+  const allocation=Number(document.getElementById('ddAllocationValue').value||0);
+  if(document.getElementById('ddAllocationType').value==='percentage' && (allocation<0||allocation>100)) return alert('Percentage allocation must be between 0 and 100.');
+  const payload={employee_id:id,payment_method:method,status:document.getElementById('ddStatus').value,bank_name:document.getElementById('ddBankName').value.trim()||null,account_type:document.getElementById('ddAccountType').value,allocation_type:document.getElementById('ddAllocationType').value,allocation_value:allocation};
+  if(account||routing){payload.account_number=account;payload.routing_number=routing;}
+  try{
+    document.getElementById('ddSaveButton').disabled=true;
+    await dashDdApi('save_direct_deposit',payload);
+    await loadEmployeeEditDirectDeposit(id);
+    showMessage('Direct deposit settings saved.',true);
+  }catch(e){alert(e.message);}finally{document.getElementById('ddSaveButton').disabled=false;}
+}
+(function(){
+  const originalEdit=window.editEmployee;
+  if(typeof originalEdit==='function'){
+    window.editEmployee=function(id){
+      originalEdit(id);
+      setTimeout(function(){loadEmployeeEditDirectDeposit(id);},0);
+    };
+  }
+})();
 </script>
 </body>
 </html>
