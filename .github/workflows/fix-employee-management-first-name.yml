@@ -1,0 +1,65 @@
+name: Fix Employee Management First Name Save
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix employee edit save and duplicate direct deposit markup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('employee-management.html')
+          s=p.read_text()
+          start=s.find('\n<div class="dd">\n<b>Direct Deposit</b>')
+          marker=s.find('\n<div id="DASH_EMPLOYEE_EDIT_DIRECT_DEPOSIT">', start)
+          if start >= 0 and marker > start:
+              s=s[:start]+'\n'+s[marker:]
+          new_save=r'''async function saveEmployee(){
+              try{
+                  const wasEditing=!!editingEmployeeId;
+                  const existing=wasEditing ? employees.find(function(item){return String(item.employee_id)===String(editingEmployeeId);}) : null;
+                  const firstNameInput=document.getElementById('firstName');
+                  const firstName=String(firstNameInput?.value ?? '').trim() || String(existing?.first_name ?? '').trim();
+                  if(!firstName) throw new Error('First name is required.');
+                  const employee={
+                      employee_id:String(document.getElementById('employeeId')?.value || editingEmployeeId || '').trim().toUpperCase(),
+                      first_name:firstName,
+                      last_name:String(document.getElementById('lastName')?.value ?? '').trim() || (existing?.last_name || null),
+                      phone:String(document.getElementById('phone')?.value ?? '').trim() || (existing?.phone || null),
+                      position:String(document.getElementById('position')?.value ?? '').trim() || (existing?.position || null),
+                      hire_date:String(document.getElementById('hireDate')?.value ?? '').trim() || (existing?.hire_date || null),
+                      hourly_pay:document.getElementById('hourlyPay')?.value === '' ? (existing?.hourly_pay_rate ?? null) : Number(document.getElementById('hourlyPay').value),
+                      notes:String(document.getElementById('notes')?.value ?? '').trim() || (existing?.notes || null),
+                      employment_status:document.getElementById('employmentStatus')?.value || existing?.employment_status || 'active'
+                  };
+                  if(!employee.employee_id) throw new Error('Employee ID is required.');
+                  let result;
+                  if(wasEditing) result=await employeeApi('update',{old_employee_id:editingEmployeeId,...employee});
+                  else result=await employeeApi('add',employee);
+                  closeEmployeeModal();
+                  await loadEmployees();
+                  if(!wasEditing && result?.setup_url) showSetupLink(result.setup_url,employee.employee_id);
+                  else showMessage(wasEditing ? 'Employee record updated.' : 'Employee record saved.');
+              }catch(error){showMessage(error?.message || 'Unable to save employee record.',false);}
+          }'''
+          pattern=r'async function saveEmployee\(\)\{.*?\n\}\n\n/\* --------------------------------\n   PASSWORD SETUP / RESET'
+          replacement=new_save+'\n\n/* --------------------------------\n   PASSWORD SETUP / RESET'
+          s,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit('Could not locate saveEmployee function')
+          p.write_text(s)
+          PY
+      - name: Commit patched employee management
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add employee-management.html
+          git diff --cached --quiet || git commit -m 'Fix employee edit first name save validation'
+          git push
