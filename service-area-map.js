@@ -6,14 +6,15 @@ function updateHomepageCopy(){
  paragraphs.forEach(function(p){if(p.textContent.indexOf('DASH Services is based around the Myrtle Beach and Conway area')!==-1||p.textContent.indexOf('The homepage keeps this simple')!==-1){p.innerHTML='DASH Services is proud to serve Myrtle Beach, Conway, and communities throughout the surrounding Grand Strand area. We’re committed to providing dependable, convenient service wherever you need us.<br><br>From everyday service needs to jobs that require a little more travel, we’re here to make the process simple from start to finish.<br><br>Explore our services and find the right option for you on our <a href="book-service.html?v=20260816" style="color:#c62828;font-weight:900;text-decoration:underline">Book a Service</a> page.';}});
  var hero=document.querySelector('.hero-inner');
  if(hero){
-   var title=hero.querySelector('h1'), location=hero.querySelector('.location');
-   if(title&&location){
+   var title=hero.querySelector('h1'), location=hero.querySelector('.location'), subline=hero.querySelector('.subline');
+   if(title&&location&&subline){
+     subline.textContent='Whatever service you need, DASH Services is here to make the process simple, clear, and convenient. Explore our services, find the right option for you, and get started with a customer-first experience from the very beginning.';
      location.innerHTML='Serving Myrtle Beach &amp; surrounding areas';
      location.classList.add('hero-location-updated');
      var est=hero.querySelector('.hero-est');
      if(!est){est=document.createElement('div');est.className='hero-est';est.textContent='EST. 2026';title.insertAdjacentElement('afterend',est);}
      var style=document.getElementById('dash-hero-est-style');
-     if(!style){style=document.createElement('style');style.id='dash-hero-est-style';style.textContent='.hero-est{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#f2b5b5;margin:-10px 0 24px}.hero-location-updated{margin-top:18px;color:#f2b5b5;font-size:14px;font-weight:800;letter-spacing:.4px}';document.head.appendChild(style);}
+     if(!style){style=document.createElement('style');style.id='dash-hero-est-style';style.textContent='.hero h1{margin-bottom:8px}.hero-est{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#f2b5b5;margin:0 0 22px}.hero-location-updated{margin-top:18px;color:#f2b5b5;font-size:14px;font-weight:800;letter-spacing:.4px}';document.head.appendChild(style);}
    }
  }
  var welcome=document.querySelector('.welcome');
