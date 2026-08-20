@@ -1,0 +1,39 @@
+name: Add Tax Center Link
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch-admin:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Tax Center link
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin-production.html')
+          s=p.read_text(encoding='utf-8')
+          marker="<button onclick=\"show('finances',this)\">Company Finances</button>"
+          link="<button onclick=\"location.href='admin-tax-center.html'\">Tax & Owner Draw</button>"
+          if link not in s:
+              if marker not in s:
+                  raise SystemExit('Company Finances navigation marker not found')
+              s=s.replace(marker, marker+'\n'+link, 1)
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('Tax Center link already present')
+          PY
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add Tax and Owner Draw to Finance tab"
+            git push
+          fi
