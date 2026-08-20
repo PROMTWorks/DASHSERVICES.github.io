@@ -18,6 +18,12 @@
     host.innerHTML='';
     host.className='service-map google-service-map';
 
+    // Update the homepage service-area introduction without changing the booking page.
+    var intro=document.querySelector('.visual-intro-copy p');
+    if(intro){
+      intro.innerHTML='DASH Services is proud to serve Myrtle Beach, Conway, and communities throughout the surrounding Grand Strand area. We’re committed to providing dependable, convenient service wherever you need us.<br><br>From everyday service needs to jobs that require a little more travel, we’re here to make the process simple from start to finish.<br><br>Explore our services and find the right option for you on our <a href="book-service.html?v=20260816" style="color:#c62828;font-weight:900;text-decoration:underline">Book a Service</a> page.';
+    }
+
     var mapEl=document.createElement('div');
     mapEl.className='google-map-canvas';
     host.appendChild(mapEl);
