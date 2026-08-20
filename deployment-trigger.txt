@@ -1,2 +1,2 @@
 DASH Services deployment refresh
-Updated August 20, 2026 to trigger a fresh GitHub Pages deployment after service-content updates.
+Forced August 20, 2026 refresh after restoring the full All Services page so GitHub Pages serves the current main version.
