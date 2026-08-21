@@ -57,21 +57,13 @@ Audit history will populate after secure authentication is implemented.
 </div>
 
 <div class="cards security-contact-cards">
-
 <div class="card security-contact-card"><div class="label">📹 PROPERTY SECURITY</div><div class="value security-contact-status" id="securityStatus-property">Not configured yet</div><div class="muted" id="securitySummary-property"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('property','Property Security')">Add / Edit</button></div>
-
 <div class="card security-contact-card"><div class="label">🚨 ALARM / MONITORING COMPANY</div><div class="value security-contact-status" id="securityStatus-alarm">Not configured yet</div><div class="muted" id="securitySummary-alarm"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('alarm','Alarm / Monitoring Company')">Add / Edit</button></div>
-
 <div class="card security-contact-card"><div class="label">🔐 ACCESS CONTROL PROVIDER</div><div class="value security-contact-status" id="securityStatus-access">Not configured yet</div><div class="muted" id="securitySummary-access"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('access','Access Control Provider')">Add / Edit</button></div>
-
 <div class="card security-contact-card"><div class="label">🚗 COMPANY VEHICLE GPS TRACKING</div><div class="value security-contact-status" id="securityStatus-gps">Not configured yet</div><div class="muted" id="securitySummary-gps"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('gps','Company Vehicle GPS Tracking')">Add / Edit</button></div>
-
 <div class="card security-contact-card"><div class="label">📹 COMPANY VEHICLE DASH CAMERAS</div><div class="value security-contact-status" id="securityStatus-dashcam">Not configured yet</div><div class="muted" id="securitySummary-dashcam"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('dashcam','Company Vehicle Dash Cameras')">Add / Edit</button></div>
-
 <div class="card security-contact-card"><div class="label">📞 EMERGENCY & SECURITY CONTACTS</div><div class="value security-contact-status" id="securityStatus-emergency">Not configured yet</div><div class="muted" id="securitySummary-emergency"></div><button class="btn" style="margin-top:14px" onclick="openSecurityContact('emergency','Emergency & Security Contacts')">Add / Edit</button></div>
-
-<div class="card security-contact-card" style="grid-column:1/-1"><div class="label">🚚 U-HAUL CONTACT</div><div class="value security-contact-status" id="securityStatus-uhaul">U-Haul</div><div class="muted" id="securitySummary-uhaul">1-800-GO-U-HAUL · 1-800-468-4285 · General customer service & reservations</div><div class="toolbar" style="margin-top:14px"><button class="btn" onclick="openSecurityContact('uhaul','U-Haul Contact')">View / Edit</button><a class="btn light" href="https://www.uhaul.com/Contact/" target="_blank" rel="noopener">U-Haul Contact Page</a></div></div>
-
+<div class="card security-contact-card" style="grid-column:1/-1"><div class="label">🚚 U-HAUL CONTACT</div><div class="value security-contact-status" id="securityStatus-uhaul">U-Haul</div><div class="muted" id="securitySummary-uhaul">Phone: Not entered · Contact: Not entered</div><div class="toolbar" style="margin-top:14px"><button class="btn" onclick="openSecurityContact('uhaul','U-Haul Contact')">View / Edit</button><a class="btn light" href="https://www.uhaul.com/Contact/" target="_blank" rel="noopener">U-Haul Contact Page</a></div></div>
 </div>
 
 </section>
@@ -89,72 +81,6 @@ Audit history will populate after secure authentication is implemented.
           if 'id="security-contact-styles"' not in s:
               s = s.replace('</head>', style + '</head>', 1)
 
-          script = r'''
-<script id="security-contact-script">
-(function(){
-  const SUPABASE_URL = window.SUPABASE_URL || '';
-  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
-  const defaults = {
-    uhaul: {category:'uhaul', title:'U-Haul Contact', company_name:'U-Haul', phone:'1-800-468-4285', website:'https://www.uhaul.com/Contact/', notes:'General U-Haul customer service and reservations. Roadside Assistance: 1-800-528-0355.'}
-  };
-  window.securityContactData = defaults;
-
-  function escapeHtml(v){return String(v||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));}
-  function refreshSecurityCards(data){
-    window.securityContactData = Object.assign({}, defaults, data||{});
-    ['property','alarm','access','gps','dashcam','emergency','uhaul'].forEach(cat=>{
-      const d=window.securityContactData[cat];
-      const status=document.getElementById('securityStatus-'+cat);
-      const summary=document.getElementById('securitySummary-'+cat);
-      if(!status||!summary)return;
-      if(d && (d.company_name||d.contact_name||d.phone||d.email||d.notes)){
-        status.textContent=d.company_name||d.contact_name||'Configured';
-        summary.textContent=[d.contact_name,d.phone,d.email].filter(Boolean).join(' · ') || 'Contact information saved';
-      } else { status.textContent='Not configured yet'; summary.textContent=''; }
-    });
-  }
-  window.refreshSecurityCards=refreshSecurityCards;
-
-  window.openSecurityContact=function(category,title){
-    const d=window.securityContactData[category]||{category};
-    let modal=document.getElementById('securityContactModal');
-    if(!modal){
-      modal=document.createElement('div'); modal.id='securityContactModal'; modal.className='modal';
-      modal.innerHTML='<div class="modalbox"><div class="modalhead"><h2 id="securityContactTitle"></h2><button class="close" onclick="document.getElementById(\'securityContactModal\').classList.remove(\'show\')">Close</button></div><div class="form"><div class="field"><label>Company / Provider</label><input id="sc_company"></div><div class="field"><label>Contact Name</label><input id="sc_contact"></div><div class="field"><label>Phone</label><input id="sc_phone"></div><div class="field"><label>Email</label><input id="sc_email"></div><div class="field full"><label>Website</label><input id="sc_website"></div><div class="field full"><label>Address</label><input id="sc_address"></div><div class="field full"><label>Notes</label><textarea id="sc_notes"></textarea></div></div><div class="actions"><button class="btn light" onclick="document.getElementById(\'securityContactModal\').classList.remove(\'show\')">Cancel</button><button class="btn" id="sc_save">Save Contact</button></div></div>';
-      document.body.appendChild(modal);
-    }
-    document.getElementById('securityContactTitle').textContent=title;
-    document.getElementById('sc_company').value=d.company_name||'';
-    document.getElementById('sc_contact').value=d.contact_name||'';
-    document.getElementById('sc_phone').value=d.phone||'';
-    document.getElementById('sc_email').value=d.email||'';
-    document.getElementById('sc_website').value=d.website||'';
-    document.getElementById('sc_address').value=d.address||'';
-    document.getElementById('sc_notes').value=d.notes||'';
-    document.getElementById('sc_save').onclick=async function(){
-      const payload={category,title,company_name:document.getElementById('sc_company').value.trim(),contact_name:document.getElementById('sc_contact').value.trim(),phone:document.getElementById('sc_phone').value.trim(),email:document.getElementById('sc_email').value.trim(),website:document.getElementById('sc_website').value.trim(),address:document.getElementById('sc_address').value.trim(),notes:document.getElementById('sc_notes').value.trim(),active:true};
-      if(window.supabaseClient){
-        const {error}=await window.supabaseClient.from('security_activity_contacts').upsert(payload,{onConflict:'category'});
-        if(error){alert('Could not save contact: '+error.message);return;}
-      } else { window.securityContactData[category]=payload; }
-      window.securityContactData[category]=payload; refreshSecurityCards(window.securityContactData); modal.classList.remove('show');
-    };
-    modal.classList.add('show');
-  };
-
-  async function loadSecurityContacts(){
-    if(!window.supabaseClient){refreshSecurityCards(defaults);return;}
-    const {data,error}=await window.supabaseClient.from('security_activity_contacts').select('*').eq('active',true);
-    if(!error){const map={};(data||[]).forEach(r=>map[r.category]=r);refreshSecurityCards(map);} else refreshSecurityCards(defaults);
-  }
-  window.loadSecurityContacts=loadSecurityContacts;
-  setTimeout(loadSecurityContacts,500);
-})();
-</script>
-'''
-          if 'id="security-contact-script"' not in s:
-              s = s.replace('</body>', script + '\n</body>', 1)
-
           p.write_text(s, encoding='utf-8')
           PY
 
@@ -164,5 +90,5 @@ Audit history will populate after secure authentication is implemented.
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin-production.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Add security contacts and U-Haul contact"
+          git commit -m "Keep U-Haul phone field blank"
           git push
