@@ -485,30 +485,30 @@ with Super Admin retaining full control.
 </div>
 
 
-<div class="panel" id="employeePayCapacityPanel">
-  <div class="head"><div><h2>Employee Pay Capacity</h2><div class="mini">Super Admin financial planning tool</div></div><span class="pill">Super Admin Only</span></div>
-  <div class="body">
-    <div class="notice"><b>Planning estimate:</b> This calculator estimates the highest hourly wage you can afford while protecting your planned owner draw and minimum company profit. It is not a payroll, tax, or accounting determination.</div>
-    <div class="form">
-      <div class="field"><label>Monthly Revenue</label><input id="epcRevenue" type="number" min="0" step="0.01" value="0"></div>
-      <div class="field"><label>Monthly Operating Expenses (before this employee)</label><input id="epcExpenses" type="number" min="0" step="0.01" value="0"></div>
-      <div class="field"><label>Planned Monthly Owner Draw</label><input id="epcOwnerDraw" type="number" min="0" step="0.01" value="0"></div>
-      <div class="field"><label>Minimum Monthly Company Profit</label><input id="epcProfit" type="number" min="0" step="0.01" value="0"></div>
-      <div class="field"><label>Employee Hours / Week</label><input id="epcHours" type="number" min="0" max="168" step="0.25" value="40"></div>
-      <div class="field"><label>Expected Overtime Hours / Week</label><input id="epcOT" type="number" min="0" max="168" step="0.25" value="0"></div>
-      <div class="field"><label>Employer Payroll Burden %</label><input id="epcBurden" type="number" min="0" max="100" step="0.1" value="10"></div>
-      <div class="field"><label>Current Hourly Wage</label><input id="epcCurrent" type="number" min="0" step="0.01" value="0"></div>
-    </div>
-    <div class="cards" style="margin-top:20px">
-      <div class="card"><div class="label">MAX WAGE — PROTECT OWNER DRAW + PROFIT</div><div class="value" id="epcSafe">$0.00/hr</div><div class="muted">Uses regular hours plus overtime at 1.5× pay.</div></div>
-      <div class="card"><div class="label">MAX WAGE — BEFORE OWNER DRAW IS AFFECTED</div><div class="value" id="epcDraw">$0.00/hr</div><div class="muted">Protects the planned owner draw only.</div></div>
-      <div class="card"><div class="label">PROJECTED MONTHLY EMPLOYEE COST</div><div class="value" id="epcCost">$0.00</div><div class="muted">Based on the current wage entered.</div></div>
-      <div class="card"><div class="label">AVAILABLE MONTHLY BUFFER</div><div class="value" id="epcBuffer">$0.00</div><div class="muted">After expenses, owner draw, and minimum profit.</div></div>
-    </div>
-    <div class="security" id="epcMessage">Enter your real business numbers above to calculate pay capacity.</div>
-    <div class="actions"><button class="btn" type="button" onclick="calculateEmployeePayCapacity()">Calculate Pay Capacity</button><button class="btn light" type="button" onclick="document.querySelectorAll('#employeePayCapacityPanel input').forEach((e,i)=>e.value=['0','0','0','0','40','0','10','0'][i]);calculateEmployeePayCapacity()">Reset</button></div>
-  </div>
+<div class="panel" id="companyPayrollCapacityPanel">
+<div class="head"><div><h2>Company-Wide Employee Pay Capacity</h2><div class="mini">Super Admin financial planning tool</div></div><span class="pill">Super Admin Only</span></div>
+<div class="body">
+<div class="notice"><b>Plain-English goal:</b> Estimate the highest hourly rate you could pay <b>every employee</b> at the same rate while still protecting your minimum owner draw and minimum company profit. This is a planning estimate, not payroll, tax, or accounting advice.</div>
+<div class="form">
+<div class="field"><label>Monthly Revenue</label><input id="cpcRevenue" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Monthly Non-Payroll Operating Expenses</label><input id="cpcExpenses" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Minimum Monthly Owner Draw</label><input id="cpcOwnerDraw" type="number" min="0" step="0.01" value="5000"></div>
+<div class="field"><label>Minimum Monthly Company Profit</label><input id="cpcProfit" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Number of Employees</label><input id="cpcEmployees" type="number" min="1" step="1" value="1"></div>
+<div class="field"><label>Average Hours / Employee / Week</label><input id="cpcHours" type="number" min="0" max="168" step="0.25" value="40"></div>
+<div class="field"><label>Average Overtime / Employee / Week</label><input id="cpcOT" type="number" min="0" max="168" step="0.25" value="0"></div>
+<div class="field"><label>Employer Payroll Burden %</label><input id="cpcBurden" type="number" min="0" max="100" step="0.1" value="10"></div>
+<div class="field full"><label>Current Average Hourly Wage</label><input id="cpcCurrent" type="number" min="0" step="0.01" value="0"></div>
 </div>
+<div class="cards" style="margin-top:20px">
+<div class="card"><div class="label">MAX HOURLY RATE FOR ALL EMPLOYEES</div><div class="value" id="cpcSafe">$0.00/hr</div><div class="muted">Same rate for every employee while protecting owner draw + minimum profit.</div></div>
+<div class="card"><div class="label">MAX HOURLY RATE BEFORE OWNER DRAW IS AFFECTED</div><div class="value" id="cpcDraw">$0.00/hr</div><div class="muted">Company-wide ceiling if the minimum profit target is allowed to fall.</div></div>
+<div class="card"><div class="label">CURRENT TOTAL MONTHLY PAYROLL COST</div><div class="value" id="cpcCost">$0.00</div><div class="muted">All employees at the current average wage, including payroll burden.</div></div>
+<div class="card"><div class="label">PAYROLL ROOM REMAINING</div><div class="value" id="cpcBuffer">$0.00</div><div class="muted">Money available for payroll after expenses, owner draw, and minimum profit.</div></div>
+</div>
+<div class="security" id="cpcMessage">Enter your real company numbers above to calculate the company-wide pay ceiling.</div>
+<div class="actions"><button class="btn" type="button" onclick="calculateCompanyPayrollCapacity()">Calculate Company Pay Capacity</button><button class="btn light" type="button" onclick="resetCompanyPayrollCapacity()">Reset</button></div>
+</div></div>
 </section>
 
 
@@ -1906,6 +1906,27 @@ function calculateEmployeePayCapacity(){
   });
   load();
 })();
+</script>
+<script>
+function cpcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
+function calculateCompanyPayrollCapacity(){
+  const revenue=cpcNum('cpcRevenue'),expenses=cpcNum('cpcExpenses'),draw=cpcNum('cpcOwnerDraw'),profit=cpcNum('cpcProfit');
+  const employees=Math.max(1,Math.floor(cpcNum('cpcEmployees'))),hours=cpcNum('cpcHours'),ot=cpcNum('cpcOT'),burden=cpcNum('cpcBurden')/100,current=cpcNum('cpcCurrent');
+  const paidHours=(hours+ot*1.5)*52/12, factor=paidHours*employees*(1+burden);
+  const buffer=Math.max(0,revenue-expenses-draw-profit), drawBuffer=Math.max(0,revenue-expenses-draw);
+  const safe=factor?buffer/factor:0, drawMax=factor?drawBuffer/factor:0, cost=current*factor;
+  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('cpcSafe').textContent=fmt(safe)+'/hr';
+  document.getElementById('cpcDraw').textContent=fmt(drawMax)+'/hr';
+  document.getElementById('cpcCost').textContent=fmt(cost);
+  document.getElementById('cpcBuffer').textContent=fmt(buffer);
+  const msg=document.getElementById('cpcMessage');
+  if(revenue<=0)msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';
+  else if(current>safe)msg.textContent='Warning: the current average wage is above the company-wide safe maximum.';
+  else if(current>drawMax)msg.textContent='Warning: the current average wage is above the owner-draw protection limit.';
+  else msg.textContent='Current average wage is within the company-wide owner-draw and minimum-profit target.';
+}
+function resetCompanyPayrollCapacity(){const v={cpcRevenue:0,cpcExpenses:0,cpcOwnerDraw:5000,cpcProfit:0,cpcEmployees:1,cpcHours:40,cpcOT:0,cpcBurden:10,cpcCurrent:0};Object.entries(v).forEach(([id,x])=>{const e=document.getElementById(id);if(e)e.value=x;});calculateCompanyPayrollCapacity();}
 </script>
 </body>
 </html>
