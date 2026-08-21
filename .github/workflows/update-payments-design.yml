@@ -11,7 +11,6 @@ permissions:
 # Apply the Payments redesign directly to admin-production.html.
 jobs:
   update-payments:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
