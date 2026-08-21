@@ -1,0 +1,73 @@
+name: Apply Payments Redesign
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Replace only the Payments section
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('admin-production.html')
+          s = p.read_text(encoding='utf-8')
+          start = s.find('<section id="payments"')
+          end = s.find('<section id="schedule"', start)
+          if start == -1 or end == -1:
+              raise SystemExit('Could not locate Payments section boundaries; file left unchanged.')
+          new = '''<section id="payments" class="section">
+
+<div class="title">
+<div>
+<h1>Payments</h1>
+<p>View, verify, track, and manage customer payments.</p>
+</div>
+<div class="toolbar"><button class="btn light" type="button">Export Payments</button></div>
+</div>
+
+<div class="notice"><b>Payment processing:</b> Payment records are ready for real customer transactions. A future payment processor can populate this area automatically without changing the admin layout.</div>
+
+<div class="cards">
+<div class="card"><div class="label">TOTAL RECEIVED</div><div class="value">$0.00</div><div class="muted">No completed payments</div></div>
+<div class="card"><div class="label">PENDING PAYMENTS</div><div class="value">$0.00</div><div class="muted">No payments awaiting confirmation</div></div>
+<div class="card"><div class="label">REFUNDS</div><div class="value">$0.00</div><div class="muted">No refunds recorded</div></div>
+<div class="card"><div class="label">FAILED PAYMENTS</div><div class="value">$0.00</div><div class="muted">No failed payments</div></div>
+</div>
+
+<div class="panel">
+<div class="head"><h2>Payment Records</h2><div class="toolbar"><span class="pill">Paid</span><span class="pill">Pending</span><span class="pill">Failed</span><span class="pill">Refunded</span></div></div>
+<div class="body"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:850px;font-size:13px"><thead><tr style="text-align:left;border-bottom:1px solid #e2e7ed"><th style="padding:11px 10px">Customer</th><th style="padding:11px 10px">Booking</th><th style="padding:11px 10px">Service</th><th style="padding:11px 10px">Amount</th><th style="padding:11px 10px">Payment Method</th><th style="padding:11px 10px">Status</th><th style="padding:11px 10px">Date</th><th style="padding:11px 10px">Action</th></tr></thead><tbody><tr><td colspan="8" style="padding:42px 20px;text-align:center;color:#64748b"><strong style="display:block;color:#334155;font-size:16px;margin-bottom:6px">No payments yet</strong>Customer payments will appear here once a real payment is received and recorded.</td></tr></tbody></table></div></div>
+</div>
+
+<div class="panel"><div class="head"><h2>Payment Details</h2></div><div class="body"><div class="grid2"><div class="security"><b>Payment ID</b><br><span class="muted">Available when a real payment is recorded.</span></div><div class="security"><b>Transaction ID</b><br><span class="muted">Provided by the connected payment processor.</span></div><div class="security"><b>Processor</b><br><span class="muted">Ready for future processor integration.</span></div><div class="security"><b>Refund Status</b><br><span class="muted">No refund activity recorded.</span></div></div></div></div>
+
+</section>
+
+
+'''
+          p.write_text(s[:start] + new + s[end:], encoding='utf-8')
+          PY
+
+      - name: Commit only if the Payments section changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          if git diff --cached --quiet; then
+            echo "Payments section already matches; nothing to commit."
+            exit 0
+          fi
+          git commit -m "Update admin Payments section"
+          git push origin HEAD:main
