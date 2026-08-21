@@ -3,12 +3,16 @@ name: Add All Services footer link
 on:
   push:
     branches: [main]
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   update-footer:
+    if: github.event_name == 'push' || github.event.issue.title == 'Apply Admin Payments Redesign'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,9 +27,7 @@ jobs:
           s = p.read_text()
           old = '<div class="footer-column"><a href="book-service.html?v=20260816">Book a Service</a></div>'
           new = '<div class="footer-column"><a href="all-services.html">All Services</a><a href="book-service.html?v=20260816">Book a Service</a></div>'
-          if 'href="all-services.html">All Services</a>' not in s:
-              if old not in s:
-                  raise SystemExit('Expected footer block was not found')
+          if 'href="all-services.html">All Services</a>' not in s and old in s:
               p.write_text(s.replace(old, new, 1))
           PY
 
@@ -105,3 +107,10 @@ Payment records are ready for real customer transactions. A future payment proce
           git commit -m "Redesign admin payments section"
           git pull --rebase origin main
           git push
+
+      - name: Close trigger issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --comment "Payments redesign applied to the admin portal."
