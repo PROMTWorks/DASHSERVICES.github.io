@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Add All Services to sitemap
         run: |
           python3 - <<'PY'
@@ -28,14 +29,79 @@ jobs:
                   raise SystemExit('Expected footer block was not found')
               p.write_text(s.replace(old, new, 1))
           PY
+
+      - name: Redesign admin Payments section
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('admin-production.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''<section id="payments" class="section">
+
+<div class="title">
+<div>
+<h1>Payments</h1>
+<p>Payment verification and future processor integration.</p>
+</div>
+</div>
+
+<div class="panel">
+<div class="body empty">
+<strong>No payment records</strong>
+Payment records will appear here when real customer payments are received and recorded.
+</div>
+</div>
+
+</section>'''
+          new = '''<section id="payments" class="section">
+
+<div class="title">
+<div>
+<h1>Payments</h1>
+<p>View, verify, track, and manage customer payments.</p>
+</div>
+<div class="toolbar">
+<button class="btn light" type="button">Export Payments</button>
+</div>
+</div>
+
+<div class="notice">
+<b>Payment processing:</b>
+Payment records are ready for real customer transactions. A future payment processor can populate this area automatically without changing the admin layout.
+</div>
+
+<div class="cards">
+<div class="card"><div class="label">TOTAL RECEIVED</div><div class="value">$0.00</div><div class="muted">No completed payments</div></div>
+<div class="card"><div class="label">PENDING PAYMENTS</div><div class="value">$0.00</div><div class="muted">No payments awaiting confirmation</div></div>
+<div class="card"><div class="label">REFUNDS</div><div class="value">$0.00</div><div class="muted">No refunds recorded</div></div>
+<div class="card"><div class="label">FAILED PAYMENTS</div><div class="value">$0.00</div><div class="muted">No failed payments</div></div>
+</div>
+
+<div class="panel">
+<div class="head"><h2>Payment Records</h2><div class="toolbar"><span class="pill">Paid</span><span class="pill">Pending</span><span class="pill">Failed</span><span class="pill">Refunded</span></div></div>
+<div class="body"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:850px;font-size:13px"><thead><tr style="text-align:left;border-bottom:1px solid #e2e7ed"><th style="padding:11px 10px">Customer</th><th style="padding:11px 10px">Booking</th><th style="padding:11px 10px">Service</th><th style="padding:11px 10px">Amount</th><th style="padding:11px 10px">Payment Method</th><th style="padding:11px 10px">Status</th><th style="padding:11px 10px">Date</th><th style="padding:11px 10px">Action</th></tr></thead><tbody><tr><td colspan="8" style="padding:42px 20px;text-align:center;color:#64748b"><strong style="display:block;color:#334155;font-size:16px;margin-bottom:6px">No payments yet</strong>Customer payments will appear here once a real payment is received and recorded.</td></tr></tbody></table></div></div>
+</div>
+
+<div class="panel"><div class="head"><h2>Payment Details</h2></div><div class="body"><div class="grid2"><div class="security"><b>Payment ID</b><br><span class="muted">Available when a real payment is recorded.</span></div><div class="security"><b>Transaction ID</b><br><span class="muted">Provided by the connected payment processor.</span></div><div class="security"><b>Processor</b><br><span class="muted">Ready for future processor integration.</span></div><div class="security"><b>Refund Status</b><br><span class="muted">No refund activity recorded.</span></div></div></div></div>
+
+</section>'''
+          if old in s:
+              p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          elif not ('TOTAL RECEIVED' in s and 'Payment Records' in s):
+              raise SystemExit('Expected Payments section was not found')
+          PY
+
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html admin-production.html
+          if [ -f .github/workflows/update-payments-design.yml ]; then
+            git rm .github/workflows/update-payments-design.yml
+          fi
           if git diff --cached --quiet; then
             echo "No changes needed"
             exit 0
           fi
-          git commit -m "Add All Services to footer sitemap"
+          git commit -m "Redesign admin payments section"
           git push
