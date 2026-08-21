@@ -15,6 +15,9 @@
   function load(){
     if(!document.querySelector('link[data-payments-design]')){const l=document.createElement('link');l.rel='stylesheet';l.href='payments-design.css?v=fleet1';l.dataset.paymentsDesign='1';document.head.appendChild(l)}
     renderPayments(); renderFleet();
+    const fleetScript=document.createElement('script');
+    fleetScript.src='fleet-design-v2.js?v=2';
+    document.head.appendChild(fleetScript);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
   window.renderDASHPayments=renderPayments; window.renderDASHFleet=renderFleet;
