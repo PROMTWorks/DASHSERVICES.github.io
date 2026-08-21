@@ -5,6 +5,7 @@ on:
     paths:
       - 'admin-role-guard.js'
       - 'admin-waitlist.js'
+      - 'admin-portal-tools.js'
       - '.github/workflows/install-admin-role-guard.yml'
   workflow_dispatch:
 permissions:
@@ -20,15 +21,16 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          modules=['admin-role-guard.js?v=20260821-3','admin-portal-tools.js?v=20260821-3']
           for name in ['admin-v2.html','admin-production.html']:
               p=Path(name)
               if not p.exists():
                   continue
               s=p.read_text(encoding='utf-8')
-              for src in ['admin-role-guard.js','admin-waitlist.js']:
-                  marker=src
-                  if marker not in s:
-                      tag=f'<script src="{src}?v=20260821"></script>\n'
+              for src in modules:
+                  filename=src.split('?')[0]
+                  if filename not in s:
+                      tag=f'<script src="{src}"></script>\n'
                       if '</body>' in s:
                           s=s.replace('</body>',tag+'</body>',1)
                       elif '</html>' in s:
@@ -46,5 +48,5 @@ jobs:
             echo 'No portal injection changes needed.'
             exit 0
           fi
-          git commit -m 'Connect admin wait list module'
+          git commit -m 'Install admin wait list and sign out tools'
           git push
