@@ -1798,6 +1798,32 @@ c=>({
 <script src="admin-portal-tools.js?v=20260821-3"></script>
 
 
+
+
+<script>
+function epcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
+function calculateEmployeePayCapacity(){
+  const revenue=epcNum('epcRevenue'), expenses=epcNum('epcExpenses'), draw=epcNum('epcOwnerDraw'), profit=epcNum('epcProfit');
+  const hours=epcNum('epcHours'), ot=epcNum('epcOT'), burden=epcNum('epcBurden')/100, current=epcNum('epcCurrent');
+  const regular=Math.max(0,hours*52/12), overtime=Math.max(0,ot*52/12);
+  const costFactor=((regular)+(overtime*1.5))*(1+burden);
+  const buffer=Math.max(0,revenue-expenses-draw-profit);
+  const drawBuffer=Math.max(0,revenue-expenses-draw);
+  const safe=costFactor?buffer/costFactor:0, drawMax=costFactor?drawBuffer/costFactor:0;
+  const monthlyCost=current*costFactor;
+  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('epcSafe').textContent=fmt(safe)+'/hr';
+  document.getElementById('epcDraw').textContent=fmt(drawMax)+'/hr';
+  document.getElementById('epcCost').textContent=fmt(monthlyCost);
+  document.getElementById('epcBuffer').textContent=fmt(buffer);
+  const msg=document.getElementById('epcMessage');
+  if(revenue<=0){msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';return;}
+  if(current>safe){msg.textContent='Warning: the current wage is above the estimated safe maximum and would reduce your planned owner draw and/or minimum profit.';}
+  else if(current>drawMax){msg.textContent='Warning: the current wage is above the owner-draw protection limit.';}
+  else{msg.textContent='Current wage is within the calculated owner-draw and minimum-profit target.';}
+}
+</script>
+
 <script id="DASH_EMPLOYEE_ADMIN_V4">
 (()=>{
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
@@ -1891,30 +1917,5 @@ c=>({
   load();
 })();
 </script>
-
-<script>
-function epcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
-function calculateEmployeePayCapacity(){
-  const revenue=epcNum('epcRevenue'), expenses=epcNum('epcExpenses'), draw=epcNum('epcOwnerDraw'), profit=epcNum('epcProfit');
-  const hours=epcNum('epcHours'), ot=epcNum('epcOT'), burden=epcNum('epcBurden')/100, current=epcNum('epcCurrent');
-  const regular=Math.max(0,hours*52/12), overtime=Math.max(0,ot*52/12);
-  const costFactor=((regular)+(overtime*1.5))*(1+burden);
-  const buffer=Math.max(0,revenue-expenses-draw-profit);
-  const drawBuffer=Math.max(0,revenue-expenses-draw);
-  const safe=costFactor?buffer/costFactor:0, drawMax=costFactor?drawBuffer/costFactor:0;
-  const monthlyCost=current*costFactor;
-  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('epcSafe').textContent=fmt(safe)+'/hr';
-  document.getElementById('epcDraw').textContent=fmt(drawMax)+'/hr';
-  document.getElementById('epcCost').textContent=fmt(monthlyCost);
-  document.getElementById('epcBuffer').textContent=fmt(buffer);
-  const msg=document.getElementById('epcMessage');
-  if(revenue<=0){msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';return;}
-  if(current>safe){msg.textContent='Warning: the current wage is above the estimated safe maximum and would reduce your planned owner draw and/or minimum profit.';}
-  else if(current>drawMax){msg.textContent='Warning: the current wage is above the owner-draw protection limit.';}
-  else{msg.textContent='Current wage is within the calculated owner-draw and minimum-profit target.';}
-}
-</script>
-
 </body>
 </html>
