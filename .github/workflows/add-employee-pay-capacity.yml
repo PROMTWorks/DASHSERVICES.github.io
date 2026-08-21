@@ -1,4 +1,4 @@
-name: Add Employee Pay Capacity
+name: Update Employee Pay Capacity
 
 on:
   push:
@@ -9,96 +9,89 @@ permissions:
   contents: write
 
 jobs:
-  add-pay-capacity:
+  update-pay-capacity:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Add company-wide Pay Capacity panel safely
+      - name: Replace existing pay calculator safely
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('admin-production.html')
           s=p.read_text(encoding='utf-8')
-          if 'id="companyPayrollCapacityPanel"' in s:
-              print('Company-wide Pay Capacity already installed; nothing to do.')
-              raise SystemExit(0)
-          start=s.find('<section id="finances" class="section">')
+          marker='<div class="panel" id="companyPayrollCapacityPanel">'
+          start=s.find(marker)
           if start < 0:
-              raise SystemExit('Company Finances section not found')
-          end=s.find('</section>', start)
+              start=s.find('<div class="panel" id="employeePayCapacityPanel">')
+          if start < 0:
+              raise SystemExit('Existing pay capacity panel not found')
+          end=s.find('</section>\n\n\n<section id="optimization"',start)
           if end < 0:
-              raise SystemExit('Company Finances section closing tag not found')
-          panel='''
-          <div class="panel" id="companyPayrollCapacityPanel">
-            <div class="head"><div><h2>Company-Wide Employee Pay Capacity</h2><div class="mini">Super Admin financial planning tool</div></div><span class="pill">Super Admin Only</span></div>
-            <div class="body">
-              <div class="notice"><b>Plain-English goal:</b> This calculator estimates the highest hourly rate you could pay <b>every employee</b> at the same rate while still protecting your minimum owner draw and minimum company profit. It is a planning estimate, not payroll, tax, or accounting advice.</div>
-              <div class="form">
-                <div class="field"><label>Monthly Revenue</label><input id="cpcRevenue" type="number" min="0" step="0.01" value="0"></div>
-                <div class="field"><label>Monthly Non-Payroll Operating Expenses</label><input id="cpcExpenses" type="number" min="0" step="0.01" value="0"></div>
-                <div class="field"><label>Minimum Monthly Owner Draw</label><input id="cpcOwnerDraw" type="number" min="0" step="0.01" value="5000"></div>
-                <div class="field"><label>Minimum Monthly Company Profit</label><input id="cpcProfit" type="number" min="0" step="0.01" value="0"></div>
-                <div class="field"><label>Number of Employees</label><input id="cpcEmployees" type="number" min="1" step="1" value="1"></div>
-                <div class="field"><label>Average Hours / Employee / Week</label><input id="cpcHours" type="number" min="0" max="168" step="0.25" value="40"></div>
-                <div class="field"><label>Average Overtime / Employee / Week</label><input id="cpcOT" type="number" min="0" max="168" step="0.25" value="0"></div>
-                <div class="field"><label>Employer Payroll Burden %</label><input id="cpcBurden" type="number" min="0" max="100" step="0.1" value="10"></div>
-                <div class="field full"><label>Current Average Hourly Wage</label><input id="cpcCurrent" type="number" min="0" step="0.01" value="0"></div>
-              </div>
-              <div class="cards" style="margin-top:20px">
-                <div class="card"><div class="label">MAX HOURLY RATE FOR ALL EMPLOYEES</div><div class="value" id="cpcSafe">$0.00/hr</div><div class="muted">Same rate for every employee while protecting owner draw + minimum profit.</div></div>
-                <div class="card"><div class="label">MAX HOURLY RATE BEFORE OWNER DRAW IS AFFECTED</div><div class="value" id="cpcDraw">$0.00/hr</div><div class="muted">Company-wide ceiling if the minimum profit target is allowed to fall.</div></div>
-                <div class="card"><div class="label">CURRENT TOTAL MONTHLY PAYROLL COST</div><div class="value" id="cpcCost">$0.00</div><div class="muted">All employees at the current average wage, including payroll burden.</div></div>
-                <div class="card"><div class="label">PAYROLL ROOM REMAINING</div><div class="value" id="cpcBuffer">$0.00</div><div class="muted">Money available for payroll after expenses, owner draw, and minimum profit.</div></div>
-              </div>
-              <div class="security" id="cpcMessage">Enter your real business numbers above to calculate the company-wide pay ceiling.</div>
-              <div class="actions"><button class="btn" type="button" onclick="calculateCompanyPayrollCapacity()">Calculate Company Pay Capacity</button><button class="btn light" type="button" onclick="resetCompanyPayrollCapacity()">Reset</button></div>
-            </div>
-          </div>
-          '''
-          s=s[:end]+panel+s[end:]
-          script='''
-          <script>
-          function cpcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
-          function calculateCompanyPayrollCapacity(){
-            const revenue=cpcNum('cpcRevenue'), expenses=cpcNum('cpcExpenses'), draw=cpcNum('cpcOwnerDraw'), profit=cpcNum('cpcProfit');
-            const employees=Math.max(1,Math.floor(cpcNum('cpcEmployees'))), hours=cpcNum('cpcHours'), ot=cpcNum('cpcOT'), burden=cpcNum('cpcBurden')/100, current=cpcNum('cpcCurrent');
-            const regularPerEmployee=hours*52/12, overtimePerEmployee=ot*52/12;
-            const monthlyPaidHoursPerEmployee=regularPerEmployee+(overtimePerEmployee*1.5);
-            const companyCostFactor=monthlyPaidHoursPerEmployee*employees*(1+burden);
-            const buffer=Math.max(0,revenue-expenses-draw-profit);
-            const drawBuffer=Math.max(0,revenue-expenses-draw);
-            const safe=companyCostFactor?buffer/companyCostFactor:0;
-            const drawMax=companyCostFactor?drawBuffer/companyCostFactor:0;
-            const monthlyCost=current*companyCostFactor;
-            const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('cpcSafe').textContent=fmt(safe)+'/hr';
-            document.getElementById('cpcDraw').textContent=fmt(drawMax)+'/hr';
-            document.getElementById('cpcCost').textContent=fmt(monthlyCost);
-            document.getElementById('cpcBuffer').textContent=fmt(buffer);
-            const msg=document.getElementById('cpcMessage');
-            if(revenue<=0){msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';return;}
-            if(current>safe){msg.textContent='Warning: the current average wage is above the estimated company-wide safe maximum. At this rate, your minimum owner draw and/or minimum company profit would not be protected.';}
-            else if(current>drawMax){msg.textContent='Warning: the current average wage is above the company-wide owner-draw protection limit.';}
-            else{msg.textContent='Current average wage is within the calculated company-wide owner-draw and minimum-profit target.';}
-          }
-          function resetCompanyPayrollCapacity(){
-            const values={cpcRevenue:'0',cpcExpenses:'0',cpcOwnerDraw:'5000',cpcProfit:'0',cpcEmployees:'1',cpcHours:'40',cpcOT:'0',cpcBurden:'10',cpcCurrent:'0'};
-            Object.entries(values).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});
-            calculateCompanyPayrollCapacity();
-          }
-          </script>
-          '''
-          s=s.replace('</body>',script+'\n</body>',1)
+              raise SystemExit('Could not safely locate Company Finances section boundary')
+          panel=r'''<div class="panel" id="companyPayrollCapacityPanel">
+<div class="head"><div><h2>Company-Wide Employee Pay Capacity</h2><div class="mini">Super Admin financial planning tool</div></div><span class="pill">Super Admin Only</span></div>
+<div class="body">
+<div class="notice"><b>Plain-English goal:</b> Estimate the highest hourly rate you could pay <b>every employee</b> at the same rate while protecting your minimum owner draw and minimum company profit. This is a planning estimate, not payroll, tax, or accounting advice.</div>
+<div class="form">
+<div class="field"><label>Monthly Revenue</label><input id="cpcRevenue" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Monthly Non-Payroll Operating Expenses</label><input id="cpcExpenses" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Minimum Monthly Owner Draw</label><input id="cpcOwnerDraw" type="number" min="0" step="0.01" value="5000"></div>
+<div class="field"><label>Minimum Monthly Company Profit</label><input id="cpcProfit" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Number of Employees</label><input id="cpcEmployees" type="number" min="1" step="1" value="1"></div>
+<div class="field"><label>Average Hours / Employee / Week</label><input id="cpcHours" type="number" min="0" max="168" step="0.25" value="40"></div>
+<div class="field"><label>Average Overtime / Employee / Week</label><input id="cpcOT" type="number" min="0" max="168" step="0.25" value="0"></div>
+<div class="field"><label>Employer Payroll Burden %</label><input id="cpcBurden" type="number" min="0" max="100" step="0.1" value="10"></div>
+<div class="field full"><label>Current Average Hourly Wage</label><input id="cpcCurrent" type="number" min="0" step="0.01" value="0"></div>
+</div>
+<div class="cards" style="margin-top:20px">
+<div class="card"><div class="label">MAX HOURLY RATE FOR ALL EMPLOYEES</div><div class="value" id="cpcSafe">$0.00/hr</div><div class="muted">Same rate for every employee while protecting owner draw + minimum profit.</div></div>
+<div class="card"><div class="label">MAX HOURLY RATE BEFORE OWNER DRAW IS AFFECTED</div><div class="value" id="cpcDraw">$0.00/hr</div><div class="muted">Company-wide ceiling if the minimum profit target is allowed to fall.</div></div>
+<div class="card"><div class="label">CURRENT TOTAL MONTHLY PAYROLL COST</div><div class="value" id="cpcCost">$0.00</div><div class="muted">All employees at the current average wage, including payroll burden.</div></div>
+<div class="card"><div class="label">PAYROLL ROOM REMAINING</div><div class="value" id="cpcBuffer">$0.00</div><div class="muted">Money available for payroll after expenses, owner draw, and minimum profit.</div></div>
+</div>
+<div class="security" id="cpcMessage">Enter your real company numbers above to calculate the company-wide pay ceiling.</div>
+<div class="actions"><button class="btn" type="button" onclick="calculateCompanyPayrollCapacity()">Calculate Company Pay Capacity</button><button class="btn light" type="button" onclick="resetCompanyPayrollCapacity()">Reset</button></div>
+</div></div>
+</section>
+
+
+'''
+          s=s[:start]+panel+s[end+len('</section>\n\n\n'):]
+          script=r'''<script>
+function cpcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
+function calculateCompanyPayrollCapacity(){
+ const revenue=cpcNum('cpcRevenue'),expenses=cpcNum('cpcExpenses'),draw=cpcNum('cpcOwnerDraw'),profit=cpcNum('cpcProfit');
+ const employees=Math.max(1,Math.floor(cpcNum('cpcEmployees'))),hours=cpcNum('cpcHours'),ot=cpcNum('cpcOT'),burden=cpcNum('cpcBurden')/100,current=cpcNum('cpcCurrent');
+ const paidHours=(hours+ot*1.5)*52/12, factor=paidHours*employees*(1+burden), buffer=Math.max(0,revenue-expenses-draw-profit),drawBuffer=Math.max(0,revenue-expenses-draw);
+ const safe=factor?buffer/factor:0,drawMax=factor?drawBuffer/factor:0,cost=current*factor,fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+ document.getElementById('cpcSafe').textContent=fmt(safe)+'/hr';document.getElementById('cpcDraw').textContent=fmt(drawMax)+'/hr';document.getElementById('cpcCost').textContent=fmt(cost);document.getElementById('cpcBuffer').textContent=fmt(buffer);
+ const msg=document.getElementById('cpcMessage');
+ if(revenue<=0)msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';
+ else if(current>safe)msg.textContent='Warning: the current average wage is above the company-wide safe maximum.';
+ else if(current>drawMax)msg.textContent='Warning: the current average wage is above the owner-draw protection limit.';
+ else msg.textContent='Current average wage is within the company-wide owner-draw and minimum-profit target.';
+}
+function resetCompanyPayrollCapacity(){const v={cpcRevenue:0,cpcExpenses:0,cpcOwnerDraw:5000,cpcProfit:0,cpcEmployees:1,cpcHours:40,cpcOT:0,cpcBurden:10,cpcCurrent:0};Object.entries(v).forEach(([id,x])=>document.getElementById(id).value=x);calculateCompanyPayrollCapacity();}
+</script>'''
+          s=re.sub(r'<script>\s*function cpcNum\(id\).*?</script>',script,s,count=1,flags=re.S)
+          if 'function cpcNum' not in s:s=s.replace('</body>',script+'\n</body>',1)
           p.write_text(s,encoding='utf-8')
           PY
-      - name: Commit change
+      - name: Verify
+        run: |
+          grep -q 'id="companyPayrollCapacityPanel"' admin-production.html
+          grep -q 'Number of Employees' admin-production.html
+          grep -q 'MAX HOURLY RATE FOR ALL EMPLOYEES' admin-production.html
+          grep -q 'function cpcNum' admin-production.html
+      - name: Commit safely
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin-production.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Upgrade pay capacity to company-wide payroll calculator"
+          git commit -m "Fix company-wide employee pay capacity calculator"
           git pull --rebase origin main
           git push origin HEAD:main
