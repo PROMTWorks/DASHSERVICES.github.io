@@ -104,4 +104,5 @@ Payment records are ready for real customer transactions. A future payment proce
             exit 0
           fi
           git commit -m "Redesign admin payments section"
+          git pull --rebase origin main
           git push
