@@ -47,6 +47,17 @@ jobs:
           <div class="field full"><label>Payment QR Code Image Address</label><input id="bs_payment_qr" placeholder="Enter image address when available"></div>
           </div></div></div>
 
+          <div class="panel"><div class="head"><h2>Square Payment Processing</h2><span class="pill">Not configured</span></div><div class="body"><div class="notice"><b>Future Square setup:</b> You do not have a Square account connected yet. These fields are ready for when you create one. Secret credentials should be stored securely and should not be placed directly in this HTML page.</div><div class="form">
+          <div class="field"><label>Square Account Status</label><select id="bs_square_status"><option value="not_configured">Not configured</option><option value="ready">Ready to connect</option><option value="connected">Connected</option><option value="disabled">Disabled</option></select></div>
+          <div class="field"><label>Square Environment</label><select id="bs_square_environment"><option value="sandbox">Sandbox</option><option value="production">Production</option></select></div>
+          <div class="field"><label>Square Merchant / Account ID</label><input id="bs_square_account_id" placeholder="Enter when Square account is created"></div>
+          <div class="field"><label>Square Location ID</label><input id="bs_square_location_id" placeholder="Enter Square location ID later"></div>
+          <div class="field"><label>Square Application ID</label><input id="bs_square_application_id" placeholder="Enter Square application ID later"></div>
+          <div class="field"><label>Square Checkout / Payment Link</label><input id="bs_square_payment_link" placeholder="Enter payment link when available"></div>
+          <div class="field full"><label>Square Access Token</label><input id="bs_square_access_token" type="password" autocomplete="off" placeholder="Do not enter secret token here — connect securely when ready"></div>
+          <div class="field full"><label>Square Notes</label><textarea id="bs_square_notes" placeholder="Enter Square setup notes, terminal information, or other non-secret details"></textarea></div>
+          </div><div class="actions"><button class="btn light" type="button" onclick="alert('Square is not connected yet. When you have your Square account, we can securely connect it here.')">Connect Square</button></div></div></div>
+
           <div class="panel"><div class="head"><h2>Service Settings</h2></div><div class="body"><div class="form">
           <div class="field full"><label>Services Offered</label><textarea id="bs_services" placeholder="Enter services offered by DASH Services"></textarea></div>
           <div class="field"><label>Pricing / Estimate Rules</label><textarea id="bs_pricing" placeholder="Enter pricing or estimate rules"></textarea></div>
@@ -83,7 +94,7 @@ jobs:
             const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
             let client=null;
             function getClient(){return client||(client=window.supabase?.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}}));}
-            const ids=['legal_name','customer_name','phone','email','private_address','mailing_address','hours','cashapp','venmo','payment_instructions','payment_qr','services','pricing','service_areas','scheduling','customer_email','auto_email','booking_confirm','payment_notify','manager_start','call_attempts','emergency_rule','owner_number_policy','admin_email','public_address'];
+            const ids=['legal_name','customer_name','phone','email','private_address','mailing_address','hours','cashapp','venmo','payment_instructions','payment_qr','square_status','square_environment','square_account_id','square_location_id','square_application_id','square_payment_link','square_notes','services','pricing','service_areas','scheduling','customer_email','auto_email','booking_confirm','payment_notify','manager_start','call_attempts','emergency_rule','owner_number_policy','admin_email','public_address'];
             function val(id){const e=document.getElementById('bs_'+id);return e?e.value:''}
             function set(id,v){const e=document.getElementById('bs_'+id);if(e&&v!==undefined&&v!==null)e.value=v}
             window.saveBusinessSettings=async function(){
@@ -117,5 +128,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin-production.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Add functional Business Settings"
+          git commit -m "Add complete Business Settings and Square processing"
           git push
