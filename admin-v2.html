@@ -18,5 +18,6 @@ function fail(message){spinner.style.display='none';status.textContent='Unable t
 (async()=>{try{const {data,error}=await client.auth.getUser();if(error)throw error;if(!data?.user){location.replace('admin-login.html');return}status.textContent='Access verified. Opening DASH Services Admin Portal...';await new Promise(r=>setTimeout(r,150));location.replace('admin-shell.html')}catch(e){fail(e?.message||'Please sign in again.')}})();
 client.auth.onAuthStateChange((_event,session)=>{if(!session)location.replace('admin-login.html')});
 </script>
+<script src="admin-role-guard.js?v=20260821"></script>
 </body>
 </html>
