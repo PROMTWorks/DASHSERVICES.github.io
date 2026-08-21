@@ -1,0 +1,85 @@
+/* DASH Services Policies admin redesign. Mirrors the current customer policy source in policies/customer-policies/customer-policies.md. */
+(function(){
+  const policies=[
+    {title:'Payment, Pricing & Booking Policy',category:'Customer',status:'Active',text:[
+      'DASH Services may maintain payment records for administrative, accounting, customer-service, and recordkeeping purposes. Customers paying through Cash App or Venmo must include “For [Customer Name]” and the applicable DASH booking number in the payment note or description when instructed by DASH.',
+      'Customers are responsible for providing required payment information accurately and completely. Missing or incorrect payment information may delay payment identification and may affect booking status, service dates, or scheduling availability.',
+      'Sending a payment does not automatically confirm a booking. A booking is officially confirmed only after DASH verifies the required payment and completes its booking-confirmation process.',
+      'If a customer believes a payment was submitted but DASH records do not show it as received, DASH may request transaction information for review. A dispute does not automatically establish that payment was received.',
+      'If a payment is declined, reversed, canceled, refunded by the payment provider, disputed, charged back, or otherwise not successfully retained by DASH, it will not be considered valid payment for the booking. The customer may remain responsible for the applicable amount and the booking may be placed on hold, canceled, or otherwise affected until resolved.',
+      'If required payment has not been received at least two (2) days before the scheduled service date or by the scheduled service date, the booking will be placed into Payment Pending status. Payment received after the original service date has passed will not preserve the original date, and the customer will be placed on the DASH Wait List for future scheduling. DASH cannot guarantee or estimate a replacement service date at that time.',
+      'DASH does not guarantee that an original service date or appointment time will remain available after a payment deadline has passed. Customers may communicate scheduling preferences, but DASH determines the applicable service date.'
+    ]},
+    {title:'Service Quality, Complaints & Re-Service Policy',category:'Customer',status:'Active',text:[
+      'Customers may submit complaints regarding completed DASH services and may be required to provide photographs, videos, documentation, service information, or other relevant evidence.',
+      'DASH Admin reviews complaints and available evidence to determine whether the booked service was properly completed according to applicable DASH service requirements and the agreed scope of the booking.',
+      "A complaint based solely on a customer's personal preference or disagreement with DASH's established service standards, procedures, or method of performing the service does not automatically qualify for a refund, complimentary re-service, or other compensation.",
+      'DASH may consider photographs, videos, booking information, service notes, employee reports, customer documentation, and other relevant information. DASH Admin determines the relevance and reliability of submitted evidence.',
+      "DASH Admin's review may take up to fourteen (14) calendar days from the date the complaint and required supporting evidence are received. Customers should not assume that a complaint has been approved, denied, or resolved until DASH provides an official decision.",
+      'If DASH Admin determines that evidence sufficiently establishes that the booked service was not properly completed, DASH may approve a complimentary re-service and/or full refund for the affected booking. Approved re-services and refunds are processed within five (5) to ten (10) days, subject to applicable scheduling availability for re-service.',
+      'Customers may communicate re-service scheduling preferences but may not require or select a specific re-service date. DASH determines the assigned re-service date.'
+    ]},
+    {title:'Service Address & Property Access Policy',category:'Customer',status:'Active',text:[
+      'Customers must provide the complete and accurate service address. The service location must be reasonably accessible to DASH personnel at the scheduled time.',
+      'DASH personnel will not wait for a locked property, gate, door, building, or other access point to be opened after arrival. Required access must be available when DASH personnel arrive.',
+      'Customers must provide required gate codes and other access information in the designated Property Notes section when applicable, including for HOAs, gated communities, apartment communities, neighborhoods, or property-managed locations.',
+      'Customers should provide gate codes, entry instructions, building information, unit numbers, parking instructions, and other information reasonably necessary to locate and access the service property.',
+      'If the property cannot be accessed, DASH may determine that the service cannot be performed. Any refund resulting from an access issue will be determined according to applicable DASH policies and the circumstances.'
+    ]},
+    {title:'Customer Property & Personal Belongings Policy',category:'Customer',status:'Active',text:[
+      'Customers are responsible for securing valuable, fragile, sensitive, or personally important belongings before service begins.',
+      'DASH personnel may handle or move customer property only when reasonably necessary to perform the booked service and in accordance with DASH procedures.',
+      'DASH is not responsible for delays, limitations, or changes to the service resulting from customer belongings that prevent DASH personnel from safely or properly performing the booked service.'
+    ]},
+    {title:'Damage, Existing Conditions & Pre-Existing Issues Policy',category:'Customer',status:'Active',text:[
+      'Properties, surfaces, furniture, fixtures, vehicles, equipment, landscaping, and other items being serviced may have existing damage, wear, stains, deterioration, defects, discoloration, or other pre-existing conditions.',
+      'DASH is not responsible for conditions that existed before DASH personnel began the service.',
+      'DASH may document existing conditions through photographs, videos, service notes, or other records when appropriate.',
+      'If a customer believes DASH caused damage during a service, the customer may submit a complaint with supporting evidence through the applicable DASH complaint process.'
+    ]},
+    {title:'Employee Safety & Workplace Conditions Policy',category:'Customer',status:'Active',text:[
+      'Customers are responsible for notifying DASH of known conditions at the service location that could reasonably affect employee safety or service performance.',
+      'DASH personnel may refuse to enter, pause, modify, or discontinue a service when conditions present a safety concern, dangerous animal, hazardous material, unsafe property condition, or other circumstance that may reasonably place personnel at risk.',
+      'If DASH determines that a location cannot be safely serviced, personnel may leave the property. Any refund or other resolution will be determined according to applicable DASH policies and the circumstances.'
+    ]},
+    {title:'Service Address Permission & Access Authorization Policy',category:'Customer',status:'Active',text:[
+      'Customers must provide accurate information regarding whether the property owner, tenant, HOA, property manager, or other applicable party permits the requested service.',
+      'Selecting “Yes” to a permission question represents that the customer believes the requested service is permitted and has a reasonable basis for providing that confirmation.',
+      'Selecting “Unsure” may result in DASH requesting additional information, confirmation, or administrative review. Selecting “Unsure” does not guarantee that the service will be performed.',
+      'If DASH determines before or during service that the requested service is not permitted, DASH may decline, pause, or discontinue the service. Any refund or other compensation will be determined according to applicable DASH policies and the circumstances.'
+    ]},
+    {title:'Weather & Emergency Conditions Policy',category:'Customer',status:'Active',text:[
+      'DASH may delay, reschedule, modify, or discontinue a service when weather conditions make the service unsafe, impractical, or unable to be properly completed.',
+      'DASH may take these actions because of emergencies, natural disasters, dangerous road conditions, property emergencies, utility problems, or other circumstances outside DASH’s reasonable control.',
+      'DASH determines the appropriate scheduling arrangement based on the circumstances, resources, and future availability. Customers may communicate scheduling preferences, but DASH determines the applicable service date.'
+    ]},
+    {title:'Employee Representation & Communication Policy',category:'Customer',status:'Active',text:[
+      'DASH personnel may communicate with customers regarding the services included in their booking. Employees are not automatically authorized to make binding decisions regarding refunds, cancellations, discounts, complimentary services, policy changes, booking changes, or other administrative matters.',
+      'Customers should rely on official DASH communications for administrative decisions. A statement made by an employee that has not been authorized or officially confirmed by DASH does not automatically change a DASH policy or booking.',
+      'Submitting a request or concern does not guarantee approval. Administrative requests will be reviewed according to applicable DASH policies and procedures.'
+    ]},
+    {title:'Promotions, Discounts & Coupons Policy',category:'Customer',status:'Active',text:[
+      'DASH may offer promotional pricing, discounts, coupons, or other special offers at its discretion. Each promotion may have its own terms, conditions, eligibility requirements, and expiration date.',
+      'Unless expressly stated otherwise, promotional offers may not be combined with other discounts, promotions, coupons, or special pricing.',
+      'DASH is not required to apply a promotion retroactively to a booking that was completed, paid for, or confirmed before the promotion became applicable.',
+      'DASH may modify, suspend, or discontinue a promotion subject to applicable promotional terms and obligations.'
+    ]},
+    {title:'Employee Attendance & Punctuality',category:'Employee',status:'Draft',text:['Employees are expected to report to assigned shifts on time and follow DASH scheduling and call-out procedures.']},
+    {title:'Company Vehicle & Equipment Use',category:'Vehicle & Equipment',status:'Draft',text:['Company vehicles and equipment are to be used for authorized DASH business purposes and maintained according to DASH procedures.']},
+    {title:'Customer Information & Admin Portal Security',category:'Technology & Security',status:'Draft',text:['Employees and managers must protect customer information, login credentials, and administrative records and must only access information necessary for their assigned responsibilities.']}
+  ];
+  function esc(s){return s.replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));}
+  function renderPolicies(){
+    const section=document.getElementById('policies');
+    if(!section || section.dataset.policiesV2==='1') return;
+    section.dataset.policiesV2='1';
+    const customer=policies.filter(p=>p.category==='Customer').length;
+    section.innerHTML=`<div class="title"><div><h1>Policies</h1><p>Business policies, procedures, and internal operating standards.</p></div><div class="toolbar"><button class="btn">+ Add Policy</button><button class="btn light" type="button" onclick="window.print()">Print Policies</button></div></div><div class="notice"><b>Policy library:</b> The ${customer} active customer policies below are synchronized from the DASH Services customer-policy source record. Internal policies can be added here as the business grows.</div><div class="cards"><div class="card"><div class="label">TOTAL POLICIES</div><div class="value">${policies.length}</div><div class="muted">Customer and internal policies</div></div><div class="card"><div class="label">ACTIVE</div><div class="value">${policies.filter(p=>p.status==='Active').length}</div><div class="muted">Currently in effect</div></div><div class="card"><div class="label">DRAFTS</div><div class="value">${policies.filter(p=>p.status==='Draft').length}</div><div class="muted">Not yet active</div></div><div class="card"><div class="label">CUSTOMER POLICIES</div><div class="value">${customer}</div><div class="muted">Published customer-facing policies</div></div></div><div class="panel"><div class="head"><h2>Policy Library</h2><div class="muted">Customer policies are marked Active</div></div><div class="body"><div class="policy-admin-list">${policies.map((p,i)=>`<article class="policy-admin-card"><div class="policy-admin-top"><div><span class="policy-admin-category">${esc(p.category)}</span><h3>${i+1}. ${esc(p.title)}</h3></div><span class="policy-admin-status ${p.status==='Active'?'active':'draft'}">${esc(p.status)}</span></div><div class="policy-admin-text">${p.text.map(t=>`<p>${esc(t)}</p>`).join('')}</div><div class="policy-admin-meta">Version 1.0 · ${p.status==='Active'?'Customer-facing source policy':'Internal starter policy'} · Review when business requirements change</div></article>`).join('')}</div></div></div><div class="panel"><div class="head"><h2>Internal Policy Categories</h2></div><div class="body"><div class="policy-category-grid"><div><b>Employee Policies</b><p>Attendance, scheduling, conduct, uniforms, call-outs, safety, and workplace standards.</p></div><div><b>Vehicle &amp; Equipment</b><p>Vehicle use, fuel, inspections, equipment checkout, damage, and maintenance reporting.</p></div><div><b>Financial &amp; Payment</b><p>Payments, refunds, discounts, cash handling, expenses, and company purchases.</p></div><div><b>Customer Policies</b><p>Booking, cancellation, access, complaints, property conditions, safety, weather, and promotions.</p></div><div><b>Technology &amp; Security</b><p>Admin access, passwords, customer information, records, and security procedures.</p></div></div></div></div>`;
+  }
+  function load(){
+    if(!document.getElementById('dash-policy-v2-style')){const s=document.createElement('style');s.id='dash-policy-v2-style';s.textContent='.policy-admin-list{display:grid;gap:16px}.policy-admin-card{border:1px solid #e2e7ed;border-radius:12px;background:#fff;overflow:hidden}.policy-admin-top{padding:16px 18px;background:#fafbfc;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.policy-admin-top h3{margin:6px 0 0;font-size:17px}.policy-admin-category{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#64748b;font-weight:800}.policy-admin-status{font-size:11px;padding:5px 9px;border-radius:20px;font-weight:800}.policy-admin-status.active{background:#dcfce7;color:#166534}.policy-admin-status.draft{background:#fef3c7;color:#92400e}.policy-admin-text{padding:18px}.policy-admin-text p{margin:0 0 12px;color:#334155;font-size:13px;line-height:1.6}.policy-admin-text p:last-child{margin-bottom:0}.policy-admin-meta{padding:12px 18px;border-top:1px solid #e2e7ed;color:#64748b;font-size:11px}.policy-category-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.policy-category-grid>div{border:1px solid #e2e7ed;border-radius:9px;padding:14px}.policy-category-grid p{margin:5px 0 0;color:#64748b;font-size:13px}@media(max-width:700px){.policy-category-grid{grid-template-columns:1fr}}';document.head.appendChild(s)}
+    renderPolicies();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
+  window.renderDASHPoliciesV2=renderPolicies;
+})();
