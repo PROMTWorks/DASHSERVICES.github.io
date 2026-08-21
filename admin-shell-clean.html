@@ -2,16 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DASH Services | Admin Portal</title>
-<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}#portal{display:none;width:100%;height:100%;border:0}</style>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}#portal{display:none;width:100%;height:100%;border:0}#shellSignOut{position:fixed;top:14px;right:18px;z-index:99999;display:none;border:0;border-radius:8px;padding:9px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.18)}</style>
 </head>
 <body>
 <div id="status">Opening DASH Services Admin Portal…</div>
+<button id="shellSignOut" type="button">Sign Out</button>
 <iframe id="portal" title="DASH Services Admin Portal"></iframe>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',c=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),status=document.getElementById('status'),frame=document.getElementById('portal');
-function injectPortalModule(doc,src,id){if(!doc||doc.getElementById(id))return;const s=doc.createElement('script');s.id=id;s.src=src;doc.head.appendChild(s);}
-(async()=>{try{const {data,error}=await c.auth.getUser();if(error)throw error;if(!data?.user){location.replace('admin-login.html');return}frame.src='admin-production.html';frame.onload=()=>{status.style.display='none';frame.style.display='block';const doc=frame.contentDocument;if(doc){injectPortalModule(doc,'admin-role-guard.js?v=20260821-4','dashRoleGuardLive');injectPortalModule(doc,'admin-portal-tools.js?v=20260821-4','dashPortalToolsLive');injectPortalModule(doc,'admin-shell-enhancer.js?v=20260821-1','dashShellEnhancerLive');}};}catch(e){status.textContent='Unable to verify your session. Please return to the Admin Login and sign in again.';console.error(e)}})();
+const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaK_',c=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),status=document.getElementById('status'),frame=document.getElementById('portal'),shellSignOut=document.getElementById('shellSignOut');
+async function logout(){await c.auth.signOut();location.replace('admin-login.html')}
+shellSignOut.onclick=logout;
+function addScript(doc,src,id){if(!doc||doc.getElementById(id))return;const s=doc.createElement('script');s.id=id;s.src=src;s.onload=()=>console.log('DASH module loaded',src);s.onerror=()=>console.error('DASH module failed',src);(doc.head||doc.documentElement).appendChild(s)}
+function installControls(doc){
+ shellSignOut.style.display='block';
+ if(!doc.getElementById('dashDirectSignOut')){const b=doc.createElement('button');b.id='dashDirectSignOut';b.type='button';b.textContent='Sign Out';b.style='position:fixed;top:14px;right:18px;z-index:99999;border:0;border-radius:8px;padding:9px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.18)';b.onclick=logout;doc.body.appendChild(b)}
+ const buttons=[...doc.querySelectorAll('button,a,[role="button"]')];const wait=buttons.find(x=>x.textContent.trim().toLowerCase()==='wait list');if(wait&&!wait.dataset.dashWaitHook){wait.dataset.dashWaitHook='1';wait.addEventListener('click',()=>setTimeout(()=>window.dispatchEvent(new Event('dash-waitlist-open')),100))}
+}
+(async()=>{try{const {data,error}=await c.auth.getUser();if(error)throw error;if(!data?.user){location.replace('admin-login.html');return}frame.src='admin-production.html';frame.onload=()=>{status.style.display='none';frame.style.display='block';const doc=frame.contentDocument;if(!doc)return;installControls(doc);addScript(doc,'admin-role-guard.js?v=20260821-actualshell','dashRoleGuardActual');addScript(doc,'admin-waitlist.js?v=20260821-actualshell','dashWaitlistActual');addScript(doc,'admin-portal-tools.js?v=20260821-actualshell','dashPortalToolsActual');setTimeout(()=>installControls(doc),1000);setTimeout(()=>installControls(doc),2500)}}catch(e){status.textContent='Unable to verify your session. Please return to the Admin Login and sign in again.';console.error(e)}})();
 c.auth.onAuthStateChange((_event,session)=>{if(!session)location.replace('admin-login.html')});
 </script>
 </body>
