@@ -16,6 +16,7 @@
   function load(){
     if(!document.querySelector('link[data-fleet-v2]')){const l=document.createElement('link');l.rel='stylesheet';l.href='payments-design.css?v=fleet2';l.dataset.fleetV2='1';document.head.appendChild(l)}
     renderFleet();
+    if(!document.querySelector('script[data-policy-v2]')){const s=document.createElement('script');s.src='policy-design-v2.js?v=2';s.dataset.policyV2='1';document.head.appendChild(s)}
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',load); else load();
   window.renderDASHFleetV2=renderFleet;
