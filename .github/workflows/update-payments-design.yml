@@ -9,6 +9,7 @@ permissions:
   contents: write
 
 # Apply the Payments redesign directly to admin-production.html.
+# Triggered to apply the latest Payments layout to the live admin portal.
 jobs:
   update-payments:
     runs-on: ubuntu-latest
