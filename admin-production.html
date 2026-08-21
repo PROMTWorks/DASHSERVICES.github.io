@@ -484,6 +484,31 @@ with Super Admin retaining full control.
 
 </div>
 
+
+<div class="panel" id="employeePayCapacityPanel">
+  <div class="head"><div><h2>Employee Pay Capacity</h2><div class="mini">Super Admin financial planning tool</div></div><span class="pill">Super Admin Only</span></div>
+  <div class="body">
+    <div class="notice"><b>Planning estimate:</b> This calculator estimates the highest hourly wage you can afford while protecting your planned owner draw and minimum company profit. It is not a payroll, tax, or accounting determination.</div>
+    <div class="form">
+      <div class="field"><label>Monthly Revenue</label><input id="epcRevenue" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Monthly Operating Expenses (before this employee)</label><input id="epcExpenses" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Planned Monthly Owner Draw</label><input id="epcOwnerDraw" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Minimum Monthly Company Profit</label><input id="epcProfit" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Employee Hours / Week</label><input id="epcHours" type="number" min="0" max="168" step="0.25" value="40"></div>
+      <div class="field"><label>Expected Overtime Hours / Week</label><input id="epcOT" type="number" min="0" max="168" step="0.25" value="0"></div>
+      <div class="field"><label>Employer Payroll Burden %</label><input id="epcBurden" type="number" min="0" max="100" step="0.1" value="10"></div>
+      <div class="field"><label>Current Hourly Wage</label><input id="epcCurrent" type="number" min="0" step="0.01" value="0"></div>
+    </div>
+    <div class="cards" style="margin-top:20px">
+      <div class="card"><div class="label">MAX WAGE — PROTECT OWNER DRAW + PROFIT</div><div class="value" id="epcSafe">$0.00/hr</div><div class="muted">Uses regular hours plus overtime at 1.5× pay.</div></div>
+      <div class="card"><div class="label">MAX WAGE — BEFORE OWNER DRAW IS AFFECTED</div><div class="value" id="epcDraw">$0.00/hr</div><div class="muted">Protects the planned owner draw only.</div></div>
+      <div class="card"><div class="label">PROJECTED MONTHLY EMPLOYEE COST</div><div class="value" id="epcCost">$0.00</div><div class="muted">Based on the current wage entered.</div></div>
+      <div class="card"><div class="label">AVAILABLE MONTHLY BUFFER</div><div class="value" id="epcBuffer">$0.00</div><div class="muted">After expenses, owner draw, and minimum profit.</div></div>
+    </div>
+    <div class="security" id="epcMessage">Enter your real business numbers above to calculate pay capacity.</div>
+    <div class="actions"><button class="btn" type="button" onclick="calculateEmployeePayCapacity()">Calculate Pay Capacity</button><button class="btn light" type="button" onclick="document.querySelectorAll('#employeePayCapacityPanel input').forEach((e,i)=>e.value=['0','0','0','0','40','0','10','0'][i]);calculateEmployeePayCapacity()">Reset</button></div>
+  </div>
+</div>
 </section>
 
 
@@ -1866,5 +1891,30 @@ c=>({
   load();
 })();
 </script>
+
+<script>
+function epcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
+function calculateEmployeePayCapacity(){
+  const revenue=epcNum('epcRevenue'), expenses=epcNum('epcExpenses'), draw=epcNum('epcOwnerDraw'), profit=epcNum('epcProfit');
+  const hours=epcNum('epcHours'), ot=epcNum('epcOT'), burden=epcNum('epcBurden')/100, current=epcNum('epcCurrent');
+  const regular=Math.max(0,hours*52/12), overtime=Math.max(0,ot*52/12);
+  const costFactor=((regular)+(overtime*1.5))*(1+burden);
+  const buffer=Math.max(0,revenue-expenses-draw-profit);
+  const drawBuffer=Math.max(0,revenue-expenses-draw);
+  const safe=costFactor?buffer/costFactor:0, drawMax=costFactor?drawBuffer/costFactor:0;
+  const monthlyCost=current*costFactor;
+  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('epcSafe').textContent=fmt(safe)+'/hr';
+  document.getElementById('epcDraw').textContent=fmt(drawMax)+'/hr';
+  document.getElementById('epcCost').textContent=fmt(monthlyCost);
+  document.getElementById('epcBuffer').textContent=fmt(buffer);
+  const msg=document.getElementById('epcMessage');
+  if(revenue<=0){msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';return;}
+  if(current>safe){msg.textContent='Warning: the current wage is above the estimated safe maximum and would reduce your planned owner draw and/or minimum profit.';}
+  else if(current>drawMax){msg.textContent='Warning: the current wage is above the owner-draw protection limit.';}
+  else{msg.textContent='Current wage is within the calculated owner-draw and minimum-profit target.';}
+}
+</script>
+
 </body>
 </html>
