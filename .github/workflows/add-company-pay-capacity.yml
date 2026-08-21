@@ -1,0 +1,123 @@
+name: Add Company Pay Capacity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-company-pay-capacity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  add-company-pay-capacity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add company-wide payroll capacity safely
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('admin-production.html')
+          s = path.read_text(encoding='utf-8')
+
+          marker = 'id="companyPayCapacity"'
+          if marker not in s:
+              section_start = s.find('<section id="finances"')
+              if section_start < 0:
+                  raise SystemExit('Company Finances section not found; aborting without changes.')
+              section_end = s.find('</section>', section_start)
+              if section_end < 0:
+                  raise SystemExit('Company Finances section end not found; aborting without changes.')
+
+              panel = r'''<div class="panel" id="companyPayCapacity">
+<div class="head"><h2>Company-Wide Employee Pay Capacity</h2><span class="pill">Super Admin Only</span></div>
+<div class="body">
+<div class="notice"><b>Plain-English goal:</b> This calculator tells you the highest hourly wage you can use as a company-wide ceiling while still protecting your minimum owner draw and minimum company profit. It considers all employees together.</div>
+<div class="form">
+<div class="field"><label>Monthly Revenue</label><input id="cpc_revenue" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Monthly Non-Payroll Expenses</label><input id="cpc_expenses" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label>Minimum Monthly Owner Draw</label><input id="cpc_owner" type="number" min="0" step="0.01" value="5000"></div>
+<div class="field"><label>Minimum Monthly Company Profit</label><input id="cpc_profit" type="number" min="0" step="0.01" value="2000"></div>
+<div class="field"><label>Number of Employees</label><input id="cpc_employees" type="number" min="1" step="1" value="1"></div>
+<div class="field"><label>Average Hours / Employee / Week</label><input id="cpc_hours" type="number" min="0" step="0.1" value="40"></div>
+<div class="field"><label>Average Overtime / Employee / Week</label><input id="cpc_ot" type="number" min="0" step="0.1" value="0"></div>
+<div class="field"><label>Employer Payroll Burden %</label><input id="cpc_burden" type="number" min="0" step="0.1" value="10"></div>
+<div class="field"><label>Current Average Hourly Wage</label><input id="cpc_current" type="number" min="0" step="0.01" value="15"></div>
+</div>
+<div class="cards" style="margin-top:20px">
+<div class="card"><div class="label">MAX COMPANY-WIDE HOURLY CEILING</div><div class="value" id="cpc_max">$0.00/hr</div><div class="muted">Maximum common hourly wage for all employees while protecting both owner draw and minimum profit.</div></div>
+<div class="card"><div class="label">CURRENT TOTAL MONTHLY PAYROLL COST</div><div class="value" id="cpc_cost">$0.00</div><div class="muted">Includes regular pay, overtime at 1.5×, and employer payroll burden.</div></div>
+<div class="card"><div class="label">PAYROLL ROOM LEFT</div><div class="value" id="cpc_room">$0.00</div><div class="muted">Amount available before the owner-draw/profit floor is breached.</div></div>
+<div class="card"><div class="label">$5,000+ OWNER DRAW PROTECTED</div><div class="value" id="cpc_status">—</div><div class="muted" id="cpc_status_note">Enter revenue and expenses.</div></div>
+</div>
+<div class="security"><b>How to use it:</b> Enter all employees together. The ceiling assumes every employee is paid at the same hourly rate. If employees have different rates, use their actual current average wage to check total payroll, then use the ceiling as the maximum rate you want any employee to exceed only after reviewing the mix of wages.</div>
+</div></div>'''
+              s = s[:section_end] + panel + s[section_end:]
+
+          path.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Add calculator logic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('admin-production.html')
+          s=p.read_text(encoding='utf-8')
+          if 'function calculateCompanyPayCapacity()' not in s:
+              js=r'''<script>
+function calculateCompanyPayCapacity(){
+  const n=id=>document.getElementById(id);
+  const num=id=>Math.max(0,parseFloat(n(id)?.value)||0);
+  const revenue=num('cpc_revenue'), expenses=num('cpc_expenses'), owner=num('cpc_owner'), profit=num('cpc_profit');
+  const employees=Math.max(1,Math.floor(num('cpc_employees'))), hours=num('cpc_hours'), ot=num('cpc_ot'), burden=num('cpc_burden')/100, current=num('cpc_current');
+  const regular=hours*52/12, overtime=ot*52/12;
+  const monthlyHoursPerEmployee=regular+overtime*1.5;
+  const available=Math.max(0,revenue-expenses-owner-profit);
+  const currentMonthly=((regular*current)+(overtime*current*1.5))*(1+burden)*employees;
+  const maxWage=monthlyHoursPerEmployee>0 ? available/(monthlyHoursPerEmployee*(1+burden)*employees) : 0;
+  const room=available-currentMonthly;
+  n('cpc_max').textContent='$'+maxWage.toFixed(2)+'/hr';
+  n('cpc_cost').textContent='$'+currentMonthly.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  n('cpc_room').textContent='$'+room.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ok=room>=0 && revenue>0;
+  n('cpc_status').textContent=ok?'YES':'NO';
+  n('cpc_status_note').textContent=ok?'Your minimum owner draw and profit floor are protected at the current average wage.':'Current payroll is too high for the entered revenue/expense assumptions, or revenue has not been entered.';
+}
+(function(){
+  const ids=['cpc_revenue','cpc_expenses','cpc_owner','cpc_profit','cpc_employees','cpc_hours','cpc_ot','cpc_burden','cpc_current'];
+  ids.forEach(x=>{const e=document.getElementById(x);if(e)e.addEventListener('input',calculateCompanyPayCapacity)});
+  if(document.getElementById('companyPayCapacity'))calculateCompanyPayCapacity();
+})();
+</script>'''
+              s=s.replace('</body>',js+'\n</body>')
+              p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Verify before commit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('admin-production.html').read_text(encoding='utf-8')
+          required=['id="companyPayCapacity"','function calculateCompanyPayCapacity()','MAX COMPANY-WIDE HOURLY CEILING']
+          missing=[x for x in required if x not in s]
+          if missing: raise SystemExit('Verification failed: '+', '.join(missing))
+          print('Company-wide pay capacity verified.')
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin-production.html
+          if git diff --cached --quiet; then echo 'No changes needed.'; exit 0; fi
+          git commit -m "Add company-wide employee pay capacity calculator"
+          git pull --rebase origin main
+          git push origin HEAD:main
