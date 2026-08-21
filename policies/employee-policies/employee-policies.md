@@ -166,7 +166,23 @@ Employees may not independently:
 
 Customer questions or disputes regarding promotional terms should be handled according to the applicable escalation process.
 
-## 14. Employee Limitations & Escalation Policy
+## 14. Military Discount — In-Person Verification Procedure
+
+DASH Services offers a 90% discount only to the individual qualifying service member or veteran who presents valid military or veteran identification and receives the eligible DASH Services-controlled service. The discount is not transferable and does not extend to spouses, children, relatives, friends, or other members of the customer's party.
+
+The military discount is available in person only at a physical DASH Services location and must not be offered through online booking or online payment. Employees must verify the qualifying person's identification before applying the discount.
+
+The discount applies only to services whose pricing and performance are controlled by DASH Services. It does not apply to third-party charges or services, including U-Haul rental charges or other third-party amounts that DASH does not control.
+
+If a non-qualifying family member or other person requests the military discount, employees should politely explain that the discount is limited to the qualifying service member or veteran whose identification is presented and verified. Employees should not argue with, insult, threaten, or attempt to shame the customer.
+
+If a customer becomes abusive, threatening, or materially disruptive after the discount is denied, employees should end the interaction when reasonably necessary for safety and notify a manager or Super Admin. DASH may cancel or decline to perform the affected service and may refuse future bookings when permitted by applicable law and company policy. Any ban or future-service restriction must be based on the customer's conduct or other legitimate business reason, not simply on the fact that the person was not eligible for the discount.
+
+South Carolina law makes knowingly and falsely representing that a person served in the Armed Forces for the purpose of securing a tangible benefit a misdemeanor. Employees should document suspected false representations and escalate them to management rather than making legal threats or attempting to enforce criminal penalties themselves.
+
+**Employee limitation:** Only an authorized employee or manager may apply the military discount. Employees may not create exceptions, extend the discount to family members, or apply it to third-party charges.
+
+## 15. Employee Limitations & Escalation Policy
 
 Employees are responsible for following DASH policies and procedures within the authority assigned to their role.
 
@@ -180,11 +196,12 @@ Employees must escalate matters involving:
 - Safety concerns requiring management involvement.
 - Property permission concerns.
 - Requests to change company policy.
+- Military-discount eligibility disputes or suspected false representations.
 - Any situation where the employee is uncertain about the correct policy or procedure.
 
 Employees must not create a new company rule during a customer interaction. When a policy does not clearly address a situation, the employee should escalate the matter rather than inventing an exception.
 
-## 15. Policy Change Requests
+## 16. Policy Change Requests
 
 Employees may identify problems, conflicts, or unclear language in DASH policies and may submit the concern through the approved management or HR request process.
 
