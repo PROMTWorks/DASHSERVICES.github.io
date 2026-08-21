@@ -16,5 +16,7 @@ const status=document.getElementById('status'),errorBox=document.getElementById(
 function fail(message){spinner.style.display='none';status.textContent='Unable to open admin portal.';errorBox.textContent=message||'Please sign in again.';errorBox.style.display='block';login.style.display='inline-block'}
 (async()=>{try{const {data,error}=await client.auth.getSession();if(error)throw error;if(!data?.session){location.replace('admin-login.html');return}status.textContent='Session found. Opening DASH Services Admin Portal...';location.replace('admin-shell-clean.html')}catch(e){fail(e?.message)}})();
 </script>
+<script src="admin-role-guard.js?v=20260821-3"></script>
+<script src="admin-portal-tools.js?v=20260821-3"></script>
 </body>
 </html>
