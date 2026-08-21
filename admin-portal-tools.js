@@ -1,4 +1,4 @@
-/* DASH Services admin portal tools: sign out + dedicated Wait List loader + Square settings. */
+/* DASH Services admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
@@ -19,6 +19,10 @@
     if(window.__dashSquareLoaded)return;window.__dashSquareLoaded=true;
     const s=document.createElement('script');s.src='admin-square-settings.js?v=20260821-1';s.onload=()=>{};s.onerror=()=>console.error('DASH Square settings module failed to load');document.head.appendChild(s);
   }
-  function init(){addSignOut();loadWaitlist();loadSquare();}
+  function loadBusinessSettings(){
+    if(window.__dashBusinessSettingsLoaded)return;window.__dashBusinessSettingsLoaded=true;
+    const s=document.createElement('script');s.src='admin-business-settings.js?v=20260821-1';s.onload=()=>{};s.onerror=()=>console.error('DASH Business Settings module failed to load');document.head.appendChild(s);
+  }
+  function init(){addSignOut();loadWaitlist();loadSquare();loadBusinessSettings();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
