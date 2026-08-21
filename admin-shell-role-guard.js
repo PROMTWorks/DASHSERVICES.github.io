@@ -40,6 +40,11 @@
       doc.defaultView.__dashRoleWrapped=true;
     }
     const tag=doc.querySelector('.tag');if(tag)tag.textContent=access.role.replace('_',' ');
+    const comm=doc.getElementById('communications');
+    if(comm && !superAdmin && !comm.hasAttribute('data-manager-communications-rendered')){
+      comm.setAttribute('data-manager-communications-rendered','1');
+      comm.innerHTML='<div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div><div class="panel"><div class="head"><h2>Company Email Addresses</h2><span class="pill">Read Only</span></div><div class="body"><div class="rows"><div class="row"><div><strong>Customer-facing support</strong><span class="mini">The public address customers can use to contact DASH Services.</span></div><span class="pill">support@dashservices.net</span></div><div class="row"><div><strong>Business Gmail</strong><span class="mini">Internal company Gmail account. Managers cannot connect, replace, disconnect, or edit it.</span></div><span class="pill">supportdashservices@gmail.com</span></div></div></div></div><div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div>';
+    }
   }
   async function init(){
     try{access=await getAccess();if(!access){location.replace('admin-login.html');return}
