@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'admin-role-guard.js'
+      - 'admin-waitlist.js'
       - '.github/workflows/install-admin-role-guard.yml'
   workflow_dispatch:
 permissions:
@@ -15,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Inject role guard
+      - name: Inject admin modules
         shell: python
         run: |
           from pathlib import Path
@@ -24,16 +25,17 @@ jobs:
               if not p.exists():
                   continue
               s=p.read_text(encoding='utf-8')
-              marker='admin-role-guard.js'
-              if marker not in s:
-                  tag='<script src="admin-role-guard.js?v=20260821"></script>\n'
-                  if '</body>' in s:
-                      s=s.replace('</body>',tag+'</body>',1)
-                  elif '</html>' in s:
-                      s=s.replace('</html>',tag+'</html>',1)
-                  else:
-                      s += '\n'+tag
-                  p.write_text(s,encoding='utf-8')
+              for src in ['admin-role-guard.js','admin-waitlist.js']:
+                  marker=src
+                  if marker not in s:
+                      tag=f'<script src="{src}?v=20260821"></script>\n'
+                      if '</body>' in s:
+                          s=s.replace('</body>',tag+'</body>',1)
+                      elif '</html>' in s:
+                          s=s.replace('</html>',tag+'</html>',1)
+                      else:
+                          s += '\n'+tag
+              p.write_text(s,encoding='utf-8')
       - name: Commit and push
         shell: bash
         run: |
@@ -44,5 +46,5 @@ jobs:
             echo 'No portal injection changes needed.'
             exit 0
           fi
-          git commit -m 'Connect admin portal to role-based permissions'
+          git commit -m 'Connect admin wait list module'
           git push
