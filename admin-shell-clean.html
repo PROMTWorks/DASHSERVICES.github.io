@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DASH Services | Admin Portal</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f3f5f8;font-family:Arial,Helvetica,sans-serif}#status{height:100%;display:flex;align-items:center;justify-content:center;color:#475569;font-size:15px}#portal{display:none;width:100%;height:100%;border:0}</style>
+</head>
+<body>
+<div id="status">Opening DASH Services Admin Portal…</div>
+<iframe id="portal" title="DASH Services Admin Portal"></iframe>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',c=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),status=document.getElementById('status'),frame=document.getElementById('portal');
+(async()=>{try{const {data,error}=await c.auth.getUser();if(error)throw error;if(!data?.user){location.replace('admin-login.html');return}frame.src='admin-production.html';frame.onload=()=>{status.style.display='none';frame.style.display='block'};}catch(e){status.textContent='Unable to verify your session. Please return to the Admin Login and sign in again.';console.error(e)}})();
+c.auth.onAuthStateChange((_event,session)=>{if(!session)location.replace('admin-login.html')});
+</script>
+</body>
+</html>
