@@ -42,7 +42,9 @@
     const tag=doc.querySelector('.tag');if(tag)tag.textContent=access.role.replace('_',' ');
   }
   async function init(){
-    try{access=await getAccess();if(!access){location.replace('admin-login.html');return}const frame=document.getElementById('portal');if(!frame)return;
+    try{access=await getAccess();if(!access){location.replace('admin-login.html');return}
+      window.DASH_ADMIN_ACCESS=access;
+      const frame=document.getElementById('portal');if(!frame)return;
       const run=()=>{const doc=frame.contentDocument;if(!doc)return;apply(doc);if(!doc.__dashRoleObserver&&doc.body){const obs=new MutationObserver(()=>apply(doc));obs.observe(doc.body,{childList:true,subtree:true});doc.__dashRoleObserver=true}};
       frame.addEventListener('load',run);setInterval(run,1000);run();
     }catch(e){console.error('DASH role guard failed',e)}
