@@ -49,3 +49,4 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// installation trigger 2026-08-21
