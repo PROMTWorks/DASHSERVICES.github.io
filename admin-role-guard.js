@@ -2,92 +2,22 @@
 (function(){
   const SUPABASE_URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-  const permissionsBySection={
-    dashboard:null,
-    bookings:'bookings',
-    payments:'payments',
-    schedule:'schedules',
-    waitlist:'bookings',
-    complaints:'customers',
-    customers:'customers',
-    employees:'employees',
-    fleet:'fleet',
-    revenue:'reports',
-    finances:'business_settings',
-    optimization:'reports',
-    communications:'customers',
-    policies:'policies',
-    access:'admin_accessibility',
-    security:'security',
-    settings:'business_settings'
-  };
-  const textPermissions={
-    'Dashboard':null,
-    'Bookings':'bookings','Payments':'payments','Schedule':'schedules','Wait List':'bookings','Complaints & Evidence':'customers',
-    'Customers':'customers','Employee Records':'employee_accounts','Fleet & Equipment':'fleet',
-    'Revenue Analytics':'reports','Company Finances':'business_settings','Tax & Owner Draw':'business_settings','Business Optimization':'reports',
-    'Communications':'customers','Policies':'policies','Admin Accessibility':'admin_accessibility','Security & Activity':'security','Business Settings':'business_settings',
-    'Employee Time & Attendance':'employee_hours','Payroll History':'business_settings','U-Haul Interest':'business_settings'
-  };
-  function loadClient(){
-    return new Promise((resolve,reject)=>{
-      if(window.supabase) return resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}));
-      const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-      s.onload=()=>resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}));
-      s.onerror=reject; document.head.appendChild(s);
-    });
+  const permissionsBySection={dashboard:null,bookings:'bookings',payments:'payments',schedule:'schedules',waitlist:'bookings',complaints:'customers',customers:'customers',employees:'employees',fleet:'fleet',revenue:'reports',finances:'business_settings',optimization:'reports',communications:'customers',policies:'policies',access:'admin_accessibility',security:'security',settings:'business_settings'};
+  const textPermissions={'Dashboard':null,'Bookings':'bookings','Payments':'payments','Schedule':'schedules','Wait List':'bookings','Complaints & Evidence':'customers','Customers':'customers','Employee Records':'employee_accounts','Fleet & Equipment':'fleet','Revenue Analytics':'reports','Company Finances':'business_settings','Tax & Owner Draw':'business_settings','Business Optimization':'reports','Communications':'customers','Policies':'policies','Admin Accessibility':'admin_accessibility','Security & Activity':'security','Business Settings':'business_settings','Employee Time & Attendance':'employee_hours','Payroll History':'business_settings','U-Haul Interest':'business_settings'};
+  function loadClient(){return new Promise((resolve,reject)=>{if(window.supabase)return resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}));const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.onload=()=>resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}));s.onerror=reject;document.head.appendChild(s);});}
+  function setTag(role){const tag=document.querySelector('.tag');if(tag)tag.textContent=role.replace('_',' ');}
+  function hideUnauthorized(permissions,role){const allowed=new Set(permissions||[]),isSuper=role==='SUPER_ADMIN';document.querySelectorAll('aside button').forEach(btn=>{const label=(btn.textContent||'').trim(),needed=textPermissions[label];if(needed&&!isSuper&&!allowed.has(needed))btn.classList.add('role-hidden');if(label==='Employee Records'&&!isSuper&&!allowed.has('employee_accounts'))btn.classList.add('role-hidden');});document.querySelectorAll('.group').forEach(group=>{let el=group.nextElementSibling,visible=false;while(el&&!el.classList.contains('group')){if(el.matches('button')&&!el.classList.contains('role-hidden'))visible=true;el=el.nextElementSibling;}if(!visible)group.classList.add('role-hidden');});const style=document.createElement('style');style.textContent='.role-hidden{display:none!important}';document.head.appendChild(style);}
+  function renderManagerCommunications(){const section=document.getElementById('communications');if(!section||section.dataset.managerCommunications==='1')return;section.dataset.managerCommunications='1';section.innerHTML='<div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div><div class="panel"><div class="head"><h2>Company Email Addresses</h2><span class="pill">Read Only</span></div><div class="body"><div class="rows"><div class="row"><div><strong>Customer-facing support</strong><span class="mini">The public address customers can use to contact DASH Services.</span></div><span class="pill">support@dashservices.net</span></div><div class="row"><div><strong>Business Gmail</strong><span class="mini">Internal company Gmail account. Managers cannot connect, replace, disconnect, or edit it.</span></div><span class="pill">supportdashservices@gmail.com</span></div></div></div></div><div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div>';}
+  async function renderManagerSchedule(client){
+    const section=document.getElementById('schedule');if(!section||section.dataset.managerSchedule==='1')return;section.dataset.managerSchedule='1';
+    section.innerHTML='<div class="title"><div><h1>Employee Schedule</h1><p>Schedule employees for the selected work week.</p></div><div class="toolbar"><button class="btn light" id="msPrev">Previous Week</button><button class="btn light" id="msToday">Current Week</button><button class="btn light" id="msNext">Next Week</button></div></div><div class="notice"><b>Manager scheduling:</b> Managers can create, change, and remove employee shifts. Payroll, employee roles, passwords, and other restricted records remain unavailable.</div><div class="panel"><div class="head"><h2 id="msWeekTitle">Loading week...</h2><span class="pill" id="msStatus">Loading</span></div><div class="body"><div class="form"><div class="field"><label>Employee</label><select id="msEmployee"></select></div><div class="field"><label>Day</label><select id="msDay"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></div><div class="field"><label>Start</label><input id="msStart" type="time" value="08:00"></div><div class="field"><label>End</label><input id="msEnd" type="time" value="16:00"></div><div class="field"><label>Location</label><input id="msLocation" type="text" placeholder="Optional"></div><div class="field"><label>Notes</label><input id="msNotes" type="text" placeholder="Optional"></div><div class="full actions"><button class="btn" id="msSave">Save Shift</button></div></div></div></div><div class="panel"><div class="head"><h2>Weekly Employee Schedule</h2></div><div class="body" id="msGrid"><div class="empty"><strong>Loading schedule...</strong></div></div></div>';
+    let weekStart=msMonday(new Date()),employees=[],schedules=[];const iso=d=>d.toISOString().slice(0,10),pretty=d=>d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+    function msMonday(d){const x=new Date(d);x.setHours(0,0,0,0);const n=x.getDay();x.setDate(x.getDate()-(n===0?6:n-1));return x;}
+    async function load(){document.getElementById('msStatus').textContent='Loading';const {data,error}=await client.rpc('get_manager_schedule',{p_week_start:iso(weekStart)});if(error){document.getElementById('msStatus').textContent='Error';document.getElementById('msGrid').innerHTML='<div class="empty"><strong>Unable to load schedule</strong>Please try again.</div>';console.error(error);return;}employees=data.employees||[];schedules=data.schedules||[];document.getElementById('msWeekTitle').textContent='Week of '+pretty(weekStart);document.getElementById('msStatus').textContent=employees.length+' employees';const sel=document.getElementById('msEmployee');sel.innerHTML=employees.length?employees.map(e=>'<option value="'+e.employee_id+'">'+e.employee_id+' — '+e.first_name+' '+e.last_name+'</option>').join(''):'<option value="">No active employees</option>';renderGrid();}
+    function renderGrid(){const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];if(!employees.length){document.getElementById('msGrid').innerHTML='<div class="empty"><strong>No active employees</strong>Create an employee record first.</div>';return;}let html='<div class="rows">';employees.forEach(e=>{html+='<div class="panel" style="margin-bottom:10px"><div class="head"><h2>'+e.employee_id+' — '+e.first_name+' '+e.last_name+'</h2><span class="pill">'+(e.position||'Employee')+'</span></div><div class="body"><div class="calendar">';days.forEach((day,i)=>{const s=schedules.find(x=>x.employee_id===e.employee_id&&Number(x.day_of_week)===i);html+='<div class="day"><b>'+day+'</b>'+(s?'<span style="color:#334155">'+s.start_time+'–'+s.end_time+'</span><span>'+(s.location||'')+'</span><button class="btn light" data-delete="'+s.id+'" style="margin-top:8px;padding:6px 8px;font-size:11px">Remove</button>':'<span>Off</span>')+'</div>';});html+='</div></div></div>';});html+='</div>';document.getElementById('msGrid').innerHTML=html;document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Remove this shift?'))return;const {error}=await client.rpc('delete_manager_schedule',{p_id:b.dataset.delete});if(error)alert(error.message);else load();});}
+    document.getElementById('msPrev').onclick=()=>{weekStart.setDate(weekStart.getDate()-7);load();};document.getElementById('msNext').onclick=()=>{weekStart.setDate(weekStart.getDate()+7);load();};document.getElementById('msToday').onclick=()=>{weekStart=msMonday(new Date());load();};document.getElementById('msSave').onclick=async()=>{const employee=document.getElementById('msEmployee').value;if(!employee){alert('Create an employee first.');return;}const day=Number(document.getElementById('msDay').value),start=document.getElementById('msStart').value,end=document.getElementById('msEnd').value;if(!start||!end||end<=start){alert('Choose a valid start and end time.');return;}const {error}=await client.rpc('save_manager_schedule',{p_week_start:iso(weekStart),p_employee_id:employee,p_day_of_week:day,p_start_time:start,p_end_time:end,p_location:document.getElementById('msLocation').value||null,p_notes:document.getElementById('msNotes').value||null});if(error)alert(error.message);else load();};await load();
   }
-  function setTag(role){const tag=document.querySelector('.tag'); if(tag) tag.textContent=role.replace('_',' ');}
-  function hideUnauthorized(permissions,role){
-    const allowed=new Set(permissions||[]); const isSuper=role==='SUPER_ADMIN';
-    document.querySelectorAll('aside button').forEach(btn=>{
-      const label=(btn.textContent||'').trim(); const needed=textPermissions[label];
-      if(needed && !isSuper && !allowed.has(needed)) btn.classList.add('role-hidden');
-      if(label==='Employee Records' && !isSuper && !allowed.has('employee_accounts')) btn.classList.add('role-hidden');
-    });
-    document.querySelectorAll('.group').forEach(group=>{
-      let el=group.nextElementSibling,visible=false;
-      while(el && !el.classList.contains('group')){ if(el.matches('button') && !el.classList.contains('role-hidden')) visible=true; el=el.nextElementSibling; }
-      if(!visible) group.classList.add('role-hidden');
-    });
-    const style=document.createElement('style'); style.textContent='.role-hidden{display:none!important}'; document.head.appendChild(style);
-  }
-  function renderManagerCommunications(){
-    const section=document.getElementById('communications');
-    if(!section || section.dataset.managerCommunications==='1') return;
-    section.dataset.managerCommunications='1';
-    section.innerHTML=`<div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div>
-      <div class="panel"><div class="head"><h2>Company Email Addresses</h2><span class="pill">Read Only</span></div><div class="body"><div class="rows">
-        <div class="row"><div><strong>Customer-facing support</strong><span class="mini">The public address customers can use to contact DASH Services.</span></div><span class="pill">support@dashservices.net</span></div>
-        <div class="row"><div><strong>Business Gmail</strong><span class="mini">Internal company Gmail account. Managers cannot connect, replace, disconnect, or edit it.</span></div><span class="pill">supportdashservices@gmail.com</span></div>
-      </div></div></div>
-      <div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div>`;
-  }
-  function protectShow(permissions,role){
-    if(typeof window.show!=='function') return;
-    const original=window.show; const allowed=new Set(permissions||[]); const isSuper=role==='SUPER_ADMIN';
-    window.show=function(section,button){
-      const needed=permissionsBySection[section];
-      if(!isSuper && needed && !allowed.has(needed)){
-        alert('Your DASH Services role does not have permission to access this area.'); return;
-      }
-      const result=original.apply(this,arguments);
-      if(!isSuper && section==='communications') setTimeout(renderManagerCommunications,0);
-      return result;
-    };
-  }
-  async function init(){
-    try{
-      const client=await loadClient();
-      const {data:{session}}=await client.auth.getSession();
-      if(!session){window.location.replace('admin-login.html');return;}
-      const {data,error}=await client.rpc('get_my_admin_access');
-      if(error || !data || !data.active){window.location.replace('admin-login.html');return;}
-      const role=String(data.role||'').toUpperCase(); const permissions=Array.isArray(data.permissions)?data.permissions:[];
-      window.DASH_ADMIN_ACCESS={role,permissions}; setTag(role); hideUnauthorized(permissions,role);
-      if(role!=='SUPER_ADMIN') setTimeout(renderManagerCommunications,0);
-      const wait=()=>{ if(typeof window.show==='function') protectShow(permissions,role); else setTimeout(wait,100); }; wait();
-    }catch(e){console.error('DASH role guard failed',e); window.location.replace('admin-login.html');}
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  function protectShow(permissions,role,client){if(typeof window.show!=='function')return;const original=window.show,allowed=new Set(permissions||[]),isSuper=role==='SUPER_ADMIN';window.show=function(section,button){const needed=permissionsBySection[section];if(!isSuper&&needed&&!allowed.has(needed)){alert('Your DASH Services role does not have permission to access this area.');return;}const result=original.apply(this,arguments);if(!isSuper&&section==='communications')setTimeout(renderManagerCommunications,0);if(!isSuper&&section==='schedule'&&allowed.has('schedules'))setTimeout(()=>renderManagerSchedule(client),0);return result;};}
+  async function init(){try{const client=await loadClient();const {data:{session}}=await client.auth.getSession();if(!session){window.location.replace('admin-login.html');return;}const {data,error}=await client.rpc('get_my_admin_access');if(error||!data||!data.active){window.location.replace('admin-login.html');return;}const role=String(data.role||'').toUpperCase(),permissions=Array.isArray(data.permissions)?data.permissions:[];window.DASH_ADMIN_ACCESS={role,permissions};setTag(role);hideUnauthorized(permissions,role);if(role!=='SUPER_ADMIN'){setTimeout(renderManagerCommunications,0);if(permissions.includes('schedules'))setTimeout(()=>renderManagerSchedule(client),0);}protectShow(permissions,role,client);}catch(e){console.error('DASH role guard failed',e);window.location.replace('admin-login.html');}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
