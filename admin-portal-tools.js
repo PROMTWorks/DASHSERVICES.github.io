@@ -1,4 +1,4 @@
-/* DASH Services admin portal tools: sign out + dedicated Wait List loader. */
+/* DASH Services admin portal tools: sign out + dedicated Wait List loader + Square settings. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
@@ -15,6 +15,10 @@
     if(window.__dashWaitlistLoaded)return;window.__dashWaitlistLoaded=true;
     const s=document.createElement('script');s.src='admin-waitlist.js?v=20260821-2';s.onload=()=>{};s.onerror=()=>console.error('DASH wait list module failed to load');document.head.appendChild(s);
   }
-  function init(){addSignOut();loadWaitlist();}
+  function loadSquare(){
+    if(window.__dashSquareLoaded)return;window.__dashSquareLoaded=true;
+    const s=document.createElement('script');s.src='admin-square-settings.js?v=20260821-1';s.onload=()=>{};s.onerror=()=>console.error('DASH Square settings module failed to load');document.head.appendChild(s);
+  }
+  function init(){addSignOut();loadWaitlist();loadSquare();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
