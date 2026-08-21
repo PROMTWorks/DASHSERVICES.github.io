@@ -6,17 +6,6 @@
   const sections={dashboard:null,bookings:'bookings',payments:'payments',schedule:'schedules',waitlist:'bookings',complaints:'customers',customers:'customers',employees:'employee_accounts',fleet:'fleet',revenue:'reports',finances:'business_settings',optimization:'reports',communications:'customers',policies:'policies',access:'admin_accessibility',security:'security',settings:'business_settings'};
   let access=null;
   const style='[data-dash-role-hidden="1"]{display:none!important}';
-  async function getAccess(){
-    try{
-      if(!window.supabase)return null;
-      const c=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-      const {data:{session}}=await c.auth.getSession();
-      if(!session)return null;
-      const {data,error}=await c.rpc('get_my_admin_access');
-      if(error||!data||!data.active)return null;
-      return {role:String(data.role||'').toUpperCase(),permissions:new Set(Array.isArray(data.permissions)?data.permissions:[])};
-    }catch(e){console.error('DASH access lookup failed',e);return null;}
-  }
   function apply(doc){
     if(!doc||!access)return;
     const superAdmin=access.role==='SUPER_ADMIN';
@@ -31,14 +20,29 @@
       comm.innerHTML='<div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div><div class="panel"><div class="head"><h2>Company Email Addresses</h2><span class="pill">Read Only</span></div><div class="body"><div class="rows"><div class="row"><div><strong>Customer-facing support</strong><span class="mini">The public address customers can use to contact DASH Services.</span></div><span class="pill">support@dashservices.net</span></div><div class="row"><div><strong>Business Gmail</strong><span class="mini">Internal company Gmail account. Managers cannot connect, replace, disconnect, or edit it.</span></div><span class="pill">supportdashservices@gmail.com</span></div></div></div></div><div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div>';
     }
   }
+  async function resolveAccess(){
+    try{
+      if(window.DASH_ADMIN_ACCESS&&window.DASH_ADMIN_ACCESS.role)return window.DASH_ADMIN_ACCESS;
+      if(!window.supabase||!window.supabase.createClient)return null;
+      const c=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+      const {data:{session}}=await c.auth.getSession();
+      if(!session)return null;
+      const {data,error}=await c.rpc('get_my_admin_access');
+      if(error||!data||!data.active)return null;
+      return {role:String(data.role||'').toUpperCase(),permissions:new Set(Array.isArray(data.permissions)?data.permissions:[])};
+    }catch(e){console.error('DASH access lookup failed',e);return null;}
+  }
   async function init(){
     try{
-      access=await getAccess();
-      if(!access){console.error('DASH role guard: no valid session/access; leaving existing portal authentication in control');return;}
-      window.DASH_ADMIN_ACCESS=access;
-      const frame=document.getElementById('portal');if(!frame)return;
-      const run=()=>{const doc=frame.contentDocument;if(!doc)return;apply(doc);if(!doc.__dashRoleObserver&&doc.body){const obs=new MutationObserver(()=>apply(doc));obs.observe(doc.body,{childList:true,subtree:true});doc.__dashRoleObserver=true}};
+      const frame=document.getElementById('portal');
+      if(!frame)return;
+      const run=()=>{const doc=frame.contentDocument;if(!doc)return;if(!access){const candidate=window.DASH_ADMIN_ACCESS;if(candidate&&candidate.role){access=candidate;apply(doc)}}else apply(doc);};
       frame.addEventListener('load',run);setInterval(run,1000);run();
+      for(let i=0;i<20&&!access;i++){
+        const candidate=await resolveAccess();
+        if(candidate){access=candidate;window.DASH_ADMIN_ACCESS=access;run();break;}
+        await new Promise(r=>setTimeout(r,1000));
+      }
     }catch(e){console.error('DASH role guard failed',e)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
