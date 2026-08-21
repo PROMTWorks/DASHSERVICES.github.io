@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write
 
-# Triggered once to apply the Payments redesign directly to admin-production.html.
 jobs:
   update-payments:
     if: github.actor != 'github-actions[bot]'
@@ -18,29 +17,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Update Payments section
+      - name: Replace Payments section
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('admin-production.html')
           s = p.read_text(encoding='utf-8')
-          old = '''<section id="payments" class="section">
-
-<div class="title">
-<div>
-<h1>Payments</h1>
-<p>Payment verification and future processor integration.</p>
-</div>
-</div>
-
-<div class="panel">
-<div class="body empty">
-<strong>No payment records</strong>
-Payment records will appear here when real customer payments are received and recorded.
-</div>
-</div>
-
-</section>'''
+          start = s.find('<section id="payments"')
+          end = s.find('<section id="schedule"', start)
+          if start < 0 or end < 0:
+              raise SystemExit('Payments section markers not found')
           new = '''<section id="payments" class="section">
 
 <div class="title">
@@ -72,20 +58,18 @@ Payment records are ready for real customer transactions. A future payment proce
 
 <div class="panel"><div class="head"><h2>Payment Details</h2></div><div class="body"><div class="grid2"><div class="security"><b>Payment ID</b><br><span class="muted">Available when a real payment is recorded.</span></div><div class="security"><b>Transaction ID</b><br><span class="muted">Provided by the connected payment processor.</span></div><div class="security"><b>Processor</b><br><span class="muted">Ready for future processor integration.</span></div><div class="security"><b>Refund Status</b><br><span class="muted">No refund activity recorded.</span></div></div></div></div>
 
-</section>'''
-          if old not in s:
-              if 'TOTAL RECEIVED' in s and 'Payment Records' in s:
-                  raise SystemExit('Payments design already installed')
-              raise SystemExit('Expected Payments section was not found')
-          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+</section>
+
+
+'''
+          p.write_text(s[:start] + new + s[end:], encoding='utf-8')
           PY
 
-      - name: Commit Payments design and remove temporary workflow
+      - name: Commit the actual admin portal change
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin-production.html
-          git rm .github/workflows/update-payments-design.yml
-          git diff --cached --quiet && exit 0
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "Redesign admin payments section"
           git push
