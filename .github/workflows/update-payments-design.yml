@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
 
+# Apply the Payments redesign directly to admin-production.html.
 jobs:
   update-payments:
     if: github.actor != 'github-actions[bot]'
