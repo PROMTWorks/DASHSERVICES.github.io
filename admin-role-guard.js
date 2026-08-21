@@ -52,6 +52,17 @@
     });
     const style=document.createElement('style'); style.textContent='.role-hidden{display:none!important}'; document.head.appendChild(style);
   }
+  function renderManagerCommunications(){
+    const section=document.getElementById('communications');
+    if(!section || section.dataset.managerCommunications==='1') return;
+    section.dataset.managerCommunications='1';
+    section.innerHTML=`<div class="title"><div><h1>Communications</h1><p>Customer and internal communication center.</p></div></div>
+      <div class="panel"><div class="head"><h2>Company Email Addresses</h2><span class="pill">Read Only</span></div><div class="body"><div class="rows">
+        <div class="row"><div><strong>Customer-facing support</strong><span class="mini">The public address customers can use to contact DASH Services.</span></div><span class="pill">support@dashservices.net</span></div>
+        <div class="row"><div><strong>Business Gmail</strong><span class="mini">Internal company Gmail account. Managers cannot connect, replace, disconnect, or edit it.</span></div><span class="pill">supportdashservices@gmail.com</span></div>
+      </div></div></div>
+      <div class="panel"><div class="body empty"><strong>Communication history</strong>Communication history will appear here when real customer or employee communications are connected.</div></div>`;
+  }
   function protectShow(permissions,role){
     if(typeof window.show!=='function') return;
     const original=window.show; const allowed=new Set(permissions||[]); const isSuper=role==='SUPER_ADMIN';
@@ -60,7 +71,9 @@
       if(!isSuper && needed && !allowed.has(needed)){
         alert('Your DASH Services role does not have permission to access this area.'); return;
       }
-      return original.apply(this,arguments);
+      const result=original.apply(this,arguments);
+      if(!isSuper && section==='communications') setTimeout(renderManagerCommunications,0);
+      return result;
     };
   }
   async function init(){
@@ -72,6 +85,7 @@
       if(error || !data || !data.active){window.location.replace('admin-login.html');return;}
       const role=String(data.role||'').toUpperCase(); const permissions=Array.isArray(data.permissions)?data.permissions:[];
       window.DASH_ADMIN_ACCESS={role,permissions}; setTag(role); hideUnauthorized(permissions,role);
+      if(role!=='SUPER_ADMIN') setTimeout(renderManagerCommunications,0);
       const wait=()=>{ if(typeof window.show==='function') protectShow(permissions,role); else setTimeout(wait,100); }; wait();
     }catch(e){console.error('DASH role guard failed',e); window.location.replace('admin-login.html');}
   }
