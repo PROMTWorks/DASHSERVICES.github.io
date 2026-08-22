@@ -1,8 +1,9 @@
-name: Replace DASH branding
+name: Replace DASH Services Branding
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,40 +12,36 @@ jobs:
   replace-branding:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out current main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Replace customer-facing branding
+      - name: Replace DASH Services branding in all text files
         shell: bash
         run: |
           set -e
           changed=0
           while IFS= read -r -d '' file; do
-            if grep -Iq . "$file"; then
+            case "$file" in
+              *.png|*.jpg|*.jpeg|*.gif|*.webp|*.ico|*.pdf|*.zip|*.woff|*.woff2|*.ttf) continue ;;
+            esac
+            if grep -Iq . "$file" 2>/dev/null; then
               before=$(sha256sum "$file" | cut -d' ' -f1)
-              sed -i \
-                -e 's/DASH Services/DASH MOBILE SERVICES/g' \
-                -e 's/DASH SERVICES/DASH MOBILE SERVICES/g' \
-                -e 's/DASH Services LLC/DASH MOBILE SERVICES LLC/g' \
-                -e 's/DASH SERVICES LLC/DASH MOBILE SERVICES LLC/g' \
-                -e 's/>SERVICES</>MOBILE SERVICES</g' \
-                -e 's/>DASH<small>SERVICES</>DASH<small>MOBILE SERVICES</g' \
-                "$file"
+              perl -0pi -e 's/DASH SERVICES/DASH MOBILE SERVICES/g; s/DASH Services/DASH MOBILE SERVICES/g; s/Dash Services/DASH MOBILE SERVICES/g' "$file"
               after=$(sha256sum "$file" | cut -d' ' -f1)
               if [ "$before" != "$after" ]; then
                 git add "$file"
                 changed=1
               fi
             fi
-          done < <(find . -type f -not -path './.git/*' -not -path './node_modules/*' -print0)
+          done < <(git ls-files -z)
 
           if [ "$changed" -eq 1 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Change customer-facing brand to DASH MOBILE SERVICES"
-            git push
+            git commit -m "Update DASH Services branding to DASH Mobile Services"
+            git push origin HEAD:main
           else
-            echo "No DASH branding changes were needed."
+            echo "No old DASH Services branding remains in tracked text files."
           fi
