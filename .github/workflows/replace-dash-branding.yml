@@ -1,4 +1,4 @@
-name: Replace DASH Services Branding
+name: Update DASH Mobile Services legal branding
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  replace-branding:
+  update-branding:
     runs-on: ubuntu-latest
     steps:
       - name: Check out current main
@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Replace DASH Services branding in all text files
+      - name: Update customer-facing legal identity
         shell: bash
         run: |
           set -e
@@ -28,7 +28,37 @@ jobs:
             esac
             if grep -Iq . "$file" 2>/dev/null; then
               before=$(sha256sum "$file" | cut -d' ' -f1)
-              perl -0pi -e 's/DASH SERVICES/DASH MOBILE SERVICES/g; s/DASH Services/DASH MOBILE SERVICES/g; s/Dash Services/DASH MOBILE SERVICES/g' "$file"
+              python3 - "$file" <<'PY'
+          from pathlib import Path
+          import sys
+          p = Path(sys.argv[1])
+          try:
+              s = p.read_text(encoding='utf-8')
+          except UnicodeDecodeError:
+              raise SystemExit(0)
+
+          # Customer-facing brand only. Keep PROMT Works, email addresses,
+          # URLs, JS identifiers, and other technical names unchanged.
+          s = s.replace('DASH SERVICES', 'DASH MOBILE SERVICES')
+          s = s.replace('DASH Services', 'DASH MOBILE SERVICES')
+          s = s.replace('Dash Services', 'DASH MOBILE SERVICES')
+
+          # Make the legal relationship explicit where the site already
+          # identifies the public-facing brand.
+          s = s.replace(
+              'DASH MOBILE SERVICES is the public-facing brand of PROMTWORKS.',
+              'DASH MOBILE SERVICES is the DBA (doing business as) name of PROMT WORKS, LLC.'
+          )
+          s = s.replace(
+              'DASH MOBILE SERVICES is the public-facing brand of PROMT Works, LLC.',
+              'DASH MOBILE SERVICES is the DBA (doing business as) name of PROMT WORKS, LLC.'
+          )
+          s = s.replace(
+              '© 2026 DASH MOBILE SERVICES. All rights reserved.',
+              '© 2026 PROMT WORKS, LLC. DASH MOBILE SERVICES is the DBA. All rights reserved.'
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
               after=$(sha256sum "$file" | cut -d' ' -f1)
               if [ "$before" != "$after" ]; then
                 git add "$file"
@@ -40,8 +70,8 @@ jobs:
           if [ "$changed" -eq 1 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Update DASH Services branding to DASH Mobile Services"
+            git commit -m "Clarify PROMT Works legal name and DASH Mobile Services DBA"
             git push origin HEAD:main
           else
-            echo "No old DASH Services branding remains in tracked text files."
+            echo "No customer-facing branding changes were needed."
           fi
