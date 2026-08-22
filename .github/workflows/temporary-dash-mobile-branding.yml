@@ -1,4 +1,4 @@
-name: temporary brand rename
+name: Rename DASH Services branding
 
 on:
   push:
@@ -12,27 +12,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Replace DASH Services branding
+      - name: Replace customer-facing DASH Services branding
         shell: bash
         run: |
           set -e
-          git grep -Il -i "DASH Services" | xargs -r perl -pi -e 's/DASH Services/DASH MOBILE SERVICES/gi'
-          git grep -Il 'DASH<small>SERVICES</small>' | xargs -r perl -pi -e 's/DASH<small>SERVICES<\/small>/DASH<small>MOBILE SERVICES<\/small>/g'
-      - name: Commit branding change and remove temporary workflow
+          git grep -Il -i 'DASH Services' | xargs -r perl -pi -e 's/DASH Services/DASH MOBILE SERVICES/gi'
+          git grep -Il -i 'DASH<small>SERVICES</small>' | xargs -r perl -pi -e 's/DASH<small>SERVICES<\/small>/DASH<small>MOBILE SERVICES<\/small>/gi'
+          git grep -Il -i 'DASH-SERVICES' | xargs -r perl -pi -e 's/DASH-SERVICES/DASH-MOBILE-SERVICES/gi'
+          git grep -Il -i 'DASH_SERVICES' | xargs -r perl -pi -e 's/DASH_SERVICES/DASH_MOBILE_SERVICES/gi'
+      - name: Commit changes
         shell: bash
         run: |
           set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           if git diff --cached --quiet; then
-            git rm .github/workflows/temporary-dash-mobile-branding.yml
-            git commit -m "Remove temporary branding workflow"
-            git push
+            echo 'No DASH Services branding changes found.'
             exit 0
           fi
-          git commit -m "Rename customer-facing brand to DASH Mobile Services"
-          git push
-          git rm .github/workflows/temporary-dash-mobile-branding.yml
-          git commit -m "Remove temporary branding workflow"
+          git commit -m 'Rename customer-facing brand to DASH Mobile Services'
           git push
