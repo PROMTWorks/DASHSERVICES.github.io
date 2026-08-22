@@ -17,7 +17,7 @@
   }
   function isLawn(key){ return !!(window.DASH_PRICING && window.DASH_PRICING.LAWN && window.DASH_PRICING.LAWN[key]); }
   var LAWN_SERVICES=[
-    ['lawn-mowing','Lawn Mowing','Routine mowing to keep grass neat, manageable, and well maintained.'],
+    ['lawn-mowing','Lawn Mowing','Routine mowing to keep your grass neat, manageable, and well maintained.'],
     ['weed-removal','Weed Removal','Removal of weeds from suitable lawn and landscape areas.'],
     ['mulch-installation','Mulch Installation','Installation and spreading of mulch in existing landscape beds.'],
     ['decorative-rock','Decorative Rock Installation','Installation and spreading of decorative landscape rock.'],
@@ -29,13 +29,23 @@
   function lawnCardHtml(s){
     return '<div class="service"><strong>'+s[1]+'</strong><span>'+s[2]+'</span><button type="button" onclick="openBooking(\''+s[0]+'\')">Continue</button></div>';
   }
+  function removeDuplicateLawnCategories(){
+    var matches=[];
+    document.querySelectorAll('.category').forEach(function(section){
+      var h=section.querySelector('.category-head h2');
+      var text=h ? (h.textContent||'').replace(/\s+/g,' ').trim().toLowerCase() : '';
+      if(text==='lawn & property services' || text==='lawn & property care') matches.push(section);
+    });
+    matches.forEach(function(section){section.remove();});
+  }
   function installLawnCategory(){
     var automotive=el('automotive');
-    if(!automotive || el('lawnProperty')) return;
+    if(!automotive) return;
+    removeDuplicateLawnCategories();
     var section=document.createElement('section');
     section.className='category';
     section.id='lawnProperty';
-    section.innerHTML='<div class="category-head"><h2>Lawn &amp; Property Services</h2><p>Mobile lawn and property-care services offered by DASH MOBILE SERVICES.</p></div><div class="services" id="lawnServices">'+LAWN_SERVICES.map(lawnCardHtml).join('')+'</div>';
+    section.innerHTML='<div class="category-head"><h2>Lawn &amp; Property Care</h2><p>Mobile lawn and property-care services currently available for booking.</p></div><div class="services" id="lawnServices">'+LAWN_SERVICES.map(lawnCardHtml).join('')+'</div>';
     section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});
     automotive.parentNode.insertBefore(section,automotive.nextSibling);
     var select=el('service');
@@ -133,6 +143,14 @@
       if(typeof window.openBooking!=='function'||window.openBooking.__dashAutomotiveFix!==true){
         var fn=function(key){return openBookingSafe(key);};fn.__dashAutomotiveFix=true;window.openBooking=fn;
       }
+      var canonical=el('lawnProperty');
+      document.querySelectorAll('.category').forEach(function(section){
+        if(section===canonical)return;
+        var h=section.querySelector('.category-head h2');
+        var text=h ? (h.textContent||'').replace(/\s+/g,' ').trim().toLowerCase() : '';
+        if(text==='lawn & property services' || text==='lawn & property care')section.remove();
+      });
+      if(!el('lawnProperty'))installLawnCategory();
     },500);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
