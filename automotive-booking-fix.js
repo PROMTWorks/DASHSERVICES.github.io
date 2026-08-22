@@ -1,4 +1,4 @@
-/* Targeted Automotive booking fix. Lawn & Property is intentionally untouched. */
+/* Targeted Automotive booking fix. Pricing is loaded from the unified DASH pricing engine. Lawn & Property is not removed or rewritten. */
 (function(){
   'use strict';
   function el(id){ return document.getElementById(id); }
@@ -6,6 +6,14 @@
     var attr=button && button.getAttribute('onclick') || '';
     var match=attr.match(/openBooking\(['\"]([^'\"]+)['\"]\)/);
     return match ? match[1] : '';
+  }
+  function loadPricing(){
+    if(window.DASH_PRICING || document.querySelector('script[data-dash-pricing]')) return;
+    var script=document.createElement('script');
+    script.src='dash-pricing.js?v=20260821pricing1';
+    script.async=false;
+    script.setAttribute('data-dash-pricing','true');
+    document.head.appendChild(script);
   }
   function openAutomotive(serviceKey){
     var automotive=el('automotive'), booking=el('booking'), service=el('service');
@@ -35,13 +43,13 @@
   function install(){
     if(window.__dashAutomotiveBookingFixInstalled) return;
     window.__dashAutomotiveBookingFixInstalled=true;
+    loadPricing();
     window.openAutomotiveBooking=openAutomotive;
     document.addEventListener('click',intercept,true);
     document.addEventListener('pointerup',function(e){
       var button=e.target && e.target.closest ? e.target.closest('#automotive .service button') : null;
       if(button) e.preventDefault();
     },true);
-    /* Keep the fix alive if another script replaces window.openBooking. */
     setInterval(function(){
       if(typeof window.openBooking!=='function' || window.openBooking.__dashAutomotiveFix!==true){
         var fn=function(key){return openAutomotive(key);};
