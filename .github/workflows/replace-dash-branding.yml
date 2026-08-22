@@ -1,0 +1,50 @@
+name: Replace DASH branding
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  replace-branding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Replace customer-facing branding
+        shell: bash
+        run: |
+          set -e
+          changed=0
+          while IFS= read -r -d '' file; do
+            if grep -Iq . "$file"; then
+              before=$(sha256sum "$file" | cut -d' ' -f1)
+              sed -i \
+                -e 's/DASH Services/DASH MOBILE SERVICES/g' \
+                -e 's/DASH SERVICES/DASH MOBILE SERVICES/g' \
+                -e 's/DASH Services LLC/DASH MOBILE SERVICES LLC/g' \
+                -e 's/DASH SERVICES LLC/DASH MOBILE SERVICES LLC/g' \
+                -e 's/>SERVICES</>MOBILE SERVICES</g' \
+                -e 's/>DASH<small>SERVICES</>DASH<small>MOBILE SERVICES</g' \
+                "$file"
+              after=$(sha256sum "$file" | cut -d' ' -f1)
+              if [ "$before" != "$after" ]; then
+                git add "$file"
+                changed=1
+              fi
+            fi
+          done < <(find . -type f -not -path './.git/*' -not -path './node_modules/*' -print0)
+
+          if [ "$changed" -eq 1 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Change customer-facing brand to DASH MOBILE SERVICES"
+            git push
+          else
+            echo "No DASH branding changes were needed."
+          fi
