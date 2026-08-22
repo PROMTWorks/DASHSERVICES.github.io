@@ -1,11 +1,11 @@
-/* DASH Services Admin Accessibility redesign v2. Role definitions and permission roadmap. */
+/* DASH MOBILE SERVICES Admin Accessibility redesign v2. Role definitions and permission roadmap. */
 (function(){
   function renderAccess(){
     const section=document.getElementById('access');
     if(!section || section.dataset.accessRedesign==='2') return;
     section.dataset.accessRedesign='2';
     section.innerHTML=`
-      <div class="title"><div><h1>Admin Accessibility</h1><p>Role-based access and permission management for the DASH Services admin portal.</p></div></div>
+      <div class="title"><div><h1>Admin Accessibility</h1><p>Role-based access and permission management for the DASH MOBILE SERVICES admin portal.</p></div></div>
       <div class="notice"><b>Access control:</b> Each role should only have access to the information and actions required for its responsibilities. Super Admin controls role assignments and permission changes.</div>
       <div class="cards" style="grid-template-columns:repeat(3,1fr)">
         <div class="card"><div class="label">SUPER ADMIN</div><div class="value" style="font-size:22px">Full</div><div class="muted">Complete business access, including settings, financial records, employee management, policies, assets, and security.</div></div>

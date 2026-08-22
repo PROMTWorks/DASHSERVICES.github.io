@@ -1,4 +1,4 @@
-/* DASH Services Square payment processing settings. */
+/* DASH MOBILE SERVICES Square payment processing settings. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';

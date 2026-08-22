@@ -1,4 +1,4 @@
-/* DASH Services dedicated Wait List module. */
+/* DASH MOBILE SERVICES dedicated Wait List module. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';

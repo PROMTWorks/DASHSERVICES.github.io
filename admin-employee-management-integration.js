@@ -1,4 +1,4 @@
-/* DASH Services Admin Portal — Employee Management Integration
+/* DASH MOBILE SERVICES Admin Portal — Employee Management Integration
  *
  * The live Admin Portal is served by the Supabase dash-admin-portal Edge Function.
  * Employee CRUD/pay actions are routed through the secured employee-management

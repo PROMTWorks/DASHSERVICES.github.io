@@ -1,10 +1,10 @@
-# DASH Services Customer Policies
+# DASH MOBILE SERVICES Customer Policies
 
 This file is the source record for the customer-facing policies published through `policies.html`.
 
 ## Payment, Pricing & Booking Policy
 
-DASH Services may maintain payment records for administrative, accounting, customer-service, and recordkeeping purposes. Customers paying through Cash App or Venmo must include “For [Customer Name]” and the applicable DASH booking number in the payment note or description when instructed by DASH.
+DASH MOBILE SERVICES may maintain payment records for administrative, accounting, customer-service, and recordkeeping purposes. Customers paying through Cash App or Venmo must include “For [Customer Name]” and the applicable DASH booking number in the payment note or description when instructed by DASH.
 
 Customers are responsible for providing required payment information accurately and completely. Missing or incorrect payment information may delay payment identification and may affect booking status, service dates, or scheduling availability.
 

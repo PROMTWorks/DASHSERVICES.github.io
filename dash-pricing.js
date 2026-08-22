@@ -1,4 +1,4 @@
-/* DASH Services internal pricing engine. Customer sees only the final estimate. */
+/* DASH MOBILE SERVICES internal pricing engine. Customer sees only the final estimate. */
 (function(){
 'use strict';
 const CONFIG={

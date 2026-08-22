@@ -24,7 +24,7 @@
   }
   function status(message,warning){var parent=document.getElementById('restrictionProofSection')||document.getElementById('booking');if(!parent)return;var n=document.getElementById('serverRestrictionStatus');if(!n){n=document.createElement('div');n.id='serverRestrictionStatus';n.className='note '+(warning?'warning':'');parent.appendChild(n)}n.innerHTML=message;}
   function emailProof(result){
-    var p=payload(),subject=encodeURIComponent('Proof of Service Location Allowed, Service Request #'+result.request_number),body=encodeURIComponent('DASH Services - Proof of Service Location Allowed\n\nService Request #: '+result.request_number+'\nService: '+p.service_name+'\n\nService Location:\n'+p.street_address+'\n'+p.city+', '+p.state+' '+p.postal_code+'\n\nPlease attach the documentation/proof showing that DASH Services is permitted to complete the requested service at this location.');
+    var p=payload(),subject=encodeURIComponent('Proof of Service Location Allowed, Service Request #'+result.request_number),body=encodeURIComponent('DASH MOBILE SERVICES - Proof of Service Location Allowed\n\nService Request #: '+result.request_number+'\nService: '+p.service_name+'\n\nService Location:\n'+p.street_address+'\n'+p.city+', '+p.state+' '+p.postal_code+'\n\nPlease attach the documentation/proof showing that DASH MOBILE SERVICES is permitted to complete the requested service at this location.');
     window.location.href='mailto:'+SUPPORT_EMAIL+'?subject='+subject+'&body='+body;
   }
   async function proofButton(){

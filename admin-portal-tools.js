@@ -1,4 +1,4 @@
-/* DASH Services admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings. */
+/* DASH MOBILE SERVICES admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';

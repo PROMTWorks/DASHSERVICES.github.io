@@ -1,4 +1,4 @@
-/* DASH Services Google Maps configuration.
+/* DASH MOBILE SERVICES Google Maps configuration.
    Add a new Google Maps JavaScript API key here after rotating the previously
    exposed key. Keep the key restricted to the DASH GitHub Pages domain.
 */

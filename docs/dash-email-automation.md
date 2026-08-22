@@ -1,10 +1,10 @@
-# DASH Services Automated Email Setup
+# DASH MOBILE SERVICES Automated Email Setup
 
 ## Current test configuration
 
 - Sending address: `davidroyemployment@gmail.com`
 - Test destination: `djroy20.2004@gmail.com`
-- Test subject: `DASH Services — Automated Email Test`
+- Test subject: `DASH MOBILE SERVICES — Automated Email Test`
 
 ## Recommended production architecture
 
@@ -28,11 +28,11 @@ When the secure connection is configured, the Admin Portal's **Send Test Automat
 
 **To:** `djroy20.2004@gmail.com`
 
-**Subject:** `DASH Services — Automated Email Test`
+**Subject:** `DASH MOBILE SERVICES — Automated Email Test`
 
 **Body:**
 
-This is a test email from DASH Services to ensure the automated email system is working correctly leading up to launch day.
+This is a test email from DASH MOBILE SERVICES to ensure the automated email system is working correctly leading up to launch day.
 
 ## Important security rules
 

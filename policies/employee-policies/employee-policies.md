@@ -1,6 +1,6 @@
 # Employee Policies & Procedures
 
-Internal DASH Services procedures for employees handling customer-policy situations. Employees must follow the applicable customer-facing policy and use these procedures when a customer issue occurs. Employees may not independently change company policy or promise an outcome outside their authorized role.
+Internal DASH MOBILE SERVICES procedures for employees handling customer-policy situations. Employees must follow the applicable customer-facing policy and use these procedures when a customer issue occurs. Employees may not independently change company policy or promise an outcome outside their authorized role.
 
 ## 1. Booking & Payment Handling Procedure
 
@@ -168,11 +168,11 @@ Customer questions or disputes regarding promotional terms should be handled acc
 
 ## 14. Military Discount — In-Person Verification Procedure
 
-DASH Services offers a 90% discount only to the individual qualifying service member or veteran who presents valid military or veteran identification and receives the eligible DASH Services-controlled service. The discount is not transferable and does not extend to spouses, children, relatives, friends, or other members of the customer's party.
+DASH MOBILE SERVICES offers a 90% discount only to the individual qualifying service member or veteran who presents valid military or veteran identification and receives the eligible DASH MOBILE SERVICES-controlled service. The discount is not transferable and does not extend to spouses, children, relatives, friends, or other members of the customer's party.
 
-The military discount is available in person only at a physical DASH Services location and must not be offered through online booking or online payment. Employees must verify the qualifying person's identification before applying the discount.
+The military discount is available in person only at a physical DASH MOBILE SERVICES location and must not be offered through online booking or online payment. Employees must verify the qualifying person's identification before applying the discount.
 
-The discount applies only to services whose pricing and performance are controlled by DASH Services. It does not apply to third-party charges or services, including U-Haul rental charges or other third-party amounts that DASH does not control.
+The discount applies only to services whose pricing and performance are controlled by DASH MOBILE SERVICES. It does not apply to third-party charges or services, including U-Haul rental charges or other third-party amounts that DASH does not control.
 
 If a non-qualifying family member or other person requests the military discount, employees should politely explain that the discount is limited to the qualifying service member or veteran whose identification is presented and verified. Employees should not argue with, insult, threaten, or attempt to shame the customer.
 

@@ -1,6 +1,6 @@
-# DASH Services Policies
+# DASH MOBILE SERVICES Policies
 
-This is the central policy area for the DASH Services admin portal.
+This is the central policy area for the DASH MOBILE SERVICES admin portal.
 
 ## Policy categories
 

@@ -1,4 +1,4 @@
-/* DASH Services Fleet & Equipment redesign v2. Separate file to force a fresh browser load. */
+/* DASH MOBILE SERVICES Fleet & Equipment redesign v2. Separate file to force a fresh browser load. */
 (function(){
   function renderFleet(){
     const section=document.getElementById('fleet');

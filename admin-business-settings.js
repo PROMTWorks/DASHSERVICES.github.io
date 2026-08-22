@@ -1,4 +1,4 @@
-/* DASH Services Business Settings module. */
+/* DASH MOBILE SERVICES Business Settings module. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
@@ -10,11 +10,11 @@
   function render(){
     const section=document.getElementById('settings'); if(!section)return;
     section.innerHTML=`
-      <div class="title"><div><h1>Business Settings</h1><p>Manage DASH Services business information, payments, services, communications, and owner contact rules.</p></div><button class="btn" type="button" id="saveBusinessSettingsTop">Save Business Settings</button></div>
+      <div class="title"><div><h1>Business Settings</h1><p>Manage DASH MOBILE SERVICES business information, payments, services, communications, and owner contact rules.</p></div><button class="btn" type="button" id="saveBusinessSettingsTop">Save Business Settings</button></div>
       <div id="businessSettingsNotice" class="notice"><b>Super Admin only:</b> These settings are private administrative configuration. The private business address will not be displayed publicly unless you explicitly choose to use it for customer-facing content.</div>
       <div class="panel"><div class="head"><h2>Business Information</h2></div><div class="body"><div class="form">
         <div class="field"><label>Legal / Registered Business Name</label><input id="bs_legal_name" placeholder="Enter legal business name"></div>
-        <div class="field"><label>Customer-Facing Business Name</label><input id="bs_customer_name" placeholder="DASH Services"></div>
+        <div class="field"><label>Customer-Facing Business Name</label><input id="bs_customer_name" placeholder="DASH MOBILE SERVICES"></div>
         <div class="field"><label>Business Phone</label><input id="bs_phone" placeholder="Enter business phone"></div>
         <div class="field"><label>Business Email</label><input id="bs_email" type="email" placeholder="Enter business email"></div>
         <div class="field full"><label>Private Business Address <span class="mini">Admin use only — not public</span></label><input id="bs_private_address" placeholder="Enter private business address"></div>
@@ -42,7 +42,7 @@
         <div class="actions"><button class="btn light" type="button" id="connectSquareSettings">Connect Square</button></div>
       </div></div>
       <div class="panel"><div class="head"><h2>Service Settings</h2></div><div class="body"><div class="form">
-        <div class="field full"><label>Services Offered</label><textarea id="bs_services" placeholder="Enter services offered by DASH Services"></textarea></div>
+        <div class="field full"><label>Services Offered</label><textarea id="bs_services" placeholder="Enter services offered by DASH MOBILE SERVICES"></textarea></div>
         <div class="field"><label>Pricing / Estimate Rules</label><textarea id="bs_pricing" placeholder="Enter pricing or estimate rules"></textarea></div>
         <div class="field"><label>Service Areas</label><textarea id="bs_service_areas" placeholder="Enter cities, ZIP codes, or service areas"></textarea></div>
         <div class="field full"><label>Scheduling Rules</label><textarea id="bs_scheduling" placeholder="Enter scheduling rules and service-window rules"></textarea></div>
