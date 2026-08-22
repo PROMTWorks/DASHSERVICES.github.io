@@ -1,0 +1,43 @@
+name: Replace DASH Services branding
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  replace-branding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Replace customer-facing branding
+        shell: bash
+        run: |
+          set -e
+          find . -type f \
+            ! -path './.git/*' \
+            ! -path './.github/workflows/rename-dash-brand.yml' \
+            \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.md' -o -name '*.txt' -o -name '*.json' \) \
+            -print0 | while IFS= read -r -d '' file; do
+              perl -0pi -e 's/DASH Services/DASH MOBILE SERVICES/g; s/DASH SERVICES/DASH MOBILE SERVICES/g; s/Dash Services/DASH MOBILE SERVICES/g' "$file"
+          done
+
+      - name: Commit branding changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No DASH Services branding changes were needed."
+          else
+            git commit -m "Update customer-facing brand to DASH Mobile Services"
+            git push
+          fi
