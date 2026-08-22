@@ -19,7 +19,7 @@ function installControls(doc){
  const b=doc.getElementById('dashDirectSignOut');
  if(!b){const x=doc.createElement('button');x.id='dashDirectSignOut';x.type='button';x.textContent='Sign Out';x.style='position:fixed;top:14px;right:18px;z-index:99999;border:0;border-radius:8px;padding:9px 14px;background:#111827;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.18)';x.onclick=logout;doc.body.appendChild(x)}
 }
-frame.onload=()=>{status.style.display='none';frame.style.display='block';const doc=frame.contentDocument;if(!doc)return;installControls(doc);addScript(doc,'admin-role-guard.js?v=20260821-actualshell','dashRoleGuardActual');addScript(doc,'admin-waitlist.js?v=20260821-actualshell','dashWaitlistActual');addScript(doc,'admin-portal-tools.js?v=20260821-actualshell','dashPortalToolsActual');setTimeout(()=>installControls(doc),1000);setTimeout(()=>installControls(doc),2500)};
+frame.onload=()=>{status.style.display='none';frame.style.display='block';const doc=frame.contentDocument;if(!doc)return;installControls(doc);addScript(doc,'admin-role-guard.js?v=20260821-actualshell','dashRoleGuardActual');addScript(doc,'admin-waitlist.js?v=20260821-actualshell','dashWaitlistActual');addScript(doc,'admin-portal-tools.js?v=20260821-actualshell','dashPortalToolsActual');addScript(doc,'admin-job-operations.js?v=20260821-1','dashJobOperationsActual');setTimeout(()=>installControls(doc),1000);setTimeout(()=>installControls(doc),2500)};
 frame.src='admin-production.html';
 </script>
 </body>
