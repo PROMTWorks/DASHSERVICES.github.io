@@ -1,4 +1,4 @@
-name: Add All Services footer link
+name: Maintain sitemap footer links
 
 on:
   push:
@@ -15,18 +15,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Add All Services to sitemap
+      - name: Maintain sitemap links
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text()
-          old = '<div class="footer-column"><a href="book-service.html?v=20260816">Book a Service</a></div>'
-          new = '<div class="footer-column"><a href="all-services.html">All Services</a><a href="book-service.html?v=20260816">Book a Service</a></div>'
-          if 'href="all-services.html">All Services</a>' not in s:
-              if old not in s:
-                  raise SystemExit('Expected footer block was not found')
-              p.write_text(s.replace(old, new, 1))
+
+          all_services = '<a href="all-services.html">All Services</a>'
+          book_service = '<a href="book-service.html?v=20260816">Book a Service</a>'
+          support_dash = '<a href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener">Support DASH</a>'
+
+          old_book_only = f'<div class="footer-column">{book_service}</div>'
+          new_book_block = f'<div class="footer-column">{all_services}{book_service}{support_dash}</div>'
+
+          if support_dash not in s:
+              if old_book_only in s:
+                  s = s.replace(old_book_only, new_book_block, 1)
+              else:
+                  marker = f'{all_services}{book_service}'
+                  if marker not in s:
+                      raise SystemExit('Expected footer sitemap links were not found')
+                  s = s.replace(marker, marker + support_dash, 1)
+              p.write_text(s)
           PY
       - name: Commit and push
         run: |
@@ -34,5 +45,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Add All Services to footer sitemap"
+          git commit -m "Add Support DASH to footer sitemap"
           git push
