@@ -1,0 +1,43 @@
+name: Add Donate to Dash header
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  add-donate-header:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add Donate to Dash header
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          old_css = '.nav-cta{padding:11px 17px;border-radius:9px;background:#fff;color:var(--ink);box-shadow:0 5px 18px rgba(0,0,0,.16)}'
+          new_css = old_css + '.donate-cta{padding:11px 17px;border-radius:9px;background:var(--red);color:#fff!important;box-shadow:0 5px 18px rgba(198,40,40,.24)}'
+          if 'donate-cta' not in s:
+              s = s.replace(old_css, new_css, 1)
+          old_nav = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
+          new_nav = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>' + old_nav
+          if 'DONATE TO DASH' not in s:
+              if old_nav not in s:
+                  raise SystemExit('Expected booking header link was not found')
+              s = s.replace(old_nav, new_nav, 1)
+          p.write_text(s)
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add Donate to Dash header link"
+          git push
