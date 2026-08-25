@@ -1861,6 +1861,28 @@ function calculateEmployeePayCapacity(){
 
 
 
+
+<script>
+function cpcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
+function calculateCompanyPayrollCapacity(){
+  const revenue=cpcNum('cpcRevenue'),expenses=cpcNum('cpcExpenses'),draw=cpcNum('cpcOwnerDraw'),profit=cpcNum('cpcProfit');
+  const employees=Math.max(1,Math.floor(cpcNum('cpcEmployees'))),hours=cpcNum('cpcHours'),ot=cpcNum('cpcOT'),burden=cpcNum('cpcBurden')/100,current=cpcNum('cpcCurrent');
+  const paidHours=(hours+ot*1.5)*52/12, factor=paidHours*employees*(1+burden);
+  const buffer=Math.max(0,revenue-expenses-draw-profit), drawBuffer=Math.max(0,revenue-expenses-draw);
+  const safe=factor?buffer/factor:0, drawMax=factor?drawBuffer/factor:0, cost=current*factor;
+  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('cpcSafe').textContent=fmt(safe)+'/hr';
+  document.getElementById('cpcDraw').textContent=fmt(drawMax)+'/hr';
+  document.getElementById('cpcCost').textContent=fmt(cost);
+  document.getElementById('cpcBuffer').textContent=fmt(buffer);
+  const msg=document.getElementById('cpcMessage');
+  if(revenue<=0)msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';
+  else if(current>safe)msg.textContent='Warning: the current average wage is above the company-wide safe maximum.';
+  else if(current>drawMax)msg.textContent='Warning: the current average wage is above the owner-draw protection limit.';
+  else msg.textContent='Current average wage is within the company-wide owner-draw and minimum-profit target.';
+}
+function resetCompanyPayrollCapacity(){const v={cpcRevenue:0,cpcExpenses:0,cpcOwnerDraw:5000,cpcProfit:0,cpcEmployees:1,cpcHours:40,cpcOT:0,cpcBurden:10,cpcCurrent:0};Object.entries(v).forEach(([id,x])=>{const e=document.getElementById(id);if(e)e.value=x;});calculateCompanyPayrollCapacity();}
+</script>
 <script id="DASH_EMPLOYEE_ADMIN_V4">
 (()=>{
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
@@ -1926,7 +1948,7 @@ function calculateEmployeePayCapacity(){
     const h=document.getElementById('adminEmployeeRecords');
     if(!h)return;
     h.innerHTML='<div class="empty"><strong>Loading employee records...</strong></div>';
-    try{const employeeData=await api('list');rows=Array.isArray(employeeData)?employeeData:[];render();}
+    try{rows=Array.isArray(await api('list'))?await api('list'):[];render();}
     catch(e){h.innerHTML='<div class="empty"><strong>Employee records could not be loaded</strong><p>'+esc(e.message)+'</p><button class="btn" id="aeRetry">Try Again</button></div>';document.getElementById('aeRetry').onclick=load;}
   }
   function find(id){return rows.find(e=>String(e.employee_id)===String(id));}
@@ -1953,27 +1975,6 @@ function calculateEmployeePayCapacity(){
   });
   load();
 })();
-</script>
-<script>
-function cpcNum(id){const v=parseFloat(document.getElementById(id)?.value);return Number.isFinite(v)&&v>=0?v:0;}
-function calculateCompanyPayrollCapacity(){
-  const revenue=cpcNum('cpcRevenue'),expenses=cpcNum('cpcExpenses'),draw=cpcNum('cpcOwnerDraw'),profit=cpcNum('cpcProfit');
-  const employees=Math.max(1,Math.floor(cpcNum('cpcEmployees'))),hours=cpcNum('cpcHours'),ot=cpcNum('cpcOT'),burden=cpcNum('cpcBurden')/100,current=cpcNum('cpcCurrent');
-  const paidHours=(hours+ot*1.5)*52/12, factor=paidHours*employees*(1+burden);
-  const buffer=Math.max(0,revenue-expenses-draw-profit), drawBuffer=Math.max(0,revenue-expenses-draw);
-  const safe=factor?buffer/factor:0, drawMax=factor?drawBuffer/factor:0, cost=current*factor;
-  const fmt=v=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('cpcSafe').textContent=fmt(safe)+'/hr';
-  document.getElementById('cpcDraw').textContent=fmt(drawMax)+'/hr';
-  document.getElementById('cpcCost').textContent=fmt(cost);
-  document.getElementById('cpcBuffer').textContent=fmt(buffer);
-  const msg=document.getElementById('cpcMessage');
-  if(revenue<=0)msg.textContent='Enter monthly revenue and expenses to get a meaningful estimate.';
-  else if(current>safe)msg.textContent='Warning: the current average wage is above the company-wide safe maximum.';
-  else if(current>drawMax)msg.textContent='Warning: the current average wage is above the owner-draw protection limit.';
-  else msg.textContent='Current average wage is within the company-wide owner-draw and minimum-profit target.';
-}
-function resetCompanyPayrollCapacity(){const v={cpcRevenue:0,cpcExpenses:0,cpcOwnerDraw:5000,cpcProfit:0,cpcEmployees:1,cpcHours:40,cpcOT:0,cpcBurden:10,cpcCurrent:0};Object.entries(v).forEach(([id,x])=>{const e=document.getElementById(id);if(e)e.value=x;});calculateCompanyPayrollCapacity();}
 </script>
 </body>
 </html>
