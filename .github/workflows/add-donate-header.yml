@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Ensure one Donate to DASH header button
+      - name: Remove duplicate Donate to DASH header button
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -23,14 +23,18 @@ jobs:
           p = Path('index.html')
           s = p.read_text()
           marker = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
+          # Remove the unwanted nav-donate element if it exists in source.
+          s = re.sub(r'<a class="nav-donate"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
+          # Ensure exactly one primary donate button remains.
           s = re.sub(r'<a class="donate-cta"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
           old_nav = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
           if old_nav not in s:
               raise SystemExit('Expected booking header link was not found')
           s = s.replace(old_nav, marker + old_nav, 1)
-          hide = 'nav .nav-donate{display:none!important;}'
-          if hide not in s:
-              s = s.replace('</style>', hide + '</style>', 1)
+          # Safety net: remove any nav-donate element injected after the page loads.
+          guard = "<script>(function(){function removeDuplicateDonate(){document.querySelectorAll('nav .nav-donate').forEach(function(el){el.remove();});}removeDuplicateDonate();new MutationObserver(removeDuplicateDonate).observe(document.documentElement,{childList:true,subtree:true});})();</script>"
+          if "querySelectorAll('nav .nav-donate')" not in s:
+              s = s.replace('</body>', guard + '</body>', 1)
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -39,5 +43,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Permanently remove injected duplicate Donate button"
+          git commit -m "Remove duplicate Donate to DASH navigation button"
           git push
