@@ -49,6 +49,22 @@
   });
 })();
 </script>
+(function () {
+  function removeExtraDonate() {
+    document.querySelectorAll('a.nav-donate').forEach(function (button) {
+      button.remove();
+    });
+  }
 
+  removeExtraDonate();
+
+  new MutationObserver(function () {
+    removeExtraDonate();
+  }).observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();
+</script>
 </body>
 </html>
