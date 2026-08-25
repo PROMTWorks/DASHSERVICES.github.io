@@ -28,6 +28,9 @@ jobs:
           if old_nav not in s:
               raise SystemExit('Expected booking header link was not found')
           s = s.replace(old_nav, marker + old_nav, 1)
+          hide = 'nav .nav-donate{display:none!important;}'
+          if hide not in s:
+              s = s.replace('</style>', hide + '</style>', 1)
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -36,5 +39,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Normalize single Donate to DASH header button"
+          git commit -m "Hide injected duplicate Donate to DASH button"
           git push
