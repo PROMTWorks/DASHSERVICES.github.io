@@ -15,27 +15,45 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Normalize the Donate navigation button
+      - name: Keep exactly one customer Donate button
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
+
           p = Path('index.html')
           s = p.read_text()
+
           donate = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
-          # Remove every existing Donate link variant from the navigation source.
-          s = re.sub(r'<a class="(?:donate-cta|nav-donate)"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
-          # Insert exactly one Donate link before Book a Service.
           booking = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
+
+          # Remove all legacy Donate variants from the navigation, then add exactly one.
+          s = re.sub(r'<a class="(?:donate-cta|nav-donate)"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
           if booking not in s:
               raise SystemExit('Expected booking header link was not found')
           s = s.replace(booking, donate + booking, 1)
-          # Remove any legacy nav-donate injection from generated markup.
-          s = s.replace('class="nav-donate"', 'class="donate-cta"')
-          # Keep only the first Donate button if any legacy client-side code adds another.
-          guard = "<script>(function(){function keepOne(){var els=document.querySelectorAll('nav .donate-cta, nav .nav-donate');for(var i=1;i<els.length;i++)els[i].remove();}keepOne();new MutationObserver(keepOne).observe(document.documentElement,{childList:true,subtree:true});})();</script>"
-          if "querySelectorAll('nav .donate-cta, nav .nav-donate')" not in s:
-              s = s.replace('</body>', guard + '</body>', 1)
+
+          # Remove legacy Donate styling if it was previously injected into the source.
+          s = re.sub(r'<style[^>]*id=["\']dash-donate-header-style["\'][^>]*>.*?</style>', '', s, flags=re.I | re.S)
+
+          # Permanently neutralize any legacy nav-donate element that may be injected by stale cached markup.
+          guard_style = 'nav .nav-donate{display:none!important;}'
+          if guard_style not in s:
+              s = s.replace('</style>', guard_style + '</style>', 1)
+
+          guard_script = '''<script>
+(function(){
+  function removeLegacyDonate(){
+    document.querySelectorAll('nav .nav-donate').forEach(function(el){el.remove();});
+    document.querySelectorAll('#dash-donate-header-style').forEach(function(el){el.remove();});
+  }
+  removeLegacyDonate();
+  new MutationObserver(removeLegacyDonate).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>'''
+          if 'removeLegacyDonate' not in s:
+              s = s.replace('</body>', guard_script + '</body>', 1)
+
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -44,5 +62,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Fix Donate button duplication at source"
+          git commit -m "Remove duplicate Donate button from customer navigation"
           git push
