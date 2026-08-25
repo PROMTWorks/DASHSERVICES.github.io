@@ -1,4 +1,4 @@
-name: Ensure Donate to Dash header
+name: Ensure only one Donate to DASH button
 
 on:
   push:
@@ -8,33 +8,26 @@ permissions:
   contents: write
 
 jobs:
-  ensure-donate-header:
+  ensure-one-donate:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Remove duplicate Donate to DASH header button
+      - name: Remove the duplicate Donate button and keep the injected one
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           p = Path('index.html')
           s = p.read_text()
-          marker = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
-          # Remove the unwanted nav-donate element if it exists in source.
-          s = re.sub(r'<a class="nav-donate"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
-          # Ensure exactly one primary donate button remains.
+          # Remove the source donate-cta button. The live navigation already
+          # supplies the single nav-donate button; this prevents two buttons.
           s = re.sub(r'<a class="donate-cta"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
-          old_nav = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
-          if old_nav not in s:
-              raise SystemExit('Expected booking header link was not found')
-          s = s.replace(old_nav, marker + old_nav, 1)
-          # Safety net: remove any nav-donate element injected after the page loads.
-          guard = "<script>(function(){function removeDuplicateDonate(){document.querySelectorAll('nav .nav-donate').forEach(function(el){el.remove();});}removeDuplicateDonate();new MutationObserver(removeDuplicateDonate).observe(document.documentElement,{childList:true,subtree:true});})();</script>"
-          if "querySelectorAll('nav .nav-donate')" not in s:
-              s = s.replace('</body>', guard + '</body>', 1)
+          # Remove any stale source nav-donate markup if present so the live
+          # navigation cannot contain two copies in the HTML itself.
+          s = re.sub(r'<a class="nav-donate"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -43,5 +36,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Remove duplicate Donate to DASH navigation button"
+          git commit -m "Remove duplicate Donate to DASH source button"
           git push
