@@ -33,6 +33,22 @@
     if(staff || fromGithub) sessionStorage.setItem('dashStaffView','1');
   }
 })();
+<script>
+(function () {
+  function removeDuplicateDonate() {
+    document.querySelectorAll('.nav-donate').forEach(function (el) {
+      el.remove();
+    });
+  }
+
+  removeDuplicateDonate();
+
+  new MutationObserver(removeDuplicateDonate).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+})();
 </script>
+
 </body>
 </html>
