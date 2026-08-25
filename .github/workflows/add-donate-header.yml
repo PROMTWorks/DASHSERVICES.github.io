@@ -1,21 +1,19 @@
 name: Ensure Donate to Dash header
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   ensure-donate-header:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Ensure only one Donate to DASH button is visible
+      - name: Ensure exactly one Donate to DASH header button
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -24,19 +22,12 @@ jobs:
           marker = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
           first = s.find(marker)
           if first >= 0:
-              prefix = s[:first + len(marker)]
-              suffix = s[first + len(marker):].replace(marker, '')
-              s = prefix + suffix
+              s = s[:first + len(marker)] + s[first + len(marker):].replace(marker, '')
           else:
               old_nav = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
               if old_nav not in s:
                   raise SystemExit('Expected booking header link was not found')
               s = s.replace(old_nav, marker + old_nav, 1)
-          # Safety rule: if any duplicate Donate buttons are ever injected by
-          # cached/generated markup, only the first header button is displayed.
-          safety = 'nav .donate-cta ~ .donate-cta{display:none!important;}'
-          if safety not in s:
-              s = s.replace('</style>', safety + '</style>', 1)
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -45,5 +36,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Fix duplicate Donate to DASH display"
+          git commit -m "Ensure single Donate to DASH button"
           git push
