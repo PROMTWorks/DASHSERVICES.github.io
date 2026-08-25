@@ -22,17 +22,19 @@ jobs:
           import re
           p = Path('index.html')
           s = p.read_text()
-          donate = '<a class="nav-donate" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
-          # Remove every existing Donate link variant from the source.
+          donate = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
+          # Remove every existing Donate link variant from the navigation source.
           s = re.sub(r'<a class="(?:donate-cta|nav-donate)"[^>]*>\s*DONATE TO DASH\s*</a>', '', s)
           # Insert exactly one Donate link before Book a Service.
           booking = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
           if booking not in s:
               raise SystemExit('Expected booking header link was not found')
           s = s.replace(booking, donate + booking, 1)
-          # Keep only the first nav-donate if any client-side code tries to add another.
-          guard = "<script>(function(){function keepOne(){var els=document.querySelectorAll('nav .nav-donate');for(var i=1;i<els.length;i++)els[i].remove();}keepOne();new MutationObserver(keepOne).observe(document.documentElement,{childList:true,subtree:true});})();</script>"
-          if "querySelectorAll('nav .nav-donate')" not in s:
+          # Remove any legacy nav-donate injection from generated markup.
+          s = s.replace('class="nav-donate"', 'class="donate-cta"')
+          # Keep only the first Donate button if any legacy client-side code adds another.
+          guard = "<script>(function(){function keepOne(){var els=document.querySelectorAll('nav .donate-cta, nav .nav-donate');for(var i=1;i<els.length;i++)els[i].remove();}keepOne();new MutationObserver(keepOne).observe(document.documentElement,{childList:true,subtree:true});})();</script>"
+          if "querySelectorAll('nav .donate-cta, nav .nav-donate')" not in s:
               s = s.replace('</body>', guard + '</body>', 1)
           p.write_text(s)
           PY
@@ -42,5 +44,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Normalize to one Donate to DASH button"
+          git commit -m "Fix Donate button duplication at source"
           git push
