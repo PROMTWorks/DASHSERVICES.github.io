@@ -22,21 +22,20 @@ jobs:
           p = Path('index.html')
           s = p.read_text()
           marker = '<a class="donate-cta" href="https://www.gofundme.com/f/help-get-dash-mobile-services-on-the-road" target="_blank" rel="noopener noreferrer">DONATE TO DASH</a>'
-          # Keep the first existing donation button and remove any additional copies.
+          # Keep exactly one donation button in the header.
           first = s.find(marker)
           if first >= 0:
               prefix = s[:first + len(marker)]
               suffix = s[first + len(marker):].replace(marker, '')
               s = prefix + suffix
           else:
-              old_css = '.nav-cta{padding:11px 17px;border-radius:9px;background:#fff;color:var(--ink);box-shadow:0 5px 18px rgba(0,0,0,.16)}'
-              new_css = old_css + '.donate-cta{padding:11px 17px;border-radius:9px;background:var(--red);color:#fff!important;box-shadow:0 5px 18px rgba(198,40,40,.24)}'
-              if '.donate-cta' not in s:
-                  s = s.replace(old_css, new_css, 1)
               old_nav = '<a class="nav-cta" href="book-service.html?v=20260816">BOOK A SERVICE</a>'
               if old_nav not in s:
                   raise SystemExit('Expected booking header link was not found')
               s = s.replace(old_nav, marker + old_nav, 1)
+          # Force a fresh GitHub Pages deployment without changing visible content.
+          if '<!-- DASH donate header deployment check -->' not in s:
+              s = s.rstrip() + '\n<!-- DASH donate header deployment check -->\n'
           p.write_text(s)
           PY
       - name: Commit and push if changed
@@ -45,5 +44,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Ensure single Donate to DASH header button"
+          git commit -m "Refresh customer homepage deployment"
           git push
