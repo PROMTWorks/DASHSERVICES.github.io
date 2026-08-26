@@ -1,2 +1,4 @@
 DASH MOBILE SERVICES deployment refresh
 Forced August 20, 2026 refresh after restoring the full All Services page so GitHub Pages serves the current main version.
+
+August 25, 2026 homepage promotional banner refresh.
