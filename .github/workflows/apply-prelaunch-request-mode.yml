@@ -1,0 +1,58 @@
+name: Apply DASH pre-launch request mode
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update-booking-page:
+    if: ${{ !contains(github.event.head_commit.message, 'Apply DASH pre-launch request mode') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out site
+        uses: actions/checkout@v4
+
+      - name: Update booking page for pre-launch requests
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('book-service.html')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = {
+              '<h1>Book a Service</h1>': '<h1>Request a Service</h1>',
+              'Choose Automotive to view available mobile services. DASH comes to the customer, so you don\'t have to add unnecessary mileage, fuel use, or extra wear and tear just to keep up with required maintenance.': 'Choose a service and submit a request. DASH is currently in pre-launch, so requests are collected for planning and demand tracking. No payment is required and no appointment is confirmed at this stage.',
+              'Mobile automotive services currently offered by DASH MOBILE SERVICES.': 'Mobile automotive services planned for the DASH launch.',
+              '<strong>Scheduling:</strong> Your preferred date and arrival time are requests, not guarantees. DASH determines the actual service date and arrival window based on availability, routing, service requirements, and scheduling.': '<strong>Pre-launch scheduling:</strong> Your preferred date and arrival time are requests only. DASH is not currently opening appointments. Your request helps us measure demand and prepare our initial schedule.',
+              '<strong>Confirmation:</strong> Your appointment is not confirmed until DASH completes the required confirmation process and sends the official confirmation.': '<strong>Pre-launch notice:</strong> Submitting this request does not create a confirmed appointment, and you will not be charged. DASH will contact you when appointment scheduling officially opens.',
+              '<h2>Customer Contact Information</h2><p class="contact-intro">We need your contact information so DASH can communicate with you about this service request and the appointment confirmation.</p>': '<h2>Contact Information</h2><p class="contact-intro">We need your contact information so DASH can follow up about your service request and notify you when scheduling officially opens.</p>',
+              'I confirm that the contact information above is accurate and I authorize DASH MOBILE SERVICES to contact me regarding this service request and appointment.': 'I confirm that the contact information above is accurate and I authorize DASH MOBILE SERVICES to contact me about this pre-launch service request and future scheduling.',
+              '<button class="continue" onclick="submitRequest()">Submit Service Request</button>': '<button class="continue" onclick="submitRequest()">Submit Request</button>',
+          }
+
+          for old, new in replacements.items():
+              if old in text:
+                  text = text.replace(old, new, 1)
+
+          marker = '<div class="note prelaunch-note"><strong>Pre-launch:</strong> Requests are being collected to measure interest and help DASH prepare for launch. No payment is required and submitting a request does not reserve a date.</div>'
+          if 'class="note prelaunch-note"' not in text:
+              anchor = '<div class="progress"><span class="active" id="p1">1. Service</span>'
+              text = text.replace(anchor, marker + '\n' + anchor, 1)
+
+          if 'prelaunch-note' not in text:
+              raise SystemExit('Pre-launch marker was not inserted; refusing to commit a partial update.')
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Commit the targeted change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add book-service.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply DASH pre-launch request mode'
+          git push
