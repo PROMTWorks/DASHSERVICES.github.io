@@ -24,5 +24,38 @@ const originalCalc=window.calculateEstimate;window.calculateEstimate=function(){
 window.DASH_PRICING={COSTS,LAWN,AUTO,estimate};
 }
 function install(){addLawnServices()}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+function applyPrelaunchRequestMode(){
+  const h1=document.querySelector('main h1');
+  if(h1)h1.textContent='Request a Service';
+  const intro=document.querySelector('.intro');
+  if(intro)intro.textContent='Choose a service and submit a request. DASH is currently in pre-launch, so requests are collected for planning and demand tracking. No payment is required and no appointment is confirmed at this stage.';
+  const autoText=document.querySelector('#automotive .category-head p');
+  if(autoText)autoText.textContent='Mobile automotive services planned for the DASH launch.';
+  if(!document.querySelector('.prelaunch-note')){
+    const progress=document.querySelector('.progress');
+    if(progress){
+      const note=document.createElement('div');
+      note.className='note prelaunch-note';
+      note.innerHTML='<strong>Pre-launch:</strong> Requests are being collected to measure interest and help DASH prepare for launch. No payment is required and submitting a request does not reserve a date.';
+      progress.parentNode.insertBefore(note,progress);
+    }
+  }
+  document.querySelectorAll('.note').forEach(note=>{
+    if(note.textContent.includes('Your preferred date and arrival time are requests, not guarantees.')){
+      note.innerHTML='<strong>Pre-launch scheduling:</strong> Your preferred date and arrival time are requests only. DASH is not currently opening appointments. Your request helps us measure demand and prepare our initial schedule.';
+    }
+    if(note.textContent.includes('Your appointment is not confirmed until DASH completes the required confirmation process')){
+      note.innerHTML='<strong>Pre-launch notice:</strong> Submitting this request does not create a confirmed appointment, and you will not be charged. DASH will contact you when appointment scheduling officially opens.';
+    }
+  });
+  const contactHeading=document.querySelector('#contact h2');
+  if(contactHeading)contactHeading.textContent='Contact Information';
+  const contactIntro=document.querySelector('#contact .contact-intro');
+  if(contactIntro)contactIntro.textContent='We need your contact information so DASH can follow up about your service request and notify you when scheduling officially opens.';
+  const consent=document.querySelector('#consent');
+  if(consent){const span=consent.parentElement?.querySelector('span');if(span)span.innerHTML='I confirm that the contact information above is accurate and I authorize DASH MOBILE SERVICES to contact me about this pre-launch service request and future scheduling. <span class="required">*</span>'}
+  const submit=document.querySelector('#contact button[onclick="submitRequest()"]');
+  if(submit)submit.textContent='Submit Request';
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{install();applyPrelaunchRequestMode()});else{install();applyPrelaunchRequestMode()}
 })();
