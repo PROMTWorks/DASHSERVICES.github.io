@@ -3,75 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DASH Mobile Services — Commercial</title>
+<title>DASH Mobile Services — Our Commercials</title>
 <style>
-:root{--blue:#0b5cff;--cyan:#18bfff;--white:#fff;--muted:#b8c2d0;--dark:#030509}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif}
-body{display:flex;align-items:center;justify-content:center}
-#commercial{position:relative;width:100vw;height:100vh;max-width:1920px;max-height:1080px;overflow:hidden;background:#030509}
-.ambient{position:absolute;inset:-20%;z-index:0;background:radial-gradient(circle at 20% 30%,rgba(0,102,255,.17),transparent 25%),radial-gradient(circle at 80% 65%,rgba(0,210,255,.11),transparent 25%);filter:blur(45px);animation:ambientMove 18s ease-in-out infinite alternate}
-@keyframes ambientMove{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.08)}}
-#commercial::after{content:"";position:absolute;inset:0;z-index:90;pointer-events:none;opacity:.045;background-image:repeating-radial-gradient(circle at 0 0,transparent 0,transparent 1px,rgba(255,255,255,.5) 1px,rgba(255,255,255,.5) 2px);mix-blend-mode:overlay}
-.scene{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transform:scale(1.035);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.5s cubic-bezier(.22,.61,.36,1)}
-.scene.active{opacity:1;visibility:visible;transform:scale(1)}
-.banner-scene{background:#000}.banner-wrap{position:absolute;inset:0;overflow:hidden}.banner-wrap img{width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.09);animation:bannerZoom 13s ease-out forwards;filter:saturate(1.08) contrast(1.05)}
-@keyframes bannerZoom{from{transform:scale(1.09)}to{transform:scale(1)}}
-.banner-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.68),rgba(0,0,0,.12) 52%,rgba(0,0,0,.58)),linear-gradient(0deg,rgba(0,0,0,.72),transparent 42%,rgba(0,0,0,.20))}
-.opening-title{position:absolute;left:7%;bottom:12%;max-width:760px;z-index:3}.eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#dce8ff}.eyebrow::before{content:"";width:34px;height:2px;background:var(--cyan);box-shadow:0 0 15px var(--cyan)}.opening-title h1{margin:0;font-size:clamp(44px,6vw,94px);line-height:.94;letter-spacing:-.055em}.opening-title p{max-width:650px;margin:25px 0 0;color:#d8e0eb;font-size:clamp(17px,1.65vw,24px);line-height:1.55}
-.copy{width:min(1150px,88%);text-align:center;z-index:4}.copy .eyebrow{justify-content:center}.copy h2{margin:0;font-size:clamp(44px,6vw,88px);line-height:.96;letter-spacing:-.055em}.copy p{max-width:800px;margin:27px auto 0;color:var(--muted);font-size:clamp(17px,1.6vw,24px);line-height:1.6}.blue-word{color:#5aa5ff;text-shadow:0 0 35px rgba(30,120,255,.35)}
-.browser-stage{width:min(1380px,88vw);height:min(760px,78vh);perspective:1400px;z-index:4}.browser{width:100%;height:100%;background:#10151e;border:1px solid rgba(255,255,255,.18);border-radius:20px;overflow:hidden;box-shadow:0 50px 120px rgba(0,0,0,.70),0 0 80px rgba(10,100,255,.15);transform:rotateX(2deg) rotateY(-2deg) translateY(10px)}.browser-bar{height:52px;display:flex;align-items:center;gap:12px;padding:0 18px;background:#171c25;border-bottom:1px solid rgba(255,255,255,.08)}.browser-dots{display:flex;gap:7px}.browser-dot{width:10px;height:10px;border-radius:50%;background:#586170}.address{flex:1;height:30px;border-radius:8px;background:#0c1119;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 14px;color:#8d98aa;font-size:12px}.browser iframe{width:100%;height:calc(100% - 52px);border:0;background:#fff}
-.services{width:min(1250px,88vw);z-index:4}.services-heading{text-align:left}.services-heading h2{margin:0;font-size:clamp(44px,5.5vw,82px);line-height:.96;letter-spacing:-.055em}.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:38px}.service-card{min-height:205px;padding:30px;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));backdrop-filter:blur(15px);box-shadow:0 25px 70px rgba(0,0,0,.25)}.service-number{color:#4f9cff;font-size:13px;font-weight:700;letter-spacing:.14em}.service-card h3{margin:22px 0 10px;font-size:24px}.service-card p{margin:0;color:#aeb8c7;line-height:1.5}
-.map-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(0,92,255,.18),transparent 42%),linear-gradient(135deg,#050913,#020306)}.map-grid{position:absolute;inset:-20%;opacity:.18;background-image:linear-gradient(rgba(100,160,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(100,160,255,.14) 1px,transparent 1px);background-size:60px 60px;transform:rotate(-8deg) scale(1.3)}.location{position:absolute;transform:translate(-50%,-50%);text-align:center}.location-dot{width:18px;height:18px;margin:auto;border-radius:50%;background:#28a9ff;box-shadow:0 0 0 7px rgba(40,169,255,.12),0 0 35px rgba(40,169,255,.8);animation:pulse 2s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 7px rgba(40,169,255,.12),0 0 35px rgba(40,169,255,.8)}50%{box-shadow:0 0 0 16px rgba(40,169,255,0),0 0 55px rgba(40,169,255,.9)}}.location span{display:block;margin-top:13px;font-weight:700;font-size:17px}.myrtle{left:62%;top:48%}.conway{left:49%;top:38%}.grandstrand{left:72%;top:60%}
-.final-brand{width:min(1050px,90vw);text-align:center;z-index:5}.final-brand img{width:min(760px,78vw);max-height:270px;object-fit:contain;filter:drop-shadow(0 25px 70px rgba(0,0,0,.65))}.final-slogan{margin-top:28px;font-size:clamp(27px,3.3vw,50px);font-weight:800;letter-spacing:-.035em}.final-slogan span{color:#59a5ff}.final-contact{margin-top:28px;display:flex;flex-direction:column;gap:13px;align-items:center}.phone-number{font-size:clamp(20px,2vw,29px);font-weight:700;letter-spacing:.04em}.facebook{display:flex;align-items:center;gap:11px;color:#dce5f3;font-size:17px}.facebook-logo{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#1877f2;color:#fff;font-weight:900;font-family:Arial,sans-serif}.final-url{margin-top:24px;color:#9eabbc;font-size:14px;letter-spacing:.10em}
-@media(max-width:850px){.services-grid{grid-template-columns:1fr;max-height:55vh;overflow:hidden}.service-card{min-height:135px;padding:20px}.service-card h3{margin:10px 0 7px;font-size:19px}.service-card p{font-size:13px}.browser-stage{width:94vw;height:62vh}.opening-title{left:6%;right:6%;bottom:12%}.final-slogan{font-size:27px}}
+:root{--ink:#0b1220;--muted:#607086;--line:#dfe6ee;--bg:#f6f8fb;--red:#c62828;--red2:#a91f1f;--blue:#0b5cff;--white:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+body{line-height:1.6}
+a{text-decoration:none;color:inherit}
+.top{background:linear-gradient(135deg,#08101d,#17263a);color:#fff;padding:78px 22px 70px;text-align:center;position:relative;overflow:hidden}
+.top:before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;right:-180px;top:-300px;background:rgba(11,92,255,.18);filter:blur(8px)}
+.top:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;left:-180px;bottom:-300px;background:rgba(198,40,40,.16);filter:blur(8px)}
+.top-inner{position:relative;z-index:1;max-width:900px;margin:auto}
+.kicker{font-size:11px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:#b9c9dc;margin-bottom:13px}
+h1{font-size:clamp(42px,7vw,76px);line-height:1.02;letter-spacing:-.045em;margin-bottom:18px}
+.top p{max-width:680px;margin:auto;color:#d9e3ee;font-size:clamp(16px,2vw,20px)}
+.wrap{max-width:1180px;margin:auto;padding:58px 22px 78px}
+.intro{text-align:center;max-width:760px;margin:0 auto 38px}.intro h2{font-size:clamp(28px,4vw,42px);line-height:1.1;margin-bottom:10px}.intro p{color:var(--muted);font-weight:600}
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,.10);transition:transform .2s ease,box-shadow .2s ease}.card:hover{transform:translateY(-4px);box-shadow:0 25px 55px rgba(15,23,42,.15)}
+.thumb{position:relative;aspect-ratio:16/9;background:#09111f;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}.card:hover .thumb img{transform:scale(1.035)}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.62))}
+.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:rgba(198,40,40,.96);box-shadow:0 12px 35px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}.play:after{content:"";margin-left:5px;border-top:11px solid transparent;border-bottom:11px solid transparent;border-left:17px solid #fff}
+.duration{position:absolute;right:14px;bottom:13px;padding:5px 8px;border-radius:7px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;font-weight:900;letter-spacing:.4px}
+.card-body{padding:25px 25px 27px}.tag{display:inline-block;font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:9px}.card h3{font-size:24px;line-height:1.15;margin-bottom:9px}.card p{color:var(--muted);font-size:14px;margin-bottom:20px}.watch{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:9px;background:var(--red);color:#fff;font-size:13px;font-weight:900;box-shadow:0 8px 20px rgba(198,40,40,.20)}.watch:hover{background:var(--red2)}
+.future{margin-top:26px;padding:28px;border:1px dashed #cbd5e1;border-radius:18px;background:rgba(255,255,255,.65);text-align:center}.future strong{display:block;font-size:16px;margin-bottom:5px}.future span{color:var(--muted);font-size:13px}
+.back{display:block;text-align:center;margin-top:34px;color:var(--red);font-size:13px;font-weight:900}
+footer{background:#fff;border-top:1px solid var(--line);padding:25px 20px;text-align:center;color:#7a8798;font-size:12px}footer strong{color:var(--ink)}
+@media(max-width:760px){.gallery{grid-template-columns:1fr}.top{padding:60px 18px}.wrap{padding:44px 16px 60px}.card-body{padding:21px}.play{width:62px;height:62px}}
 </style>
 </head>
 <body>
-<div id="commercial">
-<div class="ambient"></div>
-<section class="scene banner-scene active">
-<div class="banner-wrap"><img src="https://raw.githubusercontent.com/PROMTWorks/dashmobileservices.github.io/main/Company%20Banner.png" alt="DASH Mobile Services"><div class="banner-overlay"></div></div>
-<div class="opening-title"><div class="eyebrow">DASH MOBILE SERVICES</div><h1>Service.<br>Simplified.</h1><p>One company. Multiple services. Less hassle.</p></div>
+<header class="top"><div class="top-inner"><div class="kicker">DASH MOBILE SERVICES</div><h1>Our Commercials</h1><p>See the vision behind DASH Mobile Services, our Grand Strand company, and the services we are building for the community.</p></div></header>
+<main class="wrap">
+<section class="intro"><h2>One Company. Multiple Services. Less Hassle.</h2><p>Explore DASH commercials and see what the company stands for. Each commercial opens on its own dedicated page.</p></section>
+<section class="gallery" aria-label="DASH commercial gallery">
+<article class="card"><a href="company-commercial.html" aria-label="Watch Meet DASH Mobile Services commercial"><div class="thumb"><img src="Company%20Banner.png" alt="DASH Mobile Services commercial thumbnail"><div class="shade"></div><div class="play" aria-hidden="true"></div><div class="duration">~2 MIN</div></div><div class="card-body"><div class="tag">Featured Commercial</div><h3>Meet DASH Mobile Services</h3><p>A high-budget style introduction to who DASH Mobile Services is, its philosophy, its Grand Strand roots, and the vision behind one company, multiple services, less hassle.</p><span class="watch">Watch Commercial →</span></div></a></article>
 </section>
-<section class="scene"><div class="copy"><div class="eyebrow">OUR PHILOSOPHY</div><h2>One Company.<br><span class="blue-word">Multiple Services.</span></h2><p>DASH Mobile Services was built behind a very important belief: one company, multiple services, less hassle.</p></div></section>
-<section class="scene"><div class="copy"><div class="eyebrow">THE IDEA</div><h2>Less searching.<br><span class="blue-word">Less hassle.</span></h2><p>We believe customers shouldn't always have to search for a different company every time something needs to get done. DASH is being built to bring practical services together under one company.</p></div></section>
-<section class="scene"><div class="copy"><div class="eyebrow">WHO WE ARE</div><h2>Built for real life.<br><span class="blue-word">Built to serve.</span></h2><p>DASH isn't about being everything to everyone. It's about becoming a dependable company people can turn to when they need practical help and straightforward service.</p></div></section>
-<section class="scene"><div class="browser-stage"><div class="browser"><div class="browser-bar"><div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div><div class="address">DASH Mobile Services</div></div><iframe src="https://promtworks.github.io/dashmobileservices.github.io/" title="DASH Mobile Services website"></iframe></div></div></section>
-<section class="scene"><div class="services"><div class="services-heading"><div class="eyebrow">WHAT WE DO</div><h2>Different needs.<br><span class="blue-word">One company.</span></h2></div><div class="services-grid"><div class="service-card"><div class="service-number">01</div><h3>Automotive</h3><p>Convenient mobile automotive service options designed around the customer.</p></div><div class="service-card"><div class="service-number">02</div><h3>Lawn &amp; Property</h3><p>Practical property-care services designed to help keep outdoor spaces maintained.</p></div><div class="service-card"><div class="service-number">03</div><h3>Moving &amp; More</h3><p>Additional services designed to make everyday needs easier to handle.</p></div></div></div></section>
-<section class="scene"><div class="browser-stage"><div class="browser"><div class="browser-bar"><div class="browser-dots"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div><div class="address">DASH Mobile Services — Service Request</div></div><iframe src="https://promtworks.github.io/dashmobileservices.github.io/book-service.html" title="DASH Mobile Services booking page"></iframe></div></div></section>
-<section class="scene"><div class="map-bg"></div><div class="map-grid"></div><div class="location myrtle"><div class="location-dot"></div><span>Myrtle Beach</span></div><div class="location conway"><div class="location-dot"></div><span>Conway</span></div><div class="location grandstrand"><div class="location-dot"></div><span>Grand Strand</span></div><div class="copy"><div class="eyebrow">A GRAND STRAND COMPANY</div><h2>Built here.<br><span class="blue-word">Serving here.</span></h2><p>DASH Mobile Services is being built as a Grand Strand company, with a vision focused on serving Myrtle Beach, Conway, and surrounding communities throughout the area.</p></div></section>
-<section class="scene"><div class="copy"><div class="eyebrow">WHAT MATTERS</div><h2>Dependability.<br><span class="blue-word">Communication. Respect.</span></h2><p>Every service begins with the same standard: treat people fairly, communicate clearly, respect their time, and take pride in the work.</p></div></section>
-<section class="scene"><div class="copy"><div class="eyebrow">THE VISION</div><h2>A company<br><span class="blue-word">you can come back to.</span></h2><p>DASH is working toward becoming more than a service provider. The goal is to build a company customers recognize, trust, and feel comfortable returning to when another need arises.</p></div></section>
-<section class="scene"><div class="final-brand"><img src="https://raw.githubusercontent.com/PROMTWorks/dashmobileservices.github.io/main/Company%20Banner.png" alt="DASH Mobile Services"><div class="final-slogan">One Company. Multiple Services. <span>Less Hassle.</span></div><div class="final-contact"><div class="phone-number">(843) 471-0754</div><div class="facebook"><div class="facebook-logo">f</div><div>DASH Mobile Services</div></div></div><div class="final-url">promtworks.github.io/dashmobileservices.github.io</div></div></section>
-</div>
-<script>
-const scenes=[...document.querySelectorAll('.scene')];
-const narration=[
-{scene:0,text:'DASH Mobile Services is a Grand Strand company built around one important idea: one company, multiple services, less hassle.'},
-{scene:1,text:'That belief is at the center of everything DASH is working to become. Instead of making customers search for a different company every time something needs to get done, DASH is bringing practical services together under one company.'},
-{scene:2,text:'To us, less hassle means making things simpler. It means giving customers another option when they need help, without making the process feel unnecessarily complicated.'},
-{scene:3,text:"DASH isn't trying to be everything to everyone. We're building a company focused on practical services, dependable communication, and treating every customer with respect."},
-{scene:4,text:'Behind DASH is a bigger vision: create a company people recognize, understand, and feel comfortable turning to when everyday service needs come up.'},
-{scene:5,text:'That vision brings different service categories together. Automotive services, lawn and property care, moving services, and additional services as DASH continues to grow.'},
-{scene:6,text:'Different services may solve different problems, but the philosophy stays the same: make getting help easier, communicate clearly, and give customers a company they can come back to.'},
-{scene:7,text:'DASH Mobile Services is being built as a Grand Strand company. Myrtle Beach, Conway, and the surrounding communities are at the heart of where we want to serve.'},
-{scene:8,text:"Because good service isn't only about completing a job. It's about how customers are treated, how clearly things are communicated, and whether people feel that their time and trust matter."},
-{scene:9,text:'The long-term vision is to build more than a collection of services. It is to build a company customers recognize, trust, and feel comfortable returning to when another need comes up.'},
-{scene:10,text:'DASH Mobile Services. One company, multiple services, less hassle.'}
-];
-let voices=[];
-function loadVoices(){if('speechSynthesis' in window)voices=window.speechSynthesis.getVoices()}
-loadVoices();
-if('speechSynthesis' in window)window.speechSynthesis.onvoiceschanged=loadVoices;
-function chooseMaleVoice(){if(!voices.length)return null;const preferred=[/Microsoft.*David/i,/Microsoft.*Mark/i,/Microsoft.*Guy/i,/Google.*US English Male/i,/Google.*English.*Male/i,/Alex/i,/Daniel/i];for(const pattern of preferred){const found=voices.find(v=>pattern.test(v.name));if(found)return found}return voices.find(v=>/en-US/i.test(v.lang)&&/David|Mark|Guy|Alex|Daniel/i.test(v.name))||voices.find(v=>/en-US/i.test(v.lang))||voices[0]}
-function speak(text){return new Promise(resolve=>{if(!('speechSynthesis' in window)){resolve();return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=chooseMaleVoice();if(v)u.voice=v;u.lang='en-US';u.rate=.80;u.pitch=.88;u.volume=1;u.onend=resolve;u.onerror=resolve;window.speechSynthesis.speak(u)})}
-let audioContext=null,masterGain=null,musicNodes=[],musicStarted=false;
-function startMusic(){if(musicStarted)return;try{audioContext=new(window.AudioContext||window.webkitAudioContext)();masterGain=audioContext.createGain();masterGain.gain.value=.035;masterGain.connect(audioContext.destination);[110,146.83,164.81,196].forEach((frequency,index)=>{const oscillator=audioContext.createOscillator();const gain=audioContext.createGain();oscillator.type=index%2===0?'sine':'triangle';oscillator.frequency.value=frequency;gain.gain.value=.10/4;oscillator.connect(gain);gain.connect(masterGain);oscillator.start();musicNodes.push({oscillator,gain})});musicStarted=true}catch(e){console.warn('Music unavailable:',e)}}
-function showScene(index){scenes.forEach((scene,i)=>scene.classList.toggle('active',i===index))}
-function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-async function runCommercial(){startMusic();if(audioContext&&audioContext.state==='suspended'){try{await audioContext.resume()}catch(e){}}for(let i=0;i<narration.length;i++){const item=narration[i];showScene(item.scene);await wait(1900);await speak(item.text);if(i<narration.length-1)await wait(4200);else await wait(11000)}showScene(scenes.length-1)}
-window.addEventListener('load',()=>setTimeout(runCommercial,700));
-</script>
+<div class="future"><strong>More DASH commercials are coming.</strong><span>New service-specific and company-focused commercials can be added here as DASH grows.</span></div>
+<a class="back" href="index.html">← Back to DASH Mobile Services</a>
+</main>
+<footer><strong>DASH MOBILE SERVICES</strong> • Service. Simplified. • (843) 471-0754</footer>
 </body>
 </html>
