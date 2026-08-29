@@ -22,6 +22,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import os
 
           # Existing production admin portal: preserve the original additive tab behavior.
           p = Path('admin-production.html')
@@ -29,21 +30,25 @@ jobs:
               s = p.read_text()
               button = '<button onclick="location.href=\'admin-transfer-documents.html\'">Ownership Transfer</button>'
               marker = '<div class="group">Administration</div>'
-              if 'admin-transfer-documents.html' not in s and marker in s:
+              if 'location.href=\'admin-transfer-documents.html\'' not in s and marker in s:
                   s = s.replace(marker, button + '\n\n' + marker, 1)
                   p.write_text(s)
 
-          # Owner Management: load the new additive tab module with a cache-busting commit SHA.
+          # Owner Management: add the standalone Ownership Transfer tab loader only when it is missing.
           owner = Path('owner-management.html')
           if not owner.exists():
               raise SystemExit('owner-management.html not found; no owner portal change made.')
           s = owner.read_text()
-          src = f'<script src="owner-ownership-transfer.js?v={__import__("os").environ.get("GITHUB_SHA", "latest")}" defer></script>'
-          if 'owner-ownership-transfer.js' not in s:
+          script_name = 'owner-ownership-transfer.js'
+          if script_name not in s:
+              src = f'<script src="{script_name}?v={os.environ.get("GITHUB_SHA", "latest")}" defer></script>'
               if '</body>' not in s:
                   raise SystemExit('owner-management.html has no closing body tag; owner portal was not changed.')
               s = s.replace('</body>', src + '\n</body>', 1)
               owner.write_text(s)
+              print('Added Ownership Transfer loader to owner-management.html')
+          else:
+              print('Ownership Transfer loader already present; no owner portal change needed.')
           PY
 
       - name: Commit only the ownership-transfer navigation additions
