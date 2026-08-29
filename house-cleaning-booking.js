@@ -1,114 +1,34 @@
-/* House Cleaning booking layer. Keeps cleaning requests separate from automotive fields/workflow. */
+/* DASH MOBILE SERVICES — House Cleaning booking integration */
 (function(){
+  'use strict';
   const CLEANING='house-cleaning';
   const rates={1:125,2:155,3:195,4:235,5:285};
   const deepRates={1:75,2:90,3:110,4:130,5:150};
   const addonRates={refrigerator:35,oven:35,baseboards:40};
-  let cleaningMode=false;
   const $=id=>document.getElementById(id);
   const val=id=>{const e=$(id);return e?String(e.value||'').trim():''};
-  function isCleaning(){return val('service')===CLEANING || (( $('service')?.selectedOptions?.[0]?.text||'').toLowerCase()==='house cleaning');}
-  function setup(){
-    const grid=document.querySelector('#booking .grid'); if(!grid||!$('service')) return;
-    /* The main booking page historically built its service list from the automotive
-       array only. Add House Cleaning here so the dedicated workflow is available
-       even when the page itself has not been rebuilt. */
-    if(![...$('service').options].some(o=>o.value===CLEANING)) $('service').add(new Option('House Cleaning',CLEANING));
-    const anchor=$('date').parentElement;
-    [$('year')?.parentElement,$('make')?.parentElement,$('model')?.parentElement,$('engine')?.parentElement,$('trim')?.parentElement].filter(Boolean).forEach(n=>n.classList.add('hc-vehicle-field'));
-    const home=document.createElement('div');home.className='field full hc-field hidden';home.id='hcHomeSize';home.innerHTML='<label for="hcSize">Home Size — Flat Rate <span class="required">*</span></label><select id="hcSize"><option value="">Select home size</option><option value="1">1 Bedroom — $125</option><option value="2">2 Bedrooms — $155</option><option value="3">3 Bedrooms — $195</option><option value="4">4 Bedrooms — $235</option><option value="5">5+ Bedrooms — $285</option></select>';
-    const deep=document.createElement('div');deep.className='field full hc-field hidden';deep.id='hcDeep';deep.innerHTML='<label for="hcDeepChoice">Optional Deep Clean <span class="required">*</span></label><select id="hcDeepChoice"><option value="no">No — Standard Cleaning Only</option><option value="yes">Yes — Add Deep Clean</option></select><div class="note"><strong>Deep Clean add-on:</strong> +$75 for 1 bedroom, +$90 for 2 bedrooms, +$110 for 3 bedrooms, +$130 for 4 bedrooms, +$150 for 5+ bedrooms.</div>';
-    const addons=document.createElement('div');addons.className='field full hc-field hidden';addons.id='hcAddons';addons.innerHTML='<label>Optional Cleaning Add-Ons</label><div class="options"><label><input type="checkbox" name="hcAddon" value="refrigerator"> Inside Refrigerator — +$35</label><label><input type="checkbox" name="hcAddon" value="oven"> Inside Oven — +$35</label><label><input type="checkbox" name="hcAddon" value="baseboards"> Baseboards — +$40</label></div>';
-    grid.insertBefore(home,anchor);grid.insertBefore(deep,anchor);grid.insertBefore(addons,anchor);
-    const booking=document.querySelector('#booking');
-    const oldNotes=[...booking.querySelectorAll('.note')];
-    const autoNotice=oldNotes.find(n=>n.textContent.includes('mobile automotive service'));
-    if(autoNotice){const n=document.createElement('div');n.className='note hc-field hidden';n.id='hcNotice';n.innerHTML='<strong>House Cleaning:</strong> Your selected home size determines the standard flat rate. Deep Clean and selected add-ons are optional flat-rate extras. Your request is not a confirmed appointment and no payment is taken through this form.';autoNotice.parentElement.insertBefore(n,autoNotice);}
-    const originalUpdateSpecial=window.updateSpecial;
-    const originalCalculate=window.calculateEstimate;
-    const originalReview=window.reviewBooking;
-    const originalSubmit=window.submitRequest;
-    function toggle(){
-      cleaningMode=isCleaning();
-      document.querySelectorAll('.hc-field').forEach(x=>x.classList.toggle('hidden',!cleaningMode));
-      document.querySelectorAll('.hc-vehicle-field').forEach(x=>x.classList.toggle('hidden',cleaningMode));
-      const title=$('title'),desc=$('description');
-      if(cleaningMode){
-        title.textContent='House Cleaning Booking';
-        desc.textContent='Choose your home size, optional Deep Clean and cleaning add-ons, preferred date and time, then enter the cleaning location and contact information.';
-        const intro=document.querySelector('.intro');if(intro)intro.textContent='Choose a service below. House Cleaning uses simple flat-rate pricing based on home size — no hourly billing.';
-        const restrictionLabel=document.querySelector('label[for="addressRestrictions"]');if(restrictionLabel)restrictionLabel.innerHTML='Are there any restrictions at the service address that could prevent or limit DASH MOBILE SERVICES from completing the requested cleaning? <span class="required">*</span>';
-        const restrictionNote=oldNotes.find(n=>n.textContent.includes('mobile automotive service'));if(restrictionNote)restrictionNote.classList.add('hidden');
-        $('hcSize').onchange=updateCleaningTotal;$('hcDeepChoice').onchange=updateCleaningTotal;document.querySelectorAll('input[name="hcAddon"]').forEach(x=>x.onchange=updateCleaningTotal);
-        updateCleaningTotal();
-      } else {
-        title.textContent='Automotive Booking';
-        desc.textContent='Select your vehicle and service. Your vehicle information will be used to determine service requirements and the estimated service cost.';
-        const intro=document.querySelector('.intro');if(intro)intro.textContent='Choose a service below. DASH comes to the customer, helping make service more convenient and less of a hassle.';
-      }
-      if(originalUpdateSpecial && !cleaningMode) originalUpdateSpecial();
-    }
-    function updateCleaningTotal(){if(!cleaningMode)return;const size=val('hcSize');let total=rates[size]||0;if(val('hcDeepChoice')==='yes')total+=deepRates[size]||0;document.querySelectorAll('input[name="hcAddon"]:checked').forEach(x=>total+=addonRates[x.value]||0);if($('laborPrice'))$('laborPrice').textContent='$'+total.toFixed(2);if($('partsPrice'))$('partsPrice').textContent='$0.00';if($('totalPrice'))$('totalPrice').textContent='$'+total.toFixed(2);}
-    window.calculateHouseCleaningEstimate=updateCleaningTotal;
-    window.calculateEstimate=function(){if(!cleaningMode)return originalCalculate();if(!val('hcSize')){alert('Please select the home size.');$('hcSize').focus();return;}if(!val('date')||!val('time')){alert('Please enter your preferred service date and arrival time.');(!val('date')?$('date'):$('time')).focus();return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();$('estimate').classList.add('open');$('estimate').querySelector('h2').textContent='House Cleaning Flat-Rate Estimate';$('estimate').querySelector('.estimate-note').textContent='Estimated flat-rate service price based on your home size and selected cleaning options. DASH will review the request and confirm the final scope and price before scheduling. No payment is taken through this form.';if(typeof window.setStep==='function')window.setStep(3);$('estimate').scrollIntoView({behavior:'smooth'});};
-    window.reviewBooking=function(){if(!cleaningMode)return originalReview();if(!val('hcSize')){alert('Please select the home size.');$('hcSize').focus();return;}if(!val('date')||!val('time')){alert('Please enter your preferred service date and arrival time.');return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();const addons=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.parentElement.textContent.trim()).join(', ')||'None';const deepText=val('hcDeepChoice')==='yes'?'Yes':'No';$('reviewGrid').innerHTML=[['Service','House Cleaning'],['Home Size',$('hcSize').selectedOptions[0]?.text||''],['Deep Clean',deepText],['Cleaning Add-Ons',addons],['Preferred Date',val('date')],['Preferred Arrival Time',val('time')],['Full Service Address',typeof fullAddress==='function'?fullAddress():'' ],['Address Restrictions',val('addressRestrictions')||'None'],['Estimated Total',$('totalPrice').textContent]].map(x=>'<div><strong>'+x[0]+'</strong>'+x[1]+'</div>').join('');$('review').classList.add('open');$('contact').classList.remove('open');if(typeof window.setStep==='function')window.setStep(4);$('review').scrollIntoView({behavior:'smooth'});};
-    window.submitRequest=async function(){if(!cleaningMode)return originalSubmit();if(!val('hcSize')){alert('Please select the home size.');return;}if(!val('date')||!val('time')){alert('Please complete your preferred service date and arrival time.');return;}for(const id of ['firstName','lastName','phone','email'])if(!val(id)){alert('Please complete your first name, last name, phone number, and email address.');$(id).focus();return;}if(!$('consent').checked){alert('Please confirm that your contact information is accurate and authorize DASH MOBILE SERVICES to contact you.');return;}if(!/^\S+@\S+\.\S+$/.test(val('email'))){alert('Please enter a valid email address.');$('email').focus();return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();const addons=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.value);const size=val('hcSize');const deepChoice=val('hcDeepChoice')==='yes';const request={client_request_number:'DASH-'+Date.now()+'-'+Math.floor(100000+Math.random()*900000),service_key:'house-cleaning',service_name:'House Cleaning',vehicle_year:null,vehicle_make:null,vehicle_model:null,vehicle_engine:null,vehicle_trim:null,preferred_date:val('date'),preferred_time:val('time'),street_address:val('locationStreet'),city:val('locationCity'),state:val('locationState').toUpperCase(),postal_code:val('locationZip'),restriction_answer:val('addressRestrictions'),restriction_details:val('restrictionDetails'),customer_notes:val('notes'),special_options:[],estimated_labor:$('laborPrice').textContent,estimated_parts:'$0.00',estimated_total:$('totalPrice').textContent,first_name:val('firstName'),last_name:val('lastName'),phone:val('phone'),email:val('email'),contact_preference:val('contactPreference'),consent:true,cleaning_home_size:size,cleaning_deep_clean:deepChoice,cleaning_addons:addons,flat_rate:Number($('totalPrice').textContent.replace(/[^0-9.]/g,''))};const button=document.querySelector('#contact .continue');if(button){button.disabled=true;button.textContent='Submitting...'}try{const response=await fetch('https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/create-service-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request})});const text=await response.text();let data={};try{data=JSON.parse(text)}catch(e){data={message:text}}if(!response.ok)throw new Error(data.message||'DASH could not save the House Cleaning request.');alert('Your House Cleaning request '+(data.request_number||request.client_request_number)+' was submitted successfully. DASH will review it and contact you about scheduling and payment.');}catch(e){alert('Your House Cleaning request could not be submitted: '+e.message)}finally{if(button){button.disabled=false;button.textContent='Submit Service Request'}}};
-    const oldOpenCleaning=window.openCleaningBooking;
-    window.openCleaningBooking=function(){if(typeof oldOpenCleaning==='function')oldOpenCleaning();else{if($('booking'))$('booking').classList.add('open');if($('service'))$('service').value=CLEANING;}setTimeout(toggle,0);};
-    $('service').addEventListener('change',toggle);toggle();
+  const money=n=>'$'+Number(n||0).toFixed(2);
+  function isCleaning(){return val('service')===CLEANING || String($('service')?.selectedOptions?.[0]?.text||'').toLowerCase()==='house cleaning';}
+  function addServiceOption(){const s=$('service');if(!s)return;if(![...s.options].some(o=>o.value===CLEANING))s.add(new Option('House Cleaning',CLEANING));}
+  function addCleaningCard(){const box=$('services');if(!box||box.querySelector('[data-house-cleaning]'))return;const d=document.createElement('div');d.className='service';d.dataset.houseCleaning='1';d.innerHTML='<strong>House Cleaning</strong><span>Professional residential cleaning with simple flat-rate pricing. No hourly billing.</span><button type="button" id="houseCleaningContinue">Continue</button>';box.appendChild(d);d.querySelector('button').addEventListener('click',()=>openCleaning());}
+  function field(id,label,html){const d=document.createElement('div');d.className='field full hc-field hidden';d.id=id;d.innerHTML='<label>'+label+'</label>'+html;return d;}
+  function buildFields(){const grid=document.querySelector('#booking .grid');if(!grid||$('hcHomeSize'))return;const date=$('date')?.parentElement;if(!date)return;
+    const home=field('hcHomeSize','Home Size — Flat Rate <span class="required">*</span>','<select id="hcSize"><option value="">Select home size</option><option value="1">1 Bedroom — $125</option><option value="2">2 Bedrooms — $155</option><option value="3">3 Bedrooms — $195</option><option value="4">4 Bedrooms — $235</option><option value="5">5+ Bedrooms — $285</option></select>');
+    const deep=field('hcDeep','Optional Deep Clean <span class="required">*</span>','<select id="hcDeepChoice"><option value="no">No — Standard Cleaning Only</option><option value="yes">Yes — Add Deep Clean</option></select><div class="note"><strong>Deep Clean add-on:</strong> +$75 for 1 bedroom, +$90 for 2 bedrooms, +$110 for 3 bedrooms, +$130 for 4 bedrooms, +$150 for 5+ bedrooms.</div>');
+    const addons=field('hcAddons','Optional Cleaning Add-Ons','<div class="options"><label><input type="checkbox" id="hcRefrigerator"> Inside Refrigerator — +$35</label><label><input type="checkbox" id="hcOven"> Inside Oven — +$35</label><label><input type="checkbox" id="hcBaseboards"> Baseboards — +$40</label></div>');
+    grid.insertBefore(home,date);grid.insertBefore(deep,date);grid.insertBefore(addons,date);
+    $('hcSize').addEventListener('change',()=>{if(isCleaning())renderEstimatePreview(false)});
+    $('hcDeepChoice').addEventListener('change',()=>{if(isCleaning())renderEstimatePreview(false)});
+    ['hcRefrigerator','hcOven','hcBaseboards'].forEach(id=>$(id).addEventListener('change',()=>{if(isCleaning())renderEstimatePreview(false)}));
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
-})();
-
-/* Final House Cleaning pricing guard. This runs at the click level so no older
-   automotive estimate handler can overwrite the customer's cleaning selections. */
-(function(){
-  const CLEANING='house-cleaning';
-  const rates={1:125,2:155,3:195,4:235,5:285};
-  const deepRates={1:75,2:90,3:110,4:130,5:150};
-  const addonRates={refrigerator:35,oven:35,baseboards:40};
-  const $=id=>document.getElementById(id);
-  const isCleaning=()=>{const s=$('service');return !!s&&(s.value===CLEANING||String(s.selectedOptions?.[0]?.text||'').trim().toLowerCase()==='house cleaning');};
-  const size=()=>String($('hcSize')?.value||'').trim();
-  function calculate(){
-    if(!isCleaning())return false;
-    const s=size();
-    if(!rates[s]){alert('Please select the home size.');$('hcSize')?.focus();return true;}
-    let base=rates[s], deep=0, addons=0;
-    if($('hcDeepChoice')?.value==='yes')deep=deepRates[s]||0;
-    document.querySelectorAll('input[name="hcAddon"]:checked').forEach(x=>addons+=addonRates[x.value]||0);
-    const total=base+deep+addons;
-    if($('laborPrice'))$('laborPrice').textContent='$'+base.toFixed(2);
-    if($('partsPrice'))$('partsPrice').textContent='$'+(deep+addons).toFixed(2);
-    if($('totalPrice'))$('totalPrice').textContent='$'+total.toFixed(2);
-    const estimate=$('estimate');
-    if(estimate){
-      const h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';
-      let detail=$('hcEstimateDetails');
-      if(!detail){detail=document.createElement('div');detail.id='hcEstimateDetails';detail.style='margin:0 0 14px;line-height:1.7;font-size:14px';const note=estimate.querySelector('.estimate-note');if(note)note.parentNode.insertBefore(detail,note);}
-      const deepLine=deep?'Deep Clean: +$'+deep.toFixed(2):'Deep Clean: $0.00';
-      const addonNames=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.parentElement.textContent.trim());
-      detail.innerHTML='<strong>Standard Cleaning:</strong> $'+base.toFixed(2)+'<br><strong>'+deepLine+'</strong><br><strong>Cleaning Add-Ons:</strong> '+(addons?'$'+addons.toFixed(2)+' — '+addonNames.join(', '):'$0.00')+'<br><strong>Estimated Total:</strong> $'+total.toFixed(2);
-      const note=estimate.querySelector('.estimate-note');if(note)note.textContent='Flat-rate House Cleaning estimate. No hourly billing. DASH will review the request and confirm the final scope and price before scheduling. No payment is taken through this form.';
-      estimate.classList.add('open');
-      if(typeof window.setStep==='function')window.setStep(3);
-      estimate.scrollIntoView({behavior:'smooth'});
-    }
-    window.__dashHouseCleaningCalculate=calculate;
-    return true;
-  }
-  window.__dashHouseCleaningCalculate=calculate;
-  function bind(){
-    const button=document.querySelector('#booking > .continue');
-    if(button&&!button.__hcFinalBound){
-      button.__hcFinalBound=true;
-      button.addEventListener('click',function(e){if(isCleaning()){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();calculate();}},true);
-    }
-    ['hcSize','hcDeepChoice'].forEach(id=>{const e=$(id);if(e&&!e.__hcPriceBound){e.__hcPriceBound=true;e.addEventListener('change',calculate);}});
-    document.querySelectorAll('input[name="hcAddon"]').forEach(e=>{if(!e.__hcPriceBound){e.__hcPriceBound=true;e.addEventListener('change',calculate);}});
-    const legacy=$('special');if(legacy)legacy.classList.add('hidden');
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,0));
-  else setTimeout(bind,0);
-  [100,500,1200,2500,4000].forEach(ms=>setTimeout(bind,ms));
+  function setCleaningVisibility(on){buildFields();document.querySelectorAll('.hc-field').forEach(e=>e.classList.toggle('hidden',!on));['year','make','model','engine','trim'].forEach(id=>$(id)?.parentElement?.classList.toggle('hidden',on));if(on){$('title').textContent='House Cleaning Booking';$('description').textContent='Choose your home size, optional Deep Clean, cleaning add-ons, preferred date and time, then enter the cleaning location and contact information.';}else{$('title').textContent='Automotive Booking';$('description').textContent='Select your vehicle and service. Your vehicle information will be used to determine service requirements and the estimated service cost.';}}
+  function openCleaning(){addServiceOption();$('service').value=CLEANING;setCleaningVisibility(true);$('booking').classList.add('open');$('estimate')?.classList.remove('open');$('review')?.classList.remove('open');$('contact')?.classList.remove('open');$('booking').scrollIntoView({behavior:'smooth'});}
+  function selectedAddons(){let n=0;if($('hcRefrigerator')?.checked)n+=35;if($('hcOven')?.checked)n+=35;if($('hcBaseboards')?.checked)n+=40;return n;}
+  function calculate(){const size=Number(val('hcSize'));if(!rates[size]){alert('Please select a home size.');return null;}const base=rates[size];const deep=$('hcDeepChoice')?.value==='yes'?deepRates[size]:0;const addons=selectedAddons();return {size,base,deep,addons,total:base+deep+addons};}
+  function renderEstimatePreview(open){const r=calculate();if(!r)return;const estimate=$('estimate');if(!estimate)return;let breakdown=$('cleaningEstimateBreakdown');if(!breakdown){breakdown=document.createElement('div');breakdown.id='cleaningEstimateBreakdown';estimate.querySelector('h2')?.after(breakdown);}breakdown.innerHTML='<div class="price-row"><span>Standard Cleaning — '+r.size+(r.size===5?'+':'')+' Bedroom'+(r.size===1?'':'s')+'</span><strong>'+money(r.base)+'</strong></div>'+(r.deep?'<div class="price-row"><span>Deep Clean</span><strong>+'+money(r.deep)+'</strong></div>':'')+(r.addons?'<div class="price-row"><span>Cleaning Add-Ons</span><strong>+'+money(r.addons)+'</strong></div>':'');$('laborPrice').textContent=money(r.base);$('partsPrice').textContent=money(r.deep+r.addons);$('totalPrice').textContent=money(r.total);const note=estimate.querySelector('.estimate-note');if(note)note.textContent='Flat-rate House Cleaning estimate. No hourly billing. Deep Clean and selected cleaning add-ons are optional extras. Your request is not a confirmed appointment and no payment is taken through this form.';if(open){estimate.classList.add('open');estimate.scrollIntoView({behavior:'smooth'});}}
+  function interceptEstimate(e){if(!isCleaning())return; e.preventDefault();e.stopImmediatePropagation();renderEstimatePreview(true);}
+  function init(){addServiceOption();addCleaningCard();buildFields();$('service')?.addEventListener('change',()=>setCleaningVisibility(isCleaning()));const btn=document.querySelector('#booking button.continue');if(btn)btn.addEventListener('click',interceptEstimate,true);if(isCleaning())setCleaningVisibility(true);}
+  window.initHouseCleaningBooking=init;
+  window.calculateHouseCleaningEstimate=()=>renderEstimatePreview(true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
