@@ -63,7 +63,7 @@
     var attempts = 0;
     var timer = setInterval(function () {
       attempts += 1;
-      if (addTabAndSection() || attempts >= 20) clearInterval(timer);
+      if (addTabAndSection() || attempts >= 40) clearInterval(timer);
     }, 250);
   }
 
