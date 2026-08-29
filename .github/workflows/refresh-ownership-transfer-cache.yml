@@ -1,0 +1,39 @@
+name: Refresh Ownership Transfer owner portal cache
+
+on:
+  push:
+    paths:
+      - '.github/workflows/refresh-ownership-transfer-cache.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump owner portal script version
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('owner-management.html')
+          s = p.read_text()
+          old = 'owner-morning-wake-up.js?v=20260822-2'
+          new = 'owner-morning-wake-up.js?v=20260829-1'
+          if old in s:
+              s = s.replace(old, new, 1)
+              p.write_text(s)
+          PY
+      - name: Commit cache-busting change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add owner-management.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh Owner Management Ownership Transfer script cache'
+          git push
