@@ -246,9 +246,7 @@
       if(event){event.preventDefault();event.stopPropagation();}
       setCleaningMode();var rate=cleaningRate();if(!rate){alert('Please select the home size first.');return;}
       if(typeof window.validateAddress==='function'&&!window.validateAddress())return;
-      if(el('laborPrice'))el('laborPrice').textContent='$'+rate.toFixed(2);
-      if(el('partsPrice'))el('partsPrice').textContent='$0.00';
-      if(el('totalPrice'))el('totalPrice').textContent='$'+rate.toFixed(2);
+      if(el('laborPrice'))el('laborPrice').textContent='$'+rate.toFixed(2);if(el('partsPrice'))el('partsPrice').textContent='$0.00';if(el('totalPrice'))el('totalPrice').textContent='$'+rate.toFixed(2);
       var estimate=el('estimate');if(estimate){var h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent='Flat rate based on home size • No hourly billing';estimate.classList.add('open');var next=estimate.querySelector('button.continue');if(next){next.textContent="I'm Interested";next.onclick=function(){if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}if(typeof setStep==='function')setStep(3);estimate.scrollIntoView({behavior:'smooth'});}
     };
   }
@@ -268,4 +266,16 @@
   setTimeout(installPrelaunchFlow,800);
   setTimeout(installPrelaunchFlow,1800);
   setTimeout(installPrelaunchFlow,3000);
+})();
+/* Load the dedicated House Cleaning workflow after the existing compatibility layer. */
+(function(){
+  function load(){
+    if(window.__dashHouseCleaningLoader)return;
+    window.__dashHouseCleaningLoader=true;
+    var s=document.createElement('script');
+    s.src='house-cleaning-booking.js?v=20260828v2';
+    s.defer=true;
+    document.head.appendChild(s);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
 })();
