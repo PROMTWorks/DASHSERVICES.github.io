@@ -26,9 +26,10 @@
 
     addStyles();
 
-    var button = document.querySelector('[data-owner-tab="ownershipTransfer"]');
+    var button = document.getElementById('ownerOwnershipTransferTab');
     if (!button) {
       button = document.createElement('button');
+      button.id = 'ownerOwnershipTransferTab';
       button.className = 'tab';
       button.type = 'button';
       button.setAttribute('data-owner-tab', 'ownershipTransfer');
