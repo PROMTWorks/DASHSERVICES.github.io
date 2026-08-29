@@ -58,3 +58,5 @@
     addTabAndSection();
   }
 })();
+
+/* Cache-bust trigger: ownership-transfer module intentionally remains additive. */
