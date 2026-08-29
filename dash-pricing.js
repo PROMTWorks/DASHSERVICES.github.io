@@ -1,209 +1,31 @@
-/* DASH MOBILE SERVICES centralized customer estimate engine.
-   One source of truth for Automotive, Lawn & Property Care, and House Cleaning.
-   Customer-facing estimates are calculated here; service-specific UI may format the result. */
+/* DASH MOBILE SERVICES centralized customer estimate engine. */
 (function(){
 'use strict';
-
 const CONFIG={ownerHourly:30,employeeHourly:10,employerBurdenRate:.15,fuelCostPerMile:.70,equipmentOverheadPerLaborHour:4,businessOverheadPerJob:3,targetProfitMargin:.25,includedOilQuarts:5,extraOilPerQuart:8,salesTaxRate:0,travelBaseMiles:10,travelIncludedFee:10,travelPerMileAfterBase:.75};
-
-const AUTOMOTIVE={
-  oil:{labor:30,parts:32,minutes:45,startingAt:75.99},
-  wipers:{labor:20,parts:35,minutes:20,startingAt:69.99},
-  battery:{labor:35,parts:160,minutes:35,startingAt:239.99},
-  jump:{labor:35,parts:0,minutes:20,startingAt:29.99},
-  tire:{labor:25,parts:0,minutes:20,startingAt:29.99},
-  'tire-replacement':{labor:35,parts:125,minutes:45,startingAt:199.99},
-  air:{labor:25,parts:35,minutes:25,startingAt:72.99},
-  cabin:{labor:25,parts:35,minutes:25,startingAt:72.99},
-  headlight:{labor:65,parts:150,minutes:60,startingAt:239.99},
-  'brake-light':{labor:45,parts:80,minutes:40,startingAt:139.99},
-  fluid:{labor:25,parts:15,minutes:20,startingAt:44.99}
-};
-
-const LAWN={
-  'lawn-mowing':{labor:45,minutes:60,materials:2,startingAt:44.99},
-  'weed-removal':{labor:50,minutes:60,materials:3,startingAt:44.99},
-  'mulch-installation':{labor:55,minutes:60,materials:55,startingAt:119.99},
-  'decorative-rock':{labor:60,minutes:60,materials:65,startingAt:129.99},
-  'yard-cleanup':{labor:75,minutes:90,materials:5,startingAt:59.99},
-  'trimming-edging':{labor:35,minutes:45,materials:1,startingAt:39.99},
-  'seasonal-yard-cleanup':{labor:150,minutes:180,materials:8,startingAt:99.99},
-  'property-maintenance':{labor:60,minutes:60,materials:3,startingAt:44.99}
-};
-
-const CLEANING={
-  rates:{1:125,2:155,3:195,4:235,5:285},
-  deep:{1:75,2:90,3:110,4:130,5:150},
-  addons:{refrigerator:35,oven:35,baseboards:40}
-};
-
-const $=id=>document.getElementById(id);
-const val=id=>$(id)?String($(id).value||'').trim():'';
+const AUTOMOTIVE={oil:{labor:30,parts:32,minutes:45,startingAt:75.99},wipers:{labor:20,parts:35,minutes:20,startingAt:69.99},battery:{labor:35,parts:160,minutes:35,startingAt:239.99},jump:{labor:35,parts:0,minutes:20,startingAt:29.99},tire:{labor:25,parts:0,minutes:20,startingAt:29.99},'tire-replacement':{labor:35,parts:125,minutes:45,startingAt:199.99},air:{labor:25,parts:35,minutes:25,startingAt:72.99},cabin:{labor:25,parts:35,minutes:25,startingAt:72.99},headlight:{labor:65,parts:150,minutes:60,startingAt:239.99},'brake-light':{labor:45,parts:80,minutes:40,startingAt:139.99},fluid:{labor:25,parts:15,minutes:20,startingAt:44.99}};
+const LAWN={'lawn-mowing':{labor:45,minutes:60,materials:2,startingAt:44.99},'weed-removal':{labor:50,minutes:60,materials:3,startingAt:44.99},'mulch-installation':{labor:55,minutes:60,materials:55,startingAt:119.99},'decorative-rock':{labor:60,minutes:60,materials:65,startingAt:129.99},'yard-cleanup':{labor:75,minutes:90,materials:5,startingAt:59.99},'trimming-edging':{labor:35,minutes:45,materials:1,startingAt:39.99},'seasonal-yard-cleanup':{labor:150,minutes:180,materials:8,startingAt:99.99},'property-maintenance':{labor:60,minutes:60,materials:3,startingAt:44.99}};
+const CLEANING={rates:{1:125,2:155,3:195,4:235,5:285},deep:{1:75,2:90,3:110,4:130,5:150},addons:{refrigerator:35,oven:35,baseboards:40}};
+const $=id=>document.getElementById(id),val=id=>$(id)?String($(id).value||'').trim():'';
 const choices=()=>[...document.querySelectorAll('input[name="specialChoice"]:checked')].map(x=>String(x.value));
-function isLawn(s){return !!LAWN[s]}
-function isCleaning(s){return s==='house-cleaning'}
-function money(n){return '$'+Number(n||0).toFixed(2)}
-function travelCost(){return CONFIG.travelIncludedFee}
+function isLawn(s){return !!LAWN[s]} function isCleaning(s){return s==='house-cleaning'} function money(n){return '$'+Number(n||0).toFixed(2)} function travelCost(){return CONFIG.travelIncludedFee}
 function internalCost(service,mode,parts,minutes){const hours=Math.max(minutes/60,.25);const wage=mode==='employee'?CONFIG.employeeHourly*(1+CONFIG.employerBurdenRate):CONFIG.ownerHourly;return wage*hours+parts+CONFIG.equipmentOverheadPerLaborHour*hours+CONFIG.businessOverheadPerJob+travelCost()}
 function priceFromCost(cost){return Math.max(cost+10,cost/(1-CONFIG.targetProfitMargin))}
-
-function automotiveEstimate(s){
-  const base=AUTOMOTIVE[s]||{labor:30,parts:0,minutes:30,startingAt:39.99};
-  let labor=base.labor,parts=base.parts,minutes=base.minutes;
-  const c=choices();
-  if(s==='wipers'){const n=c.includes('All wipers')?4:Math.max(c.length,1);labor=20*n;parts=35*n;minutes=20*n}
-  if(s==='tire-replacement'){const n=Math.max(parseInt(c[0]||'1',10)||1,1);labor=35*n;parts=125*n;minutes=45*n}
-  if(s==='headlight'||s==='brake-light'){const n=(c[0]==='Both'||c[0]==='Two')?2:1;labor=base.labor*n;parts=base.parts*n;minutes=base.minutes*n}
-  if(s==='fluid'){parts=15*Math.max(c.length,1)}
-  const cost=internalCost(s,'employee',parts,minutes);
-  const calculated=priceFromCost(cost);
-  const baseCost=priceFromCost(internalCost(s,'employee',base.parts,base.minutes));
-  const multiplier=calculated>baseCost?calculated/baseCost:1;
-  const total=Math.max(base.startingAt,calculated*multiplier);
-  return {type:'automotive',labor,parts,total,startingAt:base.startingAt,minutes,cost,profit:total-cost};
-}
-
-function lawnEstimate(s){
-  const b=LAWN[s];if(!b)return null;
-  const cost=internalCost(s,'employee',b.materials,b.minutes);
-  const total=Math.max(b.startingAt,priceFromCost(cost));
-  const labor=Math.max(b.labor,total-b.materials-travelCost());
-  return {type:'lawn',labor,parts:b.materials,total,startingAt:b.startingAt,minutes:b.minutes,cost,profit:total-cost};
-}
-
-function getCleaningSize(){
-  const checked=document.querySelector('input[name="specialChoice"]:checked');
-  if(checked){const n=parseInt(checked.value,10);if(CLEANING.rates[n])return n}
-  const select=document.querySelector('select[name*="home" i], select[id*="home" i], select[id*="bedroom" i]');
-  if(select){const m=String(select.value||'').match(/([1-5])/);if(m&&CLEANING.rates[parseInt(m[1],10)])return parseInt(m[1],10)}
-  return 2;
-}
-function getDeepClean(){
-  const fields=[...document.querySelectorAll('select,input')];
-  for(const el of fields){
-    const text=(el.parentElement?el.parentElement.innerText:'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.id||'')+' '+(el.name||'');
-    if(/deep\s*clean/i.test(text)){
-      if(el.type==='radio'||el.type==='checkbox'){if(el.checked&&/yes|add|deep/i.test((el.value||'')+' '+text))return true}
-      if(el.tagName==='SELECT'&&/yes|add/i.test(el.options[el.selectedIndex]?.text||''))return true;
-      if(el.tagName==='INPUT'&&el.type==='checkbox'&&el.checked)return true;
-    }
-  }
-  return false;
-}
-function getCleaningAddons(){
-  const result=[];
-  const fields=[...document.querySelectorAll('input,select')];
-  fields.forEach(el=>{
-    const text=(el.parentElement?el.parentElement.innerText:'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.id||'')+' '+(el.name||'')+' '+(el.value||'');
-    if(el.checked||el.tagName==='SELECT'){
-      const selected=el.tagName==='SELECT'?(el.options[el.selectedIndex]?.text||''):text;
-      const combined=text+' '+selected;
-      if(/inside\s*(refrigerator|fridge)/i.test(combined))result.push({key:'refrigerator',label:'Inside Refrigerator',price:CLEANING.addons.refrigerator});
-      if(/inside\s*oven/i.test(combined))result.push({key:'oven',label:'Inside Oven',price:CLEANING.addons.oven});
-      if(/baseboards?/i.test(combined))result.push({key:'baseboards',label:'Baseboards',price:CLEANING.addons.baseboards});
-    }
-  });
-  const seen=new Set();return result.filter(x=>!seen.has(x.key)&&seen.add(x.key));
-}
-function cleaningEstimate(){
-  const size=getCleaningSize();
-  const standard=CLEANING.rates[size];
-  const deepSelected=getDeepClean();
-  const deep=deepSelected?CLEANING.deep[size]:0;
-  const addons=getCleaningAddons();
-  const addonTotal=addons.reduce((sum,x)=>sum+x.price,0);
-  const total=standard+deep+addonTotal;
-  return {type:'cleaning',size,standard,deepSelected,deep,addons,addonTotal,total,labor:standard+deep+addonTotal,parts:0,startingAt:standard,cost:total,profit:0,minutes:0};
-}
-
+function automotiveEstimate(s){const base=AUTOMOTIVE[s]||{labor:30,parts:0,minutes:30,startingAt:39.99};let labor=base.labor,parts=base.parts,minutes=base.minutes;const c=choices();if(s==='wipers'){const n=c.includes('All wipers')?4:Math.max(c.length,1);labor=20*n;parts=35*n;minutes=20*n}if(s==='tire-replacement'){const n=Math.max(parseInt(c[0]||'1',10)||1,1);labor=35*n;parts=125*n;minutes=45*n}if(s==='headlight'||s==='brake-light'){const n=(c[0]==='Both'||c[0]==='Two')?2:1;labor=base.labor*n;parts=base.parts*n;minutes=base.minutes*n}if(s==='fluid')parts=15*Math.max(c.length,1);const cost=internalCost(s,'employee',parts,minutes),calculated=priceFromCost(cost),baseCost=priceFromCost(internalCost(s,'employee',base.parts,base.minutes)),multiplier=calculated>baseCost?calculated/baseCost:1,total=Math.max(base.startingAt,calculated*multiplier);return {type:'automotive',labor,parts,total,startingAt:base.startingAt,minutes,cost,profit:total-cost}}
+function lawnEstimate(s){const b=LAWN[s];if(!b)return null;const cost=internalCost(s,'employee',b.materials,b.minutes),total=Math.max(b.startingAt,priceFromCost(cost)),labor=Math.max(b.labor,total-b.materials-travelCost());return {type:'lawn',labor,parts:b.materials,total,startingAt:b.startingAt,minutes:b.minutes,cost,profit:total-cost}}
+let rememberedCleaningSize='2';
+function rememberCleaningSelection(){const checked=document.querySelector('input[name="specialChoice"]:checked');if(checked&&CLEANING.rates[parseInt(checked.value,10)])rememberedCleaningSize=String(checked.value)}
+function restoreCleaningSelection(){const radios=[...document.querySelectorAll('input[name="specialChoice"]')];if(!radios.length)return;const target=radios.find(x=>String(x.value)===rememberedCleaningSize);if(target){radios.forEach(x=>x.checked=false);target.checked=true}}
+function getCleaningSize(){const checked=document.querySelector('input[name="specialChoice"]:checked');if(checked&&CLEANING.rates[parseInt(checked.value,10)]){rememberedCleaningSize=String(checked.value);return parseInt(checked.value,10)}restoreCleaningSelection();const r=document.querySelector('input[name="specialChoice"]:checked');return r&&CLEANING.rates[parseInt(r.value,10)]?parseInt(r.value,10):parseInt(rememberedCleaningSize,10)||2}
+function getDeepClean(){const fields=[...document.querySelectorAll('select,input')];for(const el of fields){const text=(el.parentElement?el.parentElement.innerText:'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.id||'')+' '+(el.name||'');if(/deep\s*clean/i.test(text)){if((el.type==='radio'||el.type==='checkbox')&&el.checked&&/yes|add|deep/i.test((el.value||'')+' '+text))return true;if(el.tagName==='SELECT'&&/yes|add/i.test(el.options[el.selectedIndex]?.text||''))return true}}return false}
+function getCleaningAddons(){const result=[];[...document.querySelectorAll('input,select')].forEach(el=>{const text=(el.parentElement?el.parentElement.innerText:'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.id||'')+' '+(el.name||'')+' '+(el.value||'');if(el.checked||el.tagName==='SELECT'){const selected=el.tagName==='SELECT'?(el.options[el.selectedIndex]?.text||''):text,combined=text+' '+selected;if(/inside\s*(refrigerator|fridge)/i.test(combined))result.push({key:'refrigerator',label:'Inside Refrigerator',price:35});if(/inside\s*oven/i.test(combined))result.push({key:'oven',label:'Inside Oven',price:35});if(/baseboards?/i.test(combined))result.push({key:'baseboards',label:'Baseboards',price:40})}});const seen=new Set();return result.filter(x=>!seen.has(x.key)&&seen.add(x.key))}
+function cleaningEstimate(){const size=getCleaningSize(),standard=CLEANING.rates[size],deepSelected=getDeepClean(),deep=deepSelected?CLEANING.deep[size]:0,addons=getCleaningAddons(),addonTotal=addons.reduce((sum,x)=>sum+x.price,0),total=standard+deep+addonTotal;return {type:'cleaning',size,standard,deepSelected,deep,addons,addonTotal,total,labor:total,parts:0,startingAt:standard,cost:total,profit:0,minutes:0}}
 function estimate(s){if(isCleaning(s))return cleaningEstimate();if(isLawn(s))return lawnEstimate(s);return automotiveEstimate(s)}
-
 function setText(id,text){if($(id))$(id).textContent=text}
-function addCleaningRows(e){
-  const estimate=$('estimate');if(!estimate)return;
-  const existing=estimate.querySelectorAll('.cleaning-detail-row');existing.forEach(x=>x.remove());
-  const totalRow=estimate.querySelector('.price-row.total');
-  if(!totalRow)return;
-  const rows=[];
-  rows.push(['Standard Cleaning',e.standard]);
-  if(e.deepSelected)rows.push(['Deep Clean',e.deep]);
-  e.addons.forEach(a=>rows.push([a.label,a.price]));
-  rows.forEach(item=>{const row=document.createElement('div');row.className='price-row cleaning-detail-row';row.innerHTML='<span>'+item[0]+'</span><strong>'+money(item[1])+'</strong>';totalRow.parentNode.insertBefore(row,totalRow)});
-  const laborRow=$('laborPrice')?.closest('.price-row');
-  const partsRow=$('partsPrice')?.closest('.price-row');
-  if(laborRow)laborRow.classList.add('hidden');
-  if(partsRow)partsRow.classList.add('hidden');
-}
-function clearCleaningRows(){
-  document.querySelectorAll('.cleaning-detail-row').forEach(x=>x.remove());
-  const laborRow=$('laborPrice')?.closest('.price-row');
-  const partsRow=$('partsPrice')?.closest('.price-row');
-  if(laborRow)laborRow.classList.remove('hidden');
-  if(partsRow)partsRow.classList.remove('hidden');
-}
-
-function renderEstimate(e){
-  if(!e)return;
-  if(e.type==='cleaning'){
-    setText('laborPrice',money(e.total));setText('partsPrice',money(0));setText('totalPrice',money(e.total));
-    addCleaningRows(e);
-  }else{
-    clearCleaningRows();setText('laborPrice',money(e.labor));setText('partsPrice',money(e.parts));setText('totalPrice',money(e.total));
-  }
-  const estimate=$('estimate');
-  if(estimate){
-    let badge=$('startingAtPrice');
-    if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';const h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge)}
-    badge.textContent=e.type==='cleaning'?'Flat rate • No hourly billing':'Starting at '+money(e.startingAt)+' • Final estimate based on service details';
-    estimate.classList.add('open');
-  }
-}
-
-function overrideCalculator(){
-  window.DASH_PRICING={CONFIG,AUTOMOTIVE,LAWN,CLEANING,estimate};
-  window.DASH_RENDER_ESTIMATE=renderEstimate;
-  const original=window.calculateEstimate;
-  window.calculateEstimate=function(){
-    const s=val('service');if(!s){alert('Please select a service first.');return}
-    if(isCleaning(s)){
-      if(typeof window.validateBase==='function'&&!window.validateBase())return;
-      const e=cleaningEstimate();renderEstimate(e);
-      if(typeof setStep==='function')setStep(3);
-      $('estimate')?.scrollIntoView({behavior:'smooth'});return e;
-    }
-    if(isLawn(s)){
-      if(typeof window.validateBase==='function'&&!window.validateBase())return;
-      const e=lawnEstimate(s);if(!e)return;renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e;
-    }
-    if(typeof original==='function')return original();
-    const e=automotiveEstimate(s);renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e;
-  };
-}
-
-function install(){
-  overrideCalculator();
-  // The booking compatibility script loads after this pricing engine and may wrap the
-  // calculator. Re-assert the centralized calculator after the page's booking scripts finish.
-  [50,250,750,1500].forEach(ms=>setTimeout(()=>{
-    const current=window.calculateEstimate;
-    if(!current||!current.__dashCentralPricing){
-      const fn=window.calculateEstimate;
-      window.calculateEstimate=function(){
-        const s=val('service');if(!s){alert('Please select a service first.');return}
-        if(isCleaning(s)){
-          if(typeof window.validateBase==='function'&&!window.validateBase())return;
-          const e=cleaningEstimate();renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e;
-        }
-        if(isLawn(s)){
-          if(typeof window.validateBase==='function'&&!window.validateBase())return;
-          const e=lawnEstimate(s);renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e;
-        }
-        return typeof fn==='function'?fn():automotiveEstimate(s);
-      };
-      window.calculateEstimate.__dashCentralPricing=true;
-    }
-  },ms));
-}
-
+function addCleaningRows(e){const estimate=$('estimate');if(!estimate)return;estimate.querySelectorAll('.cleaning-detail-row').forEach(x=>x.remove());const totalRow=estimate.querySelector('.price-row.total');if(!totalRow)return;const rows=[['Standard Cleaning',e.standard]];if(e.deepSelected)rows.push(['Deep Clean',e.deep]);e.addons.forEach(a=>rows.push([a.label,a.price]));rows.forEach(item=>{const row=document.createElement('div');row.className='price-row cleaning-detail-row';row.innerHTML='<span>'+item[0]+'</span><strong>'+money(item[1])+'</strong>';totalRow.parentNode.insertBefore(row,totalRow)});const laborRow=$('laborPrice')?.closest('.price-row'),partsRow=$('partsPrice')?.closest('.price-row');if(laborRow)laborRow.classList.add('hidden');if(partsRow)partsRow.classList.add('hidden')}
+function clearCleaningRows(){document.querySelectorAll('.cleaning-detail-row').forEach(x=>x.remove());const laborRow=$('laborPrice')?.closest('.price-row'),partsRow=$('partsPrice')?.closest('.price-row');if(laborRow)laborRow.classList.remove('hidden');if(partsRow)partsRow.classList.remove('hidden')}
+function renderEstimate(e){if(!e)return;if(e.type==='cleaning'){setText('laborPrice',money(e.total));setText('partsPrice',money(0));setText('totalPrice',money(e.total));addCleaningRows(e)}else{clearCleaningRows();setText('laborPrice',money(e.labor));setText('partsPrice',money(e.parts));setText('totalPrice',money(e.total))}const estimate=$('estimate');if(estimate){let badge=$('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';const h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge)}badge.textContent=e.type==='cleaning'?'Flat rate • No hourly billing':'Starting at '+money(e.startingAt)+' • Final estimate based on service details';estimate.classList.add('open')}}
+function overrideCalculator(){window.DASH_PRICING={CONFIG,AUTOMOTIVE,LAWN,CLEANING,estimate};window.DASH_RENDER_ESTIMATE=renderEstimate;const original=window.calculateEstimate;window.calculateEstimate=function(){const s=val('service');if(!s){alert('Please select a service first.');return}if(isCleaning(s)){if(typeof window.validateBase==='function'&&!window.validateBase())return;restoreCleaningSelection();const e=cleaningEstimate();renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e}if(isLawn(s)){if(typeof window.validateBase==='function'&&!window.validateBase())return;const e=lawnEstimate(s);if(!e)return;renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e}if(typeof original==='function')return original();const e=automotiveEstimate(s);renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e}}
+function installSelectionGuard(){document.addEventListener('change',function(e){if(e.target&&e.target.name==='specialChoice'&&isCleaning(val('service')))rememberCleaningSelection()},true);const target=$('specialOptions')||document.body;new MutationObserver(function(){if(isCleaning(val('service')))restoreCleaningSelection()}).observe(target,{childList:true,subtree:true})}
+function install(){overrideCalculator();installSelectionGuard();[50,250,750,1500].forEach(ms=>setTimeout(()=>{const current=window.calculateEstimate;if(!current||!current.__dashCentralPricing){const fn=window.calculateEstimate;window.calculateEstimate=function(){const s=val('service');if(!s){alert('Please select a service first.');return}if(isCleaning(s)){if(typeof window.validateBase==='function'&&!window.validateBase())return;restoreCleaningSelection();const e=cleaningEstimate();renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e}if(isLawn(s)){if(typeof window.validateBase==='function'&&!window.validateBase())return;const e=lawnEstimate(s);if(!e)return;renderEstimate(e);if(typeof setStep==='function')setStep(3);$('estimate')?.scrollIntoView({behavior:'smooth'});return e}return typeof fn==='function'?fn():automotiveEstimate(s)};window.calculateEstimate.__dashCentralPricing=true}},ms)});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
