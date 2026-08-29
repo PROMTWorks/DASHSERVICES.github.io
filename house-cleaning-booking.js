@@ -23,3 +23,4 @@ function bindEstimateButton(){const btn=[...document.querySelectorAll('#booking 
 function init(){addServiceOption();addCleaningCategory();buildFields();$('service')?.addEventListener('change',()=>setVisibility(isCleaning()));bindEstimateButton();if(isCleaning())setVisibility(true)}
 window.initHouseCleaningBooking=init;window.calculateHouseCleaningEstimate=()=>renderEstimate(true);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+(function(){var s=document.createElement('script');s.src='property-cleaning-booking.js?v=20260829v1';s.defer=true;document.head.appendChild(s)})();
