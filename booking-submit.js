@@ -3,8 +3,7 @@
 'use strict';
 const ENDPOINT='https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/create-service-request';
 const COSTS={ownerHourly:30.00,employeeHourly:10.00,employerBurdenRate:0.15,fuelCostPerMile:0.70,equipmentOverheadPerLaborHour:4.00,businessOverheadPerJob:3.00,targetProfitMargin:0.25,travelBaseFee:10.00};
-const LAWN={
-'lawn-mowing':{name:'Lawn Mowing',minutes:60,materials:2},'weed-removal':{name:'Weed Removal',minutes:60,materials:3},'mulch-installation':{name:'Mulch Installation',minutes:60,materials:55},'decorative-rock':{name:'Decorative Rock Installation',minutes:60,materials:65},'yard-cleanup':{name:'Yard Cleanup',minutes:90,materials:5},'trimming-edging':{name:'Trimming & Edging',minutes:45,materials:1},'seasonal-yard-cleanup':{name:'Seasonal Yard Cleanup',minutes:180,materials:8},'property-maintenance':{name:'Property Maintenance',minutes:60,materials:3}};
+const LAWN={'lawn-mowing':{name:'Lawn Mowing',minutes:60,materials:2},'weed-removal':{name:'Weed Removal',minutes:60,materials:3},'mulch-installation':{name:'Mulch Installation',minutes:60,materials:55},'decorative-rock':{name:'Decorative Rock Installation',minutes:60,materials:65},'yard-cleanup':{name:'Yard Cleanup',minutes:90,materials:5},'trimming-edging':{name:'Trimming & Edging',minutes:45,materials:1},'seasonal-yard-cleanup':{name:'Seasonal Yard Cleanup',minutes:180,materials:8},'property-maintenance':{name:'Property Maintenance',minutes:60,materials:3}};
 const AUTO={oil:{minutes:45,parts:32},wipers:{minutes:20,parts:35},battery:{minutes:35,parts:160},jump:{minutes:20,parts:0},tire:{minutes:20,parts:0},'tire-replacement':{minutes:45,parts:125},air:{minutes:25,parts:35},cabin:{minutes:25,parts:35},headlight:{minutes:60,parts:150},'brake-light':{minutes:40,parts:80},fluid:{minutes:20,parts:15}};
 const $=id=>document.getElementById(id);const val=id=>$(id)?String($(id).value||'').trim():'';
 function choices(){return [...document.querySelectorAll('input[name="specialChoice"]:checked')].map(x=>x.value)}
@@ -55,7 +54,9 @@ function applyPrelaunchRequestMode(){
   const consent=document.querySelector('#consent');
   if(consent){const span=consent.parentElement?.querySelector('span');if(span)span.innerHTML='I confirm that the contact information above is accurate and I authorize DASH MOBILE SERVICES to contact me about this pre-launch service request and future scheduling. <span class="required">*</span>'}
   const submit=document.querySelector('#contact button[onclick="submitRequest()"]');
-  if(submit)submit.textContent='Submit Request';
+  if(submit)submit.textContent='Submit Interest';
+  const reviewButton=document.querySelector('#review button[onclick="reviewBooking()"]');
+  if(reviewButton){reviewButton.textContent="I'm Interested";reviewButton.setAttribute('onclick','showContact()');}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{install();applyPrelaunchRequestMode()});else{install();applyPrelaunchRequestMode()}
 })();
