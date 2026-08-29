@@ -156,8 +156,8 @@
   function installPrelaunchFlow(){
     var estimateButton=document.querySelector('.estimate button.continue');
     var reviewButton=document.querySelector('.review button.continue');
-    if(estimateButton)estimateButton.textContent='I\'m Interested';
-    if(reviewButton)reviewButton.textContent='I\'m Interested';
+    if(estimateButton)estimateButton.textContent="I'm Interested";
+    if(reviewButton)reviewButton.textContent="I'm Interested";
     if(reviewButton)reviewButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
     if(estimateButton)estimateButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
     var submit=document.querySelector('#contact button[onclick="submitRequest()"]');
@@ -165,7 +165,59 @@
     var h=document.querySelector('#estimate h2');
     if(h)h.textContent='Estimated Service Cost — Pre-Launch';
   }
+  function installFinalEstimateFix(){
+    var button=document.querySelector('#booking > .continue');
+    if(!button)return;
+    button.type='button';
+    button.textContent='Get Estimate';
+    button.onclick=function(event){
+      if(event){event.preventDefault();event.stopPropagation();}
+      var required=['service','year','make','model','engine','trim'];
+      var service=el('service')?.value||'';
+      if(!service){alert('Please select a service first.');return;}
+      if(!isLawn(service)){
+        for(var i=0;i<required.length;i++){
+          var input=el(required[i]);
+          if(input && !String(input.value||'').trim()){alert('Please complete the service, Year, Make, Model, Engine, and Trim first.');input.focus();return;}
+        }
+      }else if(typeof window.validateBase==='function'&&!window.validateBase())return;
+      var e=null;
+      if(window.DASH_PRICING&&typeof window.DASH_PRICING.estimate==='function')e=window.DASH_PRICING.estimate(service);
+      if(!e){
+        var fallback={oil:[39,32,45],wipers:[25,35,20],battery:[45,160,35],jump:[45,0,20],tire:[25,0,20],'tire-replacement':[35,125,45],air:[25,35,25],cabin:[25,35,25],headlight:[65,150,60],'brake-light':[45,80,40],fluid:[25,15,20]};
+        var p=fallback[service];
+        if(!p){alert('Pricing is not available for this service yet.');return;}
+        var choices=[...document.querySelectorAll('input[name="specialChoice"]:checked')].map(function(x){return x.value});
+        var labor=p[0],parts=p[1],minutes=p[2];
+        if(service==='wipers'){var n=choices.includes('All wipers')?4:Math.max(choices.length,1);labor=25*n;parts=35*n;minutes=20*n;}
+        if(service==='tire-replacement'){var q=parseInt((choices[0]||'1'),10);labor=35*q;parts=125*q;minutes=45*q;}
+        if(service==='headlight'||service==='brake-light'){var qty=(choices[0]==='Both'||choices[0]==='Two')?2:1;labor=p[0]*qty;parts=p[1]*qty;minutes=p[2]*qty;}
+        if(service==='fluid')parts=15*Math.max(choices.length,1);
+        var hours=Math.max(minutes/60,.25),cost=10*1.15*hours+parts+4*hours+3+10,total=Math.max(cost+10,cost/.75);
+        e={labor:Math.max(10,total-parts-10),parts:parts,total:total,startingAt:0};
+      }
+      if(el('laborPrice'))el('laborPrice').textContent='$'+Number(e.labor).toFixed(2);
+      if(el('partsPrice'))el('partsPrice').textContent='$'+Number(e.parts).toFixed(2);
+      if(el('totalPrice'))el('totalPrice').textContent='$'+Number(e.total).toFixed(2);
+      var estimate=el('estimate');
+      if(estimate){
+        var badge=el('startingAtPrice');
+        if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';var h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge);}
+        badge.textContent=e.startingAt?'Starting at $'+Number(e.startingAt).toFixed(2)+' • Pre-launch estimate based on your selections':'Pre-launch estimate based on your selections';
+        estimate.classList.add('open');
+        var next=estimate.querySelector('button.continue');
+        if(next){next.textContent="I'm Interested";next.onclick=function(ev){if(ev){ev.preventDefault();ev.stopPropagation();}if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}
+        if(typeof setStep==='function')setStep(3);
+        estimate.scrollIntoView({behavior:'smooth'});
+      }
+    };
+  }
+  function waitForFinalFix(){
+    installPrelaunchFlow();
+    installFinalEstimateFix();
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-  setTimeout(installPrelaunchFlow,1200);
-  setTimeout(installPrelaunchFlow,2500);
+  setTimeout(waitForFinalFix,800);
+  setTimeout(waitForFinalFix,1800);
+  setTimeout(waitForFinalFix,3000);
 })();
