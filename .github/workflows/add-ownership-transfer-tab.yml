@@ -1,16 +1,17 @@
-name: Add Ownership Transfer tab
+name: Add Ownership Transfer tabs
 
 on:
   push:
     paths:
       - '.github/workflows/add-ownership-transfer-tab.yml'
+      - 'owner-ownership-transfer.js'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  add-tab:
+  add-tabs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -18,29 +19,39 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Add Ownership Transfer tab without replacing portal
+      - name: Add Ownership Transfer navigation without replacing portals
         run: |
           python3 - <<'PY'
           from pathlib import Path
+
+          # Existing production admin portal: preserve the original additive tab behavior.
           p = Path('admin-production.html')
-          s = p.read_text()
+          if p.exists():
+              s = p.read_text()
+              button = '<button onclick="location.href=\'admin-transfer-documents.html\'">Ownership Transfer</button>'
+              marker = '<div class="group">Administration</div>'
+              if 'admin-transfer-documents.html' not in s and marker in s:
+                  s = s.replace(marker, button + '\n\n' + marker, 1)
+                  p.write_text(s)
 
-          button = '<button onclick="location.href=\'admin-transfer-documents.html\'">Ownership Transfer</button>'
-          marker = '<div class="group">Administration</div>'
-
-          if 'admin-transfer-documents.html' not in s:
-              if marker not in s:
-                  raise SystemExit('Administration navigation marker not found; portal was not changed.')
-              s = s.replace(marker, button + '\n\n' + marker, 1)
-              p.write_text(s)
-
+          # Owner Management: load the new additive tab module with a cache-busting commit SHA.
+          owner = Path('owner-management.html')
+          if not owner.exists():
+              raise SystemExit('owner-management.html not found; no owner portal change made.')
+          s = owner.read_text()
+          src = f'<script src="owner-ownership-transfer.js?v={__import__("os").environ.get("GITHUB_SHA", "latest")}" defer></script>'
+          if 'owner-ownership-transfer.js' not in s:
+              if '</body>' not in s:
+                  raise SystemExit('owner-management.html has no closing body tag; owner portal was not changed.')
+              s = s.replace('</body>', src + '\n</body>', 1)
+              owner.write_text(s)
           PY
 
-      - name: Commit only the navigation addition
+      - name: Commit only the ownership-transfer navigation additions
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add admin-production.html
+          git add admin-production.html owner-management.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Add Ownership Transfer tab to Super Admin portal'
+          git commit -m 'Add Ownership Transfer to owner management'
           git push
