@@ -12,18 +12,20 @@ const $=id=>document.getElementById(id), val=id=>String($(id)?.value||'').trim()
 const isAdditional=()=>!!SERVICES[val('service')];
 function option(select,value,text){if(select&&!Array.from(select.options).some(o=>o.value===value))select.add(new Option(text,value));}
 function addServiceOptions(){const s=$('service');if(!s)return;option(s,GARAGE,'Garage Cleaning');option(s,JUNK,'Trash & Junk Removal');}
+function additionalMarkup(){return '<div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Garage cleanout, sweeping, basic organization, and surface cleaning. Starting estimates are based on garage size and final pricing may vary with condition and access.</span><div class="actions"><a class="btn primary" href="book-service.html?v=20260829-additional#garage-cleaning">Book Garage Cleaning</a></div></div><div class="service"><strong>Trash &amp; Junk Removal</strong><span>Mobile removal of household junk and debris. Starting estimates are based on estimated load size and final pricing may vary with access and item type.</span><div class="actions"><a class="btn primary" href="book-service.html?v=20260829-additional#trash-junk-removal">Request Junk Removal</a></div></div></div>';}
 function addAllServicesCards(){
  if(!location.pathname.endsWith('all-services.html')||$('additional-services'))return;
- const main=document.querySelector('main.wrap');if(!main)return;const back=main.querySelector('.back');
+ const main=document.querySelector('main.wrap');if(!main)return;
  const section=document.createElement('section');section.className='category';section.id='additional-services';
- section.innerHTML='<div class="category-toggle" style="cursor:default"><h2>Cleaning & Removal Services</h2><p>Mobile services for garages, clutter, trash, and unwanted household items.</p></div><div class="category-content" style="display:block"><div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Garage cleanout, sweeping, basic organization, and surface cleaning. Final pricing depends on garage size and condition.</span></div><div class="service"><strong>Trash & Junk Removal</strong><span>Mobile removal of household junk and debris. Final pricing depends on estimated load size, access, and item type.</span></div></div><div class="actions"><a class="btn primary" href="book-service.html?v=20260829-additional#garage-cleaning">Book Garage Cleaning</a><a class="btn secondary" href="book-service.html?v=20260829-additional#trash-junk-removal">Request Junk Removal</a></div></div>';
- if(back)main.insertBefore(section,back);else main.appendChild(section);
+ section.innerHTML='<button class="category-toggle" type="button"><span class="arrow">▼</span><h2>Cleaning &amp; Removal Services</h2><p>Mobile services for garages, clutter, trash, and unwanted household items.</p></button><div class="category-content">'+additionalMarkup()+'<div class="note"><strong>Starting prices:</strong> Final pricing may change after DASH reviews the requested work, access, item type, condition, and service requirements.</div></div>';
+ main.appendChild(section);
+ section.querySelector('.category-toggle').addEventListener('click',()=>section.classList.toggle('open'));
 }
 function addBookingCategory(){
  if(!$('booking')||$('additional-booking-services'))return;
  const automotive=$('automotive');if(!automotive||!automotive.parentNode)return;
  const section=document.createElement('section');section.className='category';section.id='additional-booking-services';
- section.innerHTML='<div class="category-head"><h2>Cleaning & Removal</h2><p>Book Garage Cleaning or request Trash & Junk Removal.</p></div><div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Choose your garage size and request a service date.</span><button type="button" data-additional="garage-cleaning">Continue</button></div><div class="service"><strong>Trash & Junk Removal</strong><span>Choose an estimated truck-load size. Final pricing is confirmed after review.</span><button type="button" data-additional="trash-junk-removal">Continue</button></div></div>';
+ section.innerHTML='<div class="category-head"><h2>Cleaning &amp; Removal</h2><p>Book Garage Cleaning or request Trash &amp; Junk Removal.</p></div><div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Choose your garage size and request a service date.</span><button type="button" data-additional="garage-cleaning">Continue</button></div><div class="service"><strong>Trash &amp; Junk Removal</strong><span>Choose an estimated truck-load size. Final pricing is confirmed after review.</span><button type="button" data-additional="trash-junk-removal">Continue</button></div></div>';
  automotive.insertAdjacentElement('afterend',section);
  section.querySelector('.category-head').addEventListener('click',()=>section.classList.toggle('open'));
  section.querySelectorAll('[data-additional]').forEach(b=>b.addEventListener('click',()=>openAdditional(b.dataset.additional)));
@@ -55,6 +57,12 @@ function wrapFunctions(){
  const oldReview=window.reviewBooking;if(oldReview&&!oldReview.__dashAdditionalWrapped){function review(){if(isAdditional())return reviewAdditional();return oldReview.apply(this,arguments)}review.__dashAdditionalWrapped=true;window.reviewBooking=review;}
  const oldSubmit=window.submitRequest;if(oldSubmit&&!oldSubmit.__dashAdditionalWrapped){function submit(){if(!isAdditional())return oldSubmit.apply(this,arguments);if(!valid())return;const restore=appendDetails();let result;try{result=oldSubmit.apply(this,arguments)}catch(err){restore?.();throw err}if(result&&typeof result.then==='function')return result.finally(()=>restore?.());restore?.();return result}submit.__dashAdditionalWrapped=true;window.submitRequest=submit;}
 }
-function init(){addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();$('service')?.addEventListener('change',()=>setMode(isAdditional()));if(location.hash==='#garage-cleaning')openAdditional(GARAGE);if(location.hash==='#trash-junk-removal')openAdditional(JUNK);}
+function init(){
+ addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();
+ $('service')?.addEventListener('change',()=>setMode(isAdditional()));
+ if(location.hash==='#garage-cleaning')openAdditional(GARAGE);if(location.hash==='#trash-junk-removal')openAdditional(JUNK);
+ // A second pass protects against other deferred customer-service modules that add their sections at DOM ready.
+ setTimeout(()=>{addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();},250);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
