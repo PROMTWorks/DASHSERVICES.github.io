@@ -2,33 +2,27 @@
 (function(){
 'use strict';
 const GARAGE='garage-cleaning', JUNK='trash-junk-removal';
-const SERVICES={
-  [GARAGE]:{name:'Garage Cleaning'},
-  [JUNK]:{name:'Trash & Junk Removal'}
-};
+const SERVICES={[GARAGE]:{name:'Garage Cleaning'},[JUNK]:{name:'Trash & Junk Removal'}};
 const garageRates={single:125,double:195,large:275};
 const junkRates={small:95,quarter:145,half:225,threequarter:325,full:425};
-const $=id=>document.getElementById(id), val=id=>String($(id)?.value||'').trim();
+const $=id=>document.getElementById(id),val=id=>String($(id)?.value||'').trim();
 const isAdditional=()=>!!SERVICES[val('service')];
 function option(select,value,text){if(select&&!Array.from(select.options).some(o=>o.value===value))select.add(new Option(text,value));}
 function addServiceOptions(){const s=$('service');if(!s)return;option(s,GARAGE,'Garage Cleaning');option(s,JUNK,'Trash & Junk Removal');}
 function additionalMarkup(){return '<div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Garage cleanout, sweeping, basic organization, and surface cleaning. Starting estimates are based on garage size and final pricing may vary with condition and access.</span><div class="actions"><a class="btn primary" href="book-service.html?v=20260829-additional#garage-cleaning">Book Garage Cleaning</a></div></div><div class="service"><strong>Trash &amp; Junk Removal</strong><span>Mobile removal of household junk and debris. Starting estimates are based on estimated load size and final pricing may vary with access and item type.</span><div class="actions"><a class="btn primary" href="book-service.html?v=20260829-additional#trash-junk-removal">Request Junk Removal</a></div></div></div>';}
 function addAllServicesCards(){
- if(!location.pathname.endsWith('all-services.html')||$('additional-services'))return;
- const main=document.querySelector('main.wrap');if(!main)return;
+ if(!location.pathname.endsWith('all-services.html'))return;
+ const main=document.querySelector('main.wrap');if(!main||document.getElementById('additional-services'))return;
  const section=document.createElement('section');section.className='category';section.id='additional-services';
  section.innerHTML='<button class="category-toggle" type="button"><span class="arrow">▼</span><h2>Cleaning &amp; Removal Services</h2><p>Mobile services for garages, clutter, trash, and unwanted household items.</p></button><div class="category-content">'+additionalMarkup()+'<div class="note"><strong>Starting prices:</strong> Final pricing may change after DASH reviews the requested work, access, item type, condition, and service requirements.</div></div>';
- main.appendChild(section);
- section.querySelector('.category-toggle').addEventListener('click',()=>section.classList.toggle('open'));
+ main.appendChild(section);section.querySelector('.category-toggle').addEventListener('click',()=>section.classList.toggle('open'));
 }
 function addBookingCategory(){
  if(!$('booking')||$('additional-booking-services'))return;
  const automotive=$('automotive');if(!automotive||!automotive.parentNode)return;
  const section=document.createElement('section');section.className='category';section.id='additional-booking-services';
  section.innerHTML='<div class="category-head"><h2>Cleaning &amp; Removal</h2><p>Book Garage Cleaning or request Trash &amp; Junk Removal.</p></div><div class="services"><div class="service"><strong>Garage Cleaning</strong><span>Choose your garage size and request a service date.</span><button type="button" data-additional="garage-cleaning">Continue</button></div><div class="service"><strong>Trash &amp; Junk Removal</strong><span>Choose an estimated truck-load size. Final pricing is confirmed after review.</span><button type="button" data-additional="trash-junk-removal">Continue</button></div></div>';
- automotive.insertAdjacentElement('afterend',section);
- section.querySelector('.category-head').addEventListener('click',()=>section.classList.toggle('open'));
- section.querySelectorAll('[data-additional]').forEach(b=>b.addEventListener('click',()=>openAdditional(b.dataset.additional)));
+ automotive.insertAdjacentElement('afterend',section);section.querySelector('.category-head').addEventListener('click',()=>section.classList.toggle('open'));section.querySelectorAll('[data-additional]').forEach(b=>b.addEventListener('click',()=>openAdditional(b.dataset.additional)));
 }
 function makeField(id,label,html){const d=document.createElement('div');d.className='field full additional-field hidden';d.id=id;d.innerHTML='<label>'+label+'</label>'+html;return d;}
 function buildFields(){
@@ -38,31 +32,14 @@ function buildFields(){
  const access=makeField('additionalAccessField','Access & Item Details','<textarea id="additionalDetails" rows="4" placeholder="Tell DASH about stairs, gates, narrow access, heavy items, appliances, furniture, bags, construction debris, or anything else we should know."></textarea>');
  grid.insertBefore(garage,date);grid.insertBefore(junk,date);grid.insertBefore(access,date);
 }
-function setMode(on){
- buildFields();document.querySelectorAll('.additional-field').forEach(e=>e.classList.toggle('hidden',!on));
- ['year','make','model','engine','trim'].forEach(id=>$(id)?.parentElement?.classList.toggle('hidden',on));
- if(on){$('title').textContent=val('service')===GARAGE?'Garage Cleaning Request':'Trash & Junk Removal Request';$('description').textContent=val('service')===GARAGE?'Choose your garage size, preferred date and time, service location, and contact information. The displayed amount is a starting estimate.':'Choose an estimated load size, preferred date and time, service location, and contact information. The displayed amount is a starting estimate and may change after item and access review.';}
-}
-function openAdditional(key){
- addServiceOptions();addBookingCategory();buildFields();$('automotive')?.classList.remove('open');$('additional-booking-services')?.classList.add('open');$('booking').classList.add('open');$('service').value=key;
- $('estimate')?.classList.remove('open');$('review')?.classList.remove('open');$('contact')?.classList.remove('open');setMode(true);$('booking').scrollIntoView({behavior:'smooth'});
-}
+function setMode(on){buildFields();document.querySelectorAll('.additional-field').forEach(e=>e.classList.toggle('hidden',!on));['year','make','model','engine','trim'].forEach(id=>$(id)?.parentElement?.classList.toggle('hidden',on));}
+function openAdditional(key){addServiceOptions();addBookingCategory();buildFields();$('automotive')?.classList.remove('open');$('additional-booking-services')?.classList.add('open');$('booking').classList.add('open');$('service').value=key;setMode(true);$('booking').scrollIntoView({behavior:'smooth'});}
 function startingEstimate(){const s=val('service');return s===GARAGE?(garageRates[val('garageSize')]||0):s===JUNK?(junkRates[val('junkLoad')]||0):0;}
 function valid(){const s=val('service');if(s===GARAGE&&!garageRates[val('garageSize')]){alert('Please select a garage size.');return false}if(s===JUNK&&!junkRates[val('junkLoad')]){alert('Please select an estimated junk load size.');return false}return true;}
-function calculateAdditional(){if(!valid())return;const total=startingEstimate();$('laborPrice').textContent='$'+(total*.6).toFixed(2);$('partsPrice').textContent='$'+(total*.4).toFixed(2);$('totalPrice').textContent='$'+total.toFixed(2);$('estimate')?.classList.add('open');$('p3')?.classList.add('active');$('estimate')?.scrollIntoView({behavior:'smooth'});}
+function calculateAdditional(){if(!valid())return;const total=startingEstimate();if($('laborPrice'))$('laborPrice').textContent='$'+(total*.6).toFixed(2);if($('partsPrice'))$('partsPrice').textContent='$'+(total*.4).toFixed(2);if($('totalPrice'))$('totalPrice').textContent='$'+total.toFixed(2);$('estimate')?.classList.add('open');$('p3')?.classList.add('active');$('estimate')?.scrollIntoView({behavior:'smooth'});}
 function reviewAdditional(){if(!valid())return;const grid=$('reviewGrid');if(!grid)return;const s=val('service'),size=s===GARAGE?val('garageSize'):val('junkLoad');grid.innerHTML=[['Service',SERVICES[s].name],[s===GARAGE?'Garage Size':'Estimated Load',size],['Preferred Date',val('date')],['Preferred Time',val('time')],['Service Address',[val('locationStreet'),val('locationCity'),val('locationState'),val('locationZip')].filter(Boolean).join(', ')],['Additional Details',val('additionalDetails')||'None provided']].map(r=>'<div><strong>'+r[0]+'</strong>'+(r[1]||'Not provided')+'</div>').join('');$('review')?.classList.add('open');$('review')?.scrollIntoView({behavior:'smooth'});}
-function appendDetails(){const s=val('service'),notes=$('notes');if(!SERVICES[s]||!notes)return null;const original=notes.value;const detail='Additional service details: '+SERVICES[s].name+'. '+(s===GARAGE?'Garage size: '+val('garageSize')+'.':'Estimated junk load: '+val('junkLoad')+'.')+' Access/item details: '+(val('additionalDetails')||'None provided')+'. Starting estimate displayed: $'+startingEstimate().toFixed(2)+'.';notes.value=original?(original+'\n\n'+detail):detail;return()=>{notes.value=original};}
-function wrapFunctions(){
- const oldCalc=window.calculateEstimate;if(oldCalc&&!oldCalc.__dashAdditionalWrapped){function calc(){if(isAdditional())return calculateAdditional();return oldCalc.apply(this,arguments)}calc.__dashAdditionalWrapped=true;window.calculateEstimate=calc;}
- const oldReview=window.reviewBooking;if(oldReview&&!oldReview.__dashAdditionalWrapped){function review(){if(isAdditional())return reviewAdditional();return oldReview.apply(this,arguments)}review.__dashAdditionalWrapped=true;window.reviewBooking=review;}
- const oldSubmit=window.submitRequest;if(oldSubmit&&!oldSubmit.__dashAdditionalWrapped){function submit(){if(!isAdditional())return oldSubmit.apply(this,arguments);if(!valid())return;const restore=appendDetails();let result;try{result=oldSubmit.apply(this,arguments)}catch(err){restore?.();throw err}if(result&&typeof result.then==='function')return result.finally(()=>restore?.());restore?.();return result}submit.__dashAdditionalWrapped=true;window.submitRequest=submit;}
-}
-function init(){
- addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();
- $('service')?.addEventListener('change',()=>setMode(isAdditional()));
- if(location.hash==='#garage-cleaning')openAdditional(GARAGE);if(location.hash==='#trash-junk-removal')openAdditional(JUNK);
- // A second pass protects against other deferred customer-service modules that add their sections at DOM ready.
- setTimeout(()=>{addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();},250);
-}
+function appendDetails(){const s=val('service'),notes=$('notes');if(!SERVICES[s]||!notes)return null;const original=notes.value;notes.value=(original?original+'\n\n':'')+'Additional service details: '+SERVICES[s].name+'. '+(s===GARAGE?'Garage size: '+val('garageSize')+'.':'Estimated junk load: '+val('junkLoad')+'.')+' Access/item details: '+(val('additionalDetails')||'None provided')+'. Starting estimate displayed: $'+startingEstimate().toFixed(2)+'.';return()=>{notes.value=original};}
+function wrapFunctions(){const oldCalc=window.calculateEstimate;if(oldCalc&&!oldCalc.__dashAdditionalWrapped){function calc(){return isAdditional()?calculateAdditional():oldCalc.apply(this,arguments)}calc.__dashAdditionalWrapped=true;window.calculateEstimate=calc;}const oldReview=window.reviewBooking;if(oldReview&&!oldReview.__dashAdditionalWrapped){function review(){return isAdditional()?reviewAdditional():oldReview.apply(this,arguments)}review.__dashAdditionalWrapped=true;window.reviewBooking=review;}const oldSubmit=window.submitRequest;if(oldSubmit&&!oldSubmit.__dashAdditionalWrapped){function submit(){if(!isAdditional())return oldSubmit.apply(this,arguments);if(!valid())return;const restore=appendDetails();let result;try{result=oldSubmit.apply(this,arguments)}catch(err){restore?.();throw err}if(result&&typeof result.then==='function')return result.finally(()=>restore?.());restore?.();return result}submit.__dashAdditionalWrapped=true;window.submitRequest=submit;}}
+function init(){addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();$('service')?.addEventListener('change',()=>setMode(isAdditional()));if(location.hash==='#garage-cleaning')openAdditional(GARAGE);if(location.hash==='#trash-junk-removal')openAdditional(JUNK);setTimeout(()=>{addServiceOptions();addAllServicesCards();addBookingCategory();buildFields();wrapFunctions();},250);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
