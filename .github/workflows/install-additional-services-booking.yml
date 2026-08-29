@@ -1,0 +1,43 @@
+name: Install additional service booking module
+
+on:
+  push:
+    paths:
+      - 'additional-services-booking.js'
+      - '.github/workflows/install-additional-services-booking.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add isolated booking module to customer pages
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          tag = '<script src="additional-services-booking.js?v=20260829v1" defer></script>'
+          for name in ('book-service.html', 'all-services.html'):
+              p = Path(name)
+              s = p.read_text()
+              if tag not in s:
+                  marker = '</head>'
+                  if marker not in s:
+                      raise SystemExit(f'head marker not found in {name}')
+                  s = s.replace(marker, '\n' + tag + '\n' + marker, 1)
+                  p.write_text(s)
+          PY
+      - name: Commit only the page wiring
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add book-service.html all-services.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Add Garage Cleaning and Trash & Junk Removal booking access'
+          git push
