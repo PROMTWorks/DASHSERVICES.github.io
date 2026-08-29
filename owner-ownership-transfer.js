@@ -60,3 +60,4 @@
 })();
 
 /* Cache-bust trigger: ownership-transfer module intentionally remains additive. */
+/* Safe update trigger for Owner Management tab installation. */
