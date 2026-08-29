@@ -26,256 +26,53 @@
     ['seasonal-yard-cleanup','Seasonal Yard Cleanup','Larger seasonal cleanup of suitable lawn and property areas.'],
     ['property-maintenance','Property Maintenance','Routine lawn and property-care service for suitable areas.']
   ];
-  function lawnCardHtml(s){
-    return '<div class="service"><strong>'+s[1]+'</strong><span>'+s[2]+'</span><button type="button" onclick="openBooking(\''+s[0]+'\')">Continue</button></div>';
-  }
-  function removeDuplicateLawnCategories(){
-    var matches=[];
-    document.querySelectorAll('.category').forEach(function(section){
-      var h=section.querySelector('.category-head h2');
-      var text=h ? (h.textContent||'').replace(/\s+/g,' ').trim().toLowerCase() : '';
-      if(text==='lawn & property services' || text==='lawn & property care') matches.push(section);
-    });
-    matches.forEach(function(section){section.remove();});
-  }
-  function installLawnCategory(){
-    var automotive=el('automotive');
-    if(!automotive) return;
-    removeDuplicateLawnCategories();
-    var section=document.createElement('section');
-    section.className='category';
-    section.id='lawnProperty';
-    section.innerHTML='<div class="category-head"><h2>Lawn &amp; Property Care</h2><p>Mobile lawn and property-care services currently available for booking.</p></div><div class="services" id="lawnServices">'+LAWN_SERVICES.map(lawnCardHtml).join('')+'</div>';
-    section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});
-    automotive.parentNode.insertBefore(section,automotive.nextSibling);
-    var select=el('service');
-    if(select){
-      LAWN_SERVICES.forEach(function(s){
-        if(![...select.options].some(function(o){return o.value===s[0];})) select.add(new Option(s[1],s[0]));
-      });
-    }
-  }
-  function setPropertyMode(active,key){
-    var ids=['year','make','model','engine','trim'];
-    ids.forEach(function(id){var field=el(id)?.closest('.field');if(field)field.classList.toggle('hidden',active);var input=el(id);if(input){input.disabled=active;}});
-    var title=el('title'),description=el('description');
-    if(active){
-      if(title)title.textContent='Lawn & Property Service Booking';
-      if(description)description.textContent='Enter the service location and scheduling information for your lawn or property-care request. Vehicle information is not required for this service.';
-    }else{
-      if(title)title.textContent='Automotive Booking';
-      if(description)description.textContent='Select your vehicle and service. Your vehicle information will be used to determine service requirements and the estimated service cost.';
-    }
-  }
-  function openBookingSafe(serviceKey){
-    var automotive=el('automotive'),booking=el('booking'),service=el('service');
-    if(!automotive || !booking || !service) return false;
-    var lawn=isLawn(serviceKey);
-    if(lawn){
-      var lp=el('lawnProperty');if(lp)lp.classList.add('open');
-      automotive.classList.remove('open');
-    }else{
-      automotive.classList.add('open');
-      var lp2=el('lawnProperty');if(lp2)lp2.classList.remove('open');
-    }
-    booking.classList.add('open');
-    service.value=serviceKey;
-    setPropertyMode(lawn,serviceKey);
-    var estimate=el('estimate'),review=el('review'),contact=el('contact');
-    if(estimate)estimate.classList.remove('open');
-    if(review)review.classList.remove('open');
-    if(contact)contact.classList.remove('open');
-    for(var i=1;i<=5;i++){var p=el('p'+i);if(p)p.classList.toggle('active',i===2);}
-    if(typeof window.updateSpecial==='function')window.updateSpecial();
-    if(booking.scrollIntoView)booking.scrollIntoView({behavior:'smooth',block:'start'});
-    return true;
-  }
+  function lawnCardHtml(s){return '<div class="service"><strong>'+s[1]+'</strong><span>'+s[2]+'</span><button type="button" onclick="openBooking(\\''+s[0]+'\\')">Continue</button></div>';}
+  function removeDuplicateLawnCategories(){var matches=[];document.querySelectorAll('.category').forEach(function(section){var h=section.querySelector('.category-head h2');var text=h?(h.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase():'';if(text==='lawn & property services'||text==='lawn & property care')matches.push(section);});matches.forEach(function(section){section.remove();});}
+  function installLawnCategory(){var automotive=el('automotive');if(!automotive)return;removeDuplicateLawnCategories();var section=document.createElement('section');section.className='category';section.id='lawnProperty';section.innerHTML='<div class="category-head"><h2>Lawn &amp; Property Care</h2><p>Mobile lawn and property-care services currently available for booking.</p></div><div class="services" id="lawnServices">'+LAWN_SERVICES.map(lawnCardHtml).join('')+'</div>';section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});automotive.parentNode.insertBefore(section,automotive.nextSibling);var select=el('service');if(select){LAWN_SERVICES.forEach(function(s){if(![...select.options].some(function(o){return o.value===s[0];}))select.add(new Option(s[1],s[0]));});}}
+  function setPropertyMode(active,key){var ids=['year','make','model','engine','trim'];ids.forEach(function(id){var field=el(id)?.closest('.field');if(field)field.classList.toggle('hidden',active);var input=el(id);if(input)input.disabled=active;});var title=el('title'),description=el('description');if(active){if(title)title.textContent='Lawn & Property Service Booking';if(description)description.textContent='Enter the service location and scheduling information for your lawn or property-care request. Vehicle information is not required for this service.';}else{if(title)title.textContent='Automotive Booking';if(description)description.textContent='Select your vehicle and service. Your vehicle information will be used to determine service requirements and the estimated service cost.';}}
+  function openBookingSafe(serviceKey){var automotive=el('automotive'),booking=el('booking'),service=el('service');if(!automotive||!booking||!service)return false;var lawn=isLawn(serviceKey);if(lawn){var lp=el('lawnProperty');if(lp)lp.classList.add('open');automotive.classList.remove('open');}else{automotive.classList.add('open');var lp2=el('lawnProperty');if(lp2)lp2.classList.remove('open');}booking.classList.add('open');service.value=serviceKey;setPropertyMode(lawn,serviceKey);var estimate=el('estimate'),review=el('review'),contact=el('contact');if(estimate)estimate.classList.remove('open');if(review)review.classList.remove('open');if(contact)contact.classList.remove('open');for(var i=1;i<=5;i++){var p=el('p'+i);if(p)p.classList.toggle('active',i===2);}if(typeof window.updateSpecial==='function')window.updateSpecial();if(booking.scrollIntoView)booking.scrollIntoView({behavior:'smooth',block:'start'});return true;}
   function install(){
     if(window.__dashBookingCompatibilityFixInstalled)return;
-    window.__dashBookingCompatibilityFixInstalled=true;
-    loadPricing();
-    installLawnCategory();
-    window.openAutomotiveBooking=openBookingSafe;
+    window.__dashBookingCompatibilityFixInstalled=true;loadPricing();installLawnCategory();window.openAutomotiveBooking=openBookingSafe;
     var originalValidate=window.validateBase;
-    window.validateBase=function(){
-      var service=el('service')?.value||'';
-      if(isLawn(service)){
-        if(!service){alert('Please select a service first.');return false;}
-        if(typeof window.validateAddress==='function')return window.validateAddress();
-        return true;
-      }
-      return typeof originalValidate==='function'?originalValidate():true;
-    };
+    window.validateBase=function(){var service=el('service')?.value||'';if(isLawn(service)){if(!service){alert('Please select a service first.');return false;}if(typeof window.validateAddress==='function')return window.validateAddress();return true;}return typeof originalValidate==='function'?originalValidate():true;};
     var originalCalculate=window.calculateEstimate;
-    window.calculateEstimate=function(){
-      var service=el('service')?.value||'';
-      if(!isLawn(service))return typeof originalCalculate==='function'?originalCalculate():undefined;
-      if(!window.validateBase())return;
-      if(!window.DASH_PRICING||!window.DASH_PRICING.estimate){alert('The pricing system is still loading. Please try again.');return;}
-      var e=window.DASH_PRICING.estimate(service);
-      if(!e){alert('Pricing is not available for this service yet.');return;}
-      if(el('laborPrice'))el('laborPrice').textContent='$'+e.labor.toFixed(2);
-      if(el('partsPrice'))el('partsPrice').textContent='$'+e.parts.toFixed(2);
-      if(el('totalPrice'))el('totalPrice').textContent='$'+e.total.toFixed(2);
-      var estimate=el('estimate');
-      if(estimate){
-        var badge=el('startingAtPrice');
-        if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';var h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge);}
-        badge.textContent='Starting at $'+e.startingAt.toFixed(2)+' • Final estimate based on service details';
-        estimate.classList.add('open');
-      }
-      if(typeof setStep==='function')setStep(3);
-      if(estimate&&estimate.scrollIntoView)estimate.scrollIntoView({behavior:'smooth'});
-    };
-    var originalOpen=window.openBooking;
-    window.openBooking=function(key){return openBookingSafe(key);};
-    window.openBooking.__dashAutomotiveFix=true;
-    document.addEventListener('click',function(e){
-      var button=e.target&&e.target.closest?e.target.closest('#automotive .service button, #lawnProperty .service button'):null;
-      if(!button)return;
-      var key=getServiceKey(button);if(!key)return;
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openBookingSafe(key);
-    },true);
-    document.addEventListener('change',function(e){
-      if(e.target&&e.target.id==='service')setPropertyMode(isLawn(e.target.value),e.target.value);
-    },true);
-    setInterval(function(){
-      if(typeof window.openBooking!=='function'||window.openBooking.__dashAutomotiveFix!==true){
-        var fn=function(key){return openBookingSafe(key);};fn.__dashAutomotiveFix=true;window.openBooking=fn;
-      }
-      var canonical=el('lawnProperty');
-      document.querySelectorAll('.category').forEach(function(section){
-        if(section===canonical)return;
-        var h=section.querySelector('.category-head h2');
-        var text=h ? (h.textContent||'').replace(/\s+/g,' ').trim().toLowerCase() : '';
-        if(text==='lawn & property services' || text==='lawn & property care')section.remove();
-      });
-      if(!el('lawnProperty'))installLawnCategory();
-    },500);
+    window.calculateEstimate=function(){var service=el('service')?.value||'';if(!isLawn(service))return typeof originalCalculate==='function'?originalCalculate():undefined;if(!window.validateBase())return;if(!window.DASH_PRICING||!window.DASH_PRICING.estimate){alert('The pricing system is still loading. Please try again.');return;}var e=window.DASH_PRICING.estimate(service);if(!e){alert('Pricing is not available for this service yet.');return;}if(el('laborPrice'))el('laborPrice').textContent='$'+e.labor.toFixed(2);if(el('partsPrice'))el('partsPrice').textContent='$'+e.parts.toFixed(2);if(el('totalPrice'))el('totalPrice').textContent='$'+e.total.toFixed(2);var estimate=el('estimate');if(estimate){var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';var h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent='Starting at $'+e.startingAt.toFixed(2)+' • Final estimate based on service details';estimate.classList.add('open');}if(typeof setStep==='function')setStep(3);if(estimate&&estimate.scrollIntoView)estimate.scrollIntoView({behavior:'smooth'});};
+    var originalOpen=window.openBooking;window.openBooking=function(key){return openBookingSafe(key);};window.openBooking.__dashAutomotiveFix=true;
+    document.addEventListener('click',function(e){var button=e.target&&e.target.closest?e.target.closest('#automotive .service button, #lawnProperty .service button'):null;if(!button)return;var key=getServiceKey(button);if(!key)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openBookingSafe(key);},true);
+    document.addEventListener('change',function(e){if(e.target&&e.target.id==='service')setPropertyMode(isLawn(e.target.value),e.target.value);},true);
+    setInterval(function(){if(typeof window.openBooking!=='function'||window.openBooking.__dashAutomotiveFix!==true){var fn=function(key){return openBookingSafe(key);};fn.__dashAutomotiveFix=true;window.openBooking=fn;}var canonical=el('lawnProperty');document.querySelectorAll('.category').forEach(function(section){if(section===canonical)return;var h=section.querySelector('.category-head h2');var text=h?(h.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase():'';if(text==='lawn & property services'||text==='lawn & property care')section.remove();});if(!el('lawnProperty'))installLawnCategory();},500);
   }
-  function installPrelaunchFlow(){
-    var estimateButton=document.querySelector('.estimate button.continue');
-    var reviewButton=document.querySelector('.review button.continue');
-    if(estimateButton)estimateButton.textContent="I'm Interested";
-    if(reviewButton)reviewButton.textContent="I'm Interested";
-    if(reviewButton)reviewButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
-    if(estimateButton)estimateButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
-    var submit=document.querySelector('#contact button[onclick="submitRequest()"]');
-    if(submit)submit.textContent='Submit Interest';
-    var h=document.querySelector('#estimate h2');
-    if(h)h.textContent='Estimated Service Cost — Pre-Launch';
-  }
-  function installFinalEstimateFix(){
-    var button=document.querySelector('#booking > .continue');
-    if(!button)return;
-    button.type='button';
-    button.textContent='Get Estimate';
-    button.onclick=function(event){
-      if(event){event.preventDefault();event.stopPropagation();}
-      var required=['service','year','make','model','engine','trim'];
-      var service=el('service')?.value||'';
-      if(!service){alert('Please select a service first.');return;}
-      if(!isLawn(service)){
-        for(var i=0;i<required.length;i++){
-          var input=el(required[i]);
-          if(input && !String(input.value||'').trim()){alert('Please complete the service, Year, Make, Model, Engine, and Trim first.');input.focus();return;}
-        }
-      }else if(typeof window.validateBase==='function'&&!window.validateBase())return;
-      var e=null;
-      if(window.DASH_PRICING&&typeof window.DASH_PRICING.estimate==='function')e=window.DASH_PRICING.estimate(service);
-      if(!e){
-        var fallback={oil:[39,32,45],wipers:[25,35,20],battery:[45,160,35],jump:[45,0,20],tire:[25,0,20],'tire-replacement':[35,125,45],air:[25,35,25],cabin:[25,35,25],headlight:[65,150,60],'brake-light':[45,80,40],fluid:[25,15,20]};
-        var p=fallback[service];
-        if(!p){alert('Pricing is not available for this service yet.');return;}
-        var choices=[...document.querySelectorAll('input[name="specialChoice"]:checked')].map(function(x){return x.value});
-        var labor=p[0],parts=p[1],minutes=p[2];
-        if(service==='wipers'){var n=choices.includes('All wipers')?4:Math.max(choices.length,1);labor=25*n;parts=35*n;minutes=20*n;}
-        if(service==='tire-replacement'){var q=parseInt((choices[0]||'1'),10);labor=35*q;parts=125*q;minutes=45*q;}
-        if(service==='headlight'||service==='brake-light'){var qty=(choices[0]==='Both'||choices[0]==='Two')?2:1;labor=p[0]*qty;parts=p[1]*qty;minutes=p[2]*qty;}
-        if(service==='fluid')parts=15*Math.max(choices.length,1);
-        var hours=Math.max(minutes/60,.25),cost=10*1.15*hours+parts+4*hours+3+10,total=Math.max(cost+10,cost/.75);
-        e={labor:Math.max(10,total-parts-10),parts:parts,total:total,startingAt:0};
-      }
-      if(el('laborPrice'))el('laborPrice').textContent='$'+Number(e.labor).toFixed(2);
-      if(el('partsPrice'))el('partsPrice').textContent='$'+Number(e.parts).toFixed(2);
-      if(el('totalPrice'))el('totalPrice').textContent='$'+Number(e.total).toFixed(2);
-      var estimate=el('estimate');
-      if(estimate){
-        var badge=el('startingAtPrice');
-        if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';var h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge);}
-        badge.textContent=e.startingAt?'Starting at $'+Number(e.startingAt).toFixed(2)+' • Pre-launch estimate based on your selections':'Pre-launch estimate based on your selections';
-        estimate.classList.add('open');
-        var next=estimate.querySelector('button.continue');
-        if(next){next.textContent="I'm Interested";next.onclick=function(ev){if(ev){ev.preventDefault();ev.stopPropagation();}if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}
-        if(typeof setStep==='function')setStep(3);
-        estimate.scrollIntoView({behavior:'smooth'});
-      }
-    };
-  }
+  function installPrelaunchFlow(){var estimateButton=document.querySelector('.estimate button.continue');var reviewButton=document.querySelector('.review button.continue');if(estimateButton)estimateButton.textContent="I'm Interested";if(reviewButton)reviewButton.textContent="I'm Interested";if(reviewButton)reviewButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};if(estimateButton)estimateButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};var submit=document.querySelector('#contact button[onclick="submitRequest()"]');if(submit)submit.textContent='Submit Interest';var h=document.querySelector('#estimate h2');if(h)h.textContent='Estimated Service Cost — Pre-Launch';}
+  function installFinalEstimateFix(){var button=document.querySelector('#booking > .continue');if(!button)return;button.type='button';button.textContent='Get Estimate';button.onclick=function(event){if(event){event.preventDefault();event.stopPropagation();}var required=['service','year','make','model','engine','trim'];var service=el('service')?.value||'';if(!service){alert('Please select a service first.');return;}if(!isLawn(service)&&service!=='house-cleaning'){for(var i=0;i<required.length;i++){var input=el(required[i]);if(input&&!String(input.value||'').trim()){alert('Please complete the service, Year, Make, Model, Engine, and Trim first.');input.focus();return;}}}else if(typeof window.validateBase==='function'&&!window.validateBase())return;var e=null;if(window.DASH_PRICING&&typeof window.DASH_PRICING.estimate==='function'&&service!=='house-cleaning')e=window.DASH_PRICING.estimate(service);if(!e&&service!=='house-cleaning'){var fallback={oil:[39,32,45],wipers:[25,35,20],battery:[45,160,35],jump:[45,0,20],tire:[25,0,20],'tire-replacement':[35,125,45],air:[25,35,25],cabin:[25,35,25],headlight:[65,150,60],'brake-light':[45,80,40],fluid:[25,15,20]};var p=fallback[service];if(!p){alert('Pricing is not available for this service yet.');return;}var choices=[...document.querySelectorAll('input[name="specialChoice"]:checked')].map(function(x){return x.value});var labor=p[0],parts=p[1],minutes=p[2];if(service==='wipers'){var n=choices.includes('All wipers')?4:Math.max(choices.length,1);labor=25*n;parts=35*n;minutes=20*n;}if(service==='tire-replacement'){var q=parseInt((choices[0]||'1'),10);labor=35*q;parts=125*q;minutes=45*q;}if(service==='headlight'||service==='brake-light'){var qty=(choices[0]==='Both'||choices[0]==='Two')?2:1;labor=p[0]*qty;parts=p[1]*qty;minutes=p[2]*qty;}if(service==='fluid')parts=15*Math.max(choices.length,1);var hours=Math.max(minutes/60,.25),cost=10*1.15*hours+parts+4*hours+3+10,total=Math.max(cost+10,cost/.75);e={labor:Math.max(10,total-parts-10),parts:parts,total:total,startingAt:0};}if(service==='house-cleaning'){return window.__dashHouseCleaningCalculate?window.__dashHouseCleaningCalculate():undefined;}if(el('laborPrice'))el('laborPrice').textContent='$'+Number(e.labor).toFixed(2);if(el('partsPrice'))el('partsPrice').textContent='$'+Number(e.parts).toFixed(2);if(el('totalPrice'))el('totalPrice').textContent='$'+Number(e.total).toFixed(2);var estimate=el('estimate');if(estimate){var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';var h=estimate.querySelector('h2');if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent=e.startingAt?'Starting at $'+Number(e.startingAt).toFixed(2)+' • Pre-launch estimate based on your selections':'Pre-launch estimate based on your selections';estimate.classList.add('open');var next=estimate.querySelector('button.continue');if(next){next.textContent="I'm Interested";next.onclick=function(ev){if(ev){ev.preventDefault();ev.stopPropagation();}if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}if(typeof setStep==='function')setStep(3);estimate.scrollIntoView({behavior:'smooth'});};}
   var CLEANING_RATES={1:125,2:155,3:195,4:235,5:285};
   function isCleaning(key){return key==='house-cleaning';}
-  function installCleaningCategory(){
-    if(el('houseCleaningCategory')||!el('automotive'))return;
-    var section=document.createElement('section');section.className='category';section.id='houseCleaningCategory';
-    section.innerHTML='<div class="category-head"><h2>House Cleaning</h2><p>Professional residential cleaning with simple flat-rate pricing. No hourly billing.</p></div><div class="services"><div class="service"><strong>Standard House Cleaning</strong><span>1 bedroom $125 • 2 bedrooms $155 • 3 bedrooms $195 • 4 bedrooms $235 • 5+ bedrooms $285</span><button type="button" onclick="openCleaningBooking()">Book Online</button></div></div>';
-    section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});
-    el('automotive').parentNode.insertBefore(section,el('automotive').nextSibling);
-    var select=el('service');if(select&&!Array.from(select.options).some(function(o){return o.value==='house-cleaning';}))select.add(new Option('House Cleaning','house-cleaning'));
-  }
+  function installCleaningCategory(){if(el('houseCleaningCategory')||!el('automotive'))return;var section=document.createElement('section');section.className='category';section.id='houseCleaningCategory';section.innerHTML='<div class="category-head"><h2>House Cleaning</h2><p>Professional residential cleaning with simple flat-rate pricing. No hourly billing.</p></div><div class="services"><div class="service"><strong>Standard House Cleaning</strong><span>1 bedroom $125 • 2 bedrooms $155 • 3 bedrooms $195 • 4 bedrooms $235 • 5+ bedrooms $285</span><button type="button" onclick="openCleaningBooking()">Book Online</button></div></div>';section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});el('automotive').parentNode.insertBefore(section,el('automotive').nextSibling);var select=el('service');if(select&&!Array.from(select.options).some(function(o){return o.value==='house-cleaning';}))select.add(new Option('House Cleaning','house-cleaning'));}
   function setCleaningMode(){
     setPropertyMode(true,'house-cleaning');
     if(el('title'))el('title').textContent='House Cleaning Booking';
     if(el('description'))el('description').textContent='Choose your home size, preferred date and time, then enter the cleaning location and contact information.';
+    /* The dedicated House Cleaning layer owns the home-size/deep-clean/add-on controls.
+       Never rebuild the legacy specialChoice radios here: rebuilding them was what reset
+       a customer's 3/4/5+ bedroom selection back to the 2-bedroom default. */
+    if(el('hcHomeSize')){
+      var hc=el('hcSize');
+      var selected=hc&&hc.value?hc.value:(document.querySelector('input[name="specialChoice"]:checked')?.value||'');
+      var legacy=el('special');if(legacy)legacy.classList.add('hidden');
+      if(hc&&selected)hc.value=selected;
+      if(typeof window.__dashHouseCleaningRefresh==='function')window.__dashHouseCleaningRefresh();
+      return;
+    }
     var special=el('special'),label=el('specialLabel'),options=el('specialOptions');
-    if(special&&label&&options){special.classList.remove('hidden');label.textContent='Home Size — Flat Rate';options.innerHTML=Object.keys(CLEANING_RATES).map(function(k){var name=k==='5'?'5+ Bedrooms':k+' Bedroom'+(k==='1'?'':'s');return '<label><input type="radio" name="specialChoice" value="'+k+'" '+(k==='2'?'checked':'')+'> '+name+' — $'+CLEANING_RATES[k]+'</label>';}).join('');}
+    if(special&&label&&options){var current=document.querySelector('input[name="specialChoice"]:checked')?.value||'2';special.classList.remove('hidden');label.textContent='Home Size — Flat Rate';options.innerHTML=Object.keys(CLEANING_RATES).map(function(k){var name=k==='5'?'5+ Bedrooms':k+' Bedroom'+(k==='1'?'':'s');return '<label><input type="radio" name="specialChoice" value="'+k+'" '+(k===current?'checked':'')+'> '+name+' — $'+CLEANING_RATES[k]+'</label>';}).join('');}
   }
-  window.openCleaningBooking=function(){
-    var booking=el('booking'),service=el('service');if(!booking||!service)return;
-    if(el('automotive'))el('automotive').classList.remove('open');if(el('lawnProperty'))el('lawnProperty').classList.remove('open');
-    if(el('houseCleaningCategory'))el('houseCleaningCategory').classList.add('open');
-    booking.classList.add('open');service.value='house-cleaning';setCleaningMode();
-    ['estimate','review','contact'].forEach(function(id){if(el(id))el(id).classList.remove('open');});
-    for(var i=1;i<=5;i++){var p=el('p'+i);if(p)p.classList.toggle('active',i===2);}
-    if(booking.scrollIntoView)booking.scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  function cleaningRate(){var c=document.querySelector('input[name="specialChoice"]:checked');return c?CLEANING_RATES[c.value]:null;}
-  function installCleaningEstimateFix(){
-    var button=document.querySelector('#booking > .continue');if(!button)return;
-    var old=button.onclick;button.onclick=function(event){
-      var service=el('service')?.value||'';if(!isCleaning(service))return old&&old.call(this,event);
-      if(event){event.preventDefault();event.stopPropagation();}
-      setCleaningMode();var rate=cleaningRate();if(!rate){alert('Please select the home size first.');return;}
-      if(typeof window.validateAddress==='function'&&!window.validateAddress())return;
-      if(el('laborPrice'))el('laborPrice').textContent='$'+rate.toFixed(2);if(el('partsPrice'))el('partsPrice').textContent='$0.00';if(el('totalPrice'))el('totalPrice').textContent='$'+rate.toFixed(2);
-      var estimate=el('estimate');if(estimate){var h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent='Flat rate based on home size • No hourly billing';estimate.classList.add('open');var next=estimate.querySelector('button.continue');if(next){next.textContent="I'm Interested";next.onclick=function(){if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}if(typeof setStep==='function')setStep(3);estimate.scrollIntoView({behavior:'smooth'});}
-    };
-  }
-  function installCleaningSubmissionFix(){
-    if(typeof window.submitRequest!=='function')return;
-    if(window.__dashCleaningSubmissionWrapped)return;window.__dashCleaningSubmissionWrapped=true;
-    var originalSubmit=window.submitRequest;
-    window.submitRequest=function(){
-      if(isCleaning(el('service')?.value||'')){
-        var choice=document.querySelector('input[name="specialChoice"]:checked');var notes=el('notes');var size=choice?(choice.value==='5'?'5+ bedrooms':choice.value+' bedroom'+(choice.value==='1'?'':'s')):'Home size not selected';if(notes)notes.value='House size: '+size+' | Flat rate: $'+(choice?CLEANING_RATES[choice.value]:0)+' | '+String(notes.value||'').trim();
-      }
-      return originalSubmit.apply(this,arguments);
-    };
-  }
+  window.openCleaningBooking=function(){var booking=el('booking'),service=el('service');if(!booking||!service)return;if(el('automotive'))el('automotive').classList.remove('open');if(el('lawnProperty'))el('lawnProperty').classList.remove('open');if(el('houseCleaningCategory'))el('houseCleaningCategory').classList.add('open');booking.classList.add('open');service.value='house-cleaning';setCleaningMode();['estimate','review','contact'].forEach(function(id){if(el(id))el(id).classList.remove('open');});for(var i=1;i<=5;i++){var p=el('p'+i);if(p)p.classList.toggle('active',i===2);}if(booking.scrollIntoView)booking.scrollIntoView({behavior:'smooth',block:'start'});};
+  function cleaningRate(){var hc=el('hcSize');if(hc&&hc.value&&CLEANING_RATES[hc.value])return CLEANING_RATES[hc.value];var c=document.querySelector('input[name="specialChoice"]:checked');return c?CLEANING_RATES[c.value]:null;}
+  function installCleaningEstimateFix(){var button=document.querySelector('#booking > .continue');if(!button)return;var old=button.onclick;button.onclick=function(event){var service=el('service')?.value||'';if(!isCleaning(service))return old&&old.call(this,event);if(window.__dashHouseCleaningCalculate){return window.__dashHouseCleaningCalculate(event);}if(event){event.preventDefault();event.stopPropagation();}setCleaningMode();var rate=cleaningRate();if(!rate){alert('Please select the home size first.');return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;if(el('laborPrice'))el('laborPrice').textContent='$'+rate.toFixed(2);if(el('partsPrice'))el('partsPrice').textContent='$0.00';if(el('totalPrice'))el('totalPrice').textContent='$'+rate.toFixed(2);var estimate=el('estimate');if(estimate){var h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent='Flat rate based on home size • No hourly billing';estimate.classList.add('open');var next=estimate.querySelector('button.continue');if(next){next.textContent="I'm Interested";next.onclick=function(){if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}if(typeof setStep==='function')setStep(3);estimate.scrollIntoView({behavior:'smooth'});}};}
+  function installCleaningSubmissionFix(){if(typeof window.submitRequest!=='function')return;if(window.__dashCleaningSubmissionWrapped)return;window.__dashCleaningSubmissionWrapped=true;var originalSubmit=window.submitRequest;window.submitRequest=function(){if(isCleaning(el('service')?.value||'')){var choice=el('hcSize')||document.querySelector('input[name="specialChoice"]:checked');var notes=el('notes');var raw=choice?choice.value:'';var size=raw?(raw==='5'?'5+ bedrooms':raw+' bedroom'+(raw==='1'?'':'s')):'Home size not selected';if(notes)notes.value='House size: '+size+' | Flat rate: $'+(raw?CLEANING_RATES[raw]:0)+' | '+String(notes.value||'').trim();}return originalSubmit.apply(this,arguments);};}
   function installCleaning(){installCleaningCategory();setTimeout(installCleaningEstimateFix,900);setTimeout(installCleaningEstimateFix,1900);setTimeout(installCleaningEstimateFix,3100);setTimeout(installCleaningSubmissionFix,1200);setTimeout(installCleaningSubmissionFix,2500);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){install();installCleaning();});else{install();installCleaning();}
-  setTimeout(installPrelaunchFlow,800);
-  setTimeout(installPrelaunchFlow,1800);
-  setTimeout(installPrelaunchFlow,3000);
+  setTimeout(installPrelaunchFlow,800);setTimeout(installPrelaunchFlow,1800);setTimeout(installPrelaunchFlow,3000);
 })();
 /* Load the dedicated House Cleaning workflow after the existing compatibility layer. */
-(function(){
-  function load(){
-    if(window.__dashHouseCleaningLoader)return;
-    window.__dashHouseCleaningLoader=true;
-    var s=document.createElement('script');
-    s.src='house-cleaning-booking.js?v=20260828v2';
-    s.defer=true;
-    document.head.appendChild(s);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();
-})();
+(function(){function load(){if(window.__dashHouseCleaningLoader)return;window.__dashHouseCleaningLoader=true;var s=document.createElement('script');s.src='house-cleaning-booking.js?v=20260828v3';s.defer=true;document.head.appendChild(s);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);else load();})();
