@@ -23,11 +23,8 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-
           path = Path('admin-production.html')
           s = path.read_text(encoding='utf-8')
-
           marker = 'id="companyPayCapacity"'
           if marker not in s:
               section_start = s.find('<section id="finances"')
@@ -36,7 +33,6 @@ jobs:
               section_end = s.find('</section>', section_start)
               if section_end < 0:
                   raise SystemExit('Company Finances section end not found; aborting without changes.')
-
               panel = r'''<div class="panel" id="companyPayCapacity">
 <div class="head"><h2>Company-Wide Employee Pay Capacity</h2><span class="pill">Super Admin Only</span></div>
 <div class="body">
@@ -58,10 +54,9 @@ jobs:
 <div class="card"><div class="label">PAYROLL ROOM LEFT</div><div class="value" id="cpc_room">$0.00</div><div class="muted">Amount available before the owner-draw/profit floor is breached.</div></div>
 <div class="card"><div class="label">$5,000+ OWNER DRAW PROTECTED</div><div class="value" id="cpc_status">—</div><div class="muted" id="cpc_status_note">Enter revenue and expenses.</div></div>
 </div>
-<div class="security"><b>How to use it:</b> Enter all employees together. The ceiling assumes every employee is paid at the same hourly rate. If employees have different rates, use their actual current average wage to check total payroll, then use the ceiling as the maximum rate you want any employee to exceed only after reviewing the mix of wages.</div>
+<div class="security"><b>How to use it:</b> Enter all employees together. The ceiling assumes every employee is paid at the same hourly rate.</div>
 </div></div>'''
               s = s[:section_end] + panel + s[section_end:]
-
           path.write_text(s, encoding='utf-8')
           PY
 
@@ -78,8 +73,7 @@ function calculateCompanyPayCapacity(){
   const num=id=>Math.max(0,parseFloat(n(id)?.value)||0);
   const revenue=num('cpc_revenue'), expenses=num('cpc_expenses'), owner=num('cpc_owner'), profit=num('cpc_profit');
   const employees=Math.max(1,Math.floor(num('cpc_employees'))), hours=num('cpc_hours'), ot=num('cpc_ot'), burden=num('cpc_burden')/100, current=num('cpc_current');
-  const regular=hours*52/12, overtime=ot*52/12;
-  const monthlyHoursPerEmployee=regular+overtime*1.5;
+  const regular=hours*52/12, overtime=ot*52/12, monthlyHoursPerEmployee=regular+overtime*1.5;
   const available=Math.max(0,revenue-expenses-owner-profit);
   const currentMonthly=((regular*current)+(overtime*current*1.5))*(1+burden)*employees;
   const maxWage=monthlyHoursPerEmployee>0 ? available/(monthlyHoursPerEmployee*(1+burden)*employees) : 0;
@@ -91,33 +85,45 @@ function calculateCompanyPayCapacity(){
   n('cpc_status').textContent=ok?'YES':'NO';
   n('cpc_status_note').textContent=ok?'Your minimum owner draw and profit floor are protected at the current average wage.':'Current payroll is too high for the entered revenue/expense assumptions, or revenue has not been entered.';
 }
-(function(){
-  const ids=['cpc_revenue','cpc_expenses','cpc_owner','cpc_profit','cpc_employees','cpc_hours','cpc_ot','cpc_burden','cpc_current'];
-  ids.forEach(x=>{const e=document.getElementById(x);if(e)e.addEventListener('input',calculateCompanyPayCapacity)});
-  if(document.getElementById('companyPayCapacity'))calculateCompanyPayCapacity();
-})();
+(function(){const ids=['cpc_revenue','cpc_expenses','cpc_owner','cpc_profit','cpc_employees','cpc_hours','cpc_ot','cpc_burden','cpc_current'];ids.forEach(x=>{const e=document.getElementById(x);if(e)e.addEventListener('input',calculateCompanyPayCapacity)});if(document.getElementById('companyPayCapacity'))calculateCompanyPayCapacity();})();
 </script>'''
               s=s.replace('</body>',js+'\n</body>')
               p.write_text(s,encoding='utf-8')
           PY
 
-      - name: Verify before commit
+      - name: Add Owner Management Ownership Transfer module
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          s=Path('admin-production.html').read_text(encoding='utf-8')
-          required=['id="companyPayCapacity"','function calculateCompanyPayCapacity()','MAX COMPANY-WIDE HOURLY CEILING']
-          missing=[x for x in required if x not in s]
-          if missing: raise SystemExit('Verification failed: '+', '.join(missing))
-          print('Company-wide pay capacity verified.')
+          p=Path('owner-management.html')
+          s=p.read_text(encoding='utf-8')
+          src='owner-ownership-transfer.js'
+          if src not in s:
+              if '</body>' not in s:
+                  raise SystemExit('owner-management.html has no closing body tag; owner portal was not changed.')
+              s=s.replace('</body>', '<script src="owner-ownership-transfer.js?v=owner-transfer-20260829" defer></script>\n</body>', 1)
+              p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Verify changes before commit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          owner=Path('owner-management.html').read_text(encoding='utf-8')
+          if 'owner-ownership-transfer.js' not in owner:
+              raise SystemExit('Owner Management verification failed.')
+          admin=Path('admin-production.html').read_text(encoding='utf-8')
+          if 'companyPayCapacity' not in admin:
+              raise SystemExit('Existing admin pay-capacity verification failed.')
+          print('Verified: owner transfer module added and existing admin pay-capacity remains present.')
           PY
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add admin-production.html
+          git add admin-production.html owner-management.html
           if git diff --cached --quiet; then echo 'No changes needed.'; exit 0; fi
-          git commit -m "Add company-wide employee pay capacity calculator"
+          git commit -m "Add Ownership Transfer to Owner Management"
           git pull --rebase origin main
           git push origin HEAD:main
