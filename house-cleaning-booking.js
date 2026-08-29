@@ -47,10 +47,63 @@
     function updateCleaningTotal(){if(!cleaningMode)return;const size=val('hcSize');let total=rates[size]||0;if(val('hcDeepChoice')==='yes')total+=deepRates[size]||0;document.querySelectorAll('input[name="hcAddon"]:checked').forEach(x=>total+=addonRates[x.value]||0);if($('laborPrice'))$('laborPrice').textContent='$'+total.toFixed(2);if($('partsPrice'))$('partsPrice').textContent='$0.00';if($('totalPrice'))$('totalPrice').textContent='$'+total.toFixed(2);}
     window.calculateEstimate=function(){if(!cleaningMode)return originalCalculate();if(!val('hcSize')){alert('Please select the home size.');$('hcSize').focus();return;}if(!val('date')||!val('time')){alert('Please enter your preferred service date and arrival time.');(!val('date')?$('date'):$('time')).focus();return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();$('estimate').classList.add('open');$('estimate').querySelector('h2').textContent='House Cleaning Flat-Rate Estimate';$('estimate').querySelector('.estimate-note').textContent='Estimated flat-rate service price based on your home size and selected cleaning options. DASH will review the request and confirm the final scope and price before scheduling. No payment is taken through this form.';if(typeof window.setStep==='function')window.setStep(3);$('estimate').scrollIntoView({behavior:'smooth'});};
     window.reviewBooking=function(){if(!cleaningMode)return originalReview();if(!val('hcSize')){alert('Please select the home size.');$('hcSize').focus();return;}if(!val('date')||!val('time')){alert('Please enter your preferred service date and arrival time.');return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();const addons=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.parentElement.textContent.trim()).join(', ')||'None';const deepText=val('hcDeepChoice')==='yes'?'Yes':'No';$('reviewGrid').innerHTML=[['Service','House Cleaning'],['Home Size',$('hcSize').selectedOptions[0]?.text||''],['Deep Clean',deepText],['Cleaning Add-Ons',addons],['Preferred Date',val('date')],['Preferred Arrival Time',val('time')],['Full Service Address',typeof fullAddress==='function'?fullAddress():'' ],['Address Restrictions',val('addressRestrictions')||'None'],['Estimated Total',$('totalPrice').textContent]].map(x=>'<div><strong>'+x[0]+'</strong>'+x[1]+'</div>').join('');$('review').classList.add('open');$('contact').classList.remove('open');if(typeof window.setStep==='function')window.setStep(4);$('review').scrollIntoView({behavior:'smooth'});};
-    window.submitRequest=async function(){if(!cleaningMode)return originalSubmit();if(!val('hcSize')){alert('Please select the home size.');return;}if(!val('date')||!val('time')){alert('Please complete your preferred service date and arrival time.');return;}for(const id of ['firstName','lastName','phone','email'])if(!val(id)){alert('Please complete your first name, last name, phone number, and email address.');$(id).focus();return;}if(!$('consent').checked){alert('Please confirm that your contact information is accurate and authorize DASH MOBILE SERVICES to contact you.');return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))){alert('Please enter a valid email address.');$('email').focus();return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();const addons=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.value);const size=val('hcSize');const deepChoice=val('hcDeepChoice')==='yes';const request={client_request_number:'DASH-'+Date.now()+'-'+Math.floor(100000+Math.random()*900000),service_key:'house-cleaning',service_name:'House Cleaning',vehicle_year:null,vehicle_make:null,vehicle_model:null,vehicle_engine:null,vehicle_trim:null,preferred_date:val('date'),preferred_time:val('time'),street_address:val('locationStreet'),city:val('locationCity'),state:val('locationState').toUpperCase(),postal_code:val('locationZip'),restriction_answer:val('addressRestrictions'),restriction_details:val('restrictionDetails'),customer_notes:val('notes'),special_options:[],estimated_labor:$('laborPrice').textContent,estimated_parts:'$0.00',estimated_total:$('totalPrice').textContent,first_name:val('firstName'),last_name:val('lastName'),phone:val('phone'),email:val('email'),contact_preference:val('contactPreference'),consent:true,cleaning_home_size:size,cleaning_deep_clean:deepChoice,cleaning_addons:addons,flat_rate:Number($('totalPrice').textContent.replace(/[^0-9.]/g,''))};const button=document.querySelector('#contact .continue');if(button){button.disabled=true;button.textContent='Submitting...'}try{const response=await fetch('https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/create-service-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request})});const text=await response.text();let data={};try{data=JSON.parse(text)}catch(e){data={message:text}}if(!response.ok)throw new Error(data.message||'DASH could not save the House Cleaning request.');alert('Your House Cleaning request '+(data.request_number||request.client_request_number)+' was submitted successfully. DASH will review it and contact you about scheduling and payment.');}catch(e){alert('Your House Cleaning request could not be submitted: '+e.message)}finally{if(button){button.disabled=false;button.textContent='Submit Service Request'}}};
+    window.submitRequest=async function(){if(!cleaningMode)return originalSubmit();if(!val('hcSize')){alert('Please select the home size.');return;}if(!val('date')||!val('time')){alert('Please complete your preferred service date and arrival time.');return;}for(const id of ['firstName','lastName','phone','email'])if(!val(id)){alert('Please complete your first name, last name, phone number, and email address.');$(id).focus();return;}if(!$('consent').checked){alert('Please confirm that your contact information is accurate and authorize DASH MOBILE SERVICES to contact you.');return;}if(!/^\S+@\S+\.\S+$/.test(val('email'))){alert('Please enter a valid email address.');$('email').focus();return;}if(typeof window.validateAddress==='function'&&!window.validateAddress())return;updateCleaningTotal();const addons=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.value);const size=val('hcSize');const deepChoice=val('hcDeepChoice')==='yes';const request={client_request_number:'DASH-'+Date.now()+'-'+Math.floor(100000+Math.random()*900000),service_key:'house-cleaning',service_name:'House Cleaning',vehicle_year:null,vehicle_make:null,vehicle_model:null,vehicle_engine:null,vehicle_trim:null,preferred_date:val('date'),preferred_time:val('time'),street_address:val('locationStreet'),city:val('locationCity'),state:val('locationState').toUpperCase(),postal_code:val('locationZip'),restriction_answer:val('addressRestrictions'),restriction_details:val('restrictionDetails'),customer_notes:val('notes'),special_options:[],estimated_labor:$('laborPrice').textContent,estimated_parts:'$0.00',estimated_total:$('totalPrice').textContent,first_name:val('firstName'),last_name:val('lastName'),phone:val('phone'),email:val('email'),contact_preference:val('contactPreference'),consent:true,cleaning_home_size:size,cleaning_deep_clean:deepChoice,cleaning_addons:addons,flat_rate:Number($('totalPrice').textContent.replace(/[^0-9.]/g,''))};const button=document.querySelector('#contact .continue');if(button){button.disabled=true;button.textContent='Submitting...'}try{const response=await fetch('https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/create-service-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request})});const text=await response.text();let data={};try{data=JSON.parse(text)}catch(e){data={message:text}}if(!response.ok)throw new Error(data.message||'DASH could not save the House Cleaning request.');alert('Your House Cleaning request '+(data.request_number||request.client_request_number)+' was submitted successfully. DASH will review it and contact you about scheduling and payment.');}catch(e){alert('Your House Cleaning request could not be submitted: '+e.message)}finally{if(button){button.disabled=false;button.textContent='Submit Service Request'}}};
     const oldOpenCleaning=window.openCleaningBooking;
     window.openCleaningBooking=function(){if(typeof oldOpenCleaning==='function')oldOpenCleaning();else{if($('booking'))$('booking').classList.add('open');if($('service'))$('service').value=CLEANING;}setTimeout(toggle,0);};
     $('service').addEventListener('change',toggle);toggle();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+
+/* Final House Cleaning pricing guard. This runs at the click level so no older
+   automotive estimate handler can overwrite the customer's cleaning selections. */
+(function(){
+  const CLEANING='house-cleaning';
+  const rates={1:125,2:155,3:195,4:235,5:285};
+  const deepRates={1:75,2:90,3:110,4:130,5:150};
+  const addonRates={refrigerator:35,oven:35,baseboards:40};
+  const $=id=>document.getElementById(id);
+  const isCleaning=()=>{const s=$('service');return !!s&&(s.value===CLEANING||String(s.selectedOptions?.[0]?.text||'').trim().toLowerCase()==='house cleaning');};
+  const size=()=>String($('hcSize')?.value||'').trim();
+  function calculate(){
+    if(!isCleaning())return false;
+    const s=size();
+    if(!rates[s]){alert('Please select the home size.');$('hcSize')?.focus();return true;}
+    let base=rates[s], deep=0, addons=0;
+    if($('hcDeepChoice')?.value==='yes')deep=deepRates[s]||0;
+    document.querySelectorAll('input[name="hcAddon"]:checked').forEach(x=>addons+=addonRates[x.value]||0);
+    const total=base+deep+addons;
+    if($('laborPrice'))$('laborPrice').textContent='$'+base.toFixed(2);
+    if($('partsPrice'))$('partsPrice').textContent='$'+(deep+addons).toFixed(2);
+    if($('totalPrice'))$('totalPrice').textContent='$'+total.toFixed(2);
+    const estimate=$('estimate');
+    if(estimate){
+      const h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';
+      let detail=$('hcEstimateDetails');
+      if(!detail){detail=document.createElement('div');detail.id='hcEstimateDetails';detail.style='margin:0 0 14px;line-height:1.7;font-size:14px';const note=estimate.querySelector('.estimate-note');if(note)note.parentNode.insertBefore(detail,note);}
+      const deepLine=deep?'Deep Clean: +$'+deep.toFixed(2):'Deep Clean: $0.00';
+      const addonNames=[...document.querySelectorAll('input[name="hcAddon"]:checked')].map(x=>x.parentElement.textContent.trim());
+      detail.innerHTML='<strong>Standard Cleaning:</strong> $'+base.toFixed(2)+'<br><strong>'+deepLine+'</strong><br><strong>Cleaning Add-Ons:</strong> '+(addons?'$'+addons.toFixed(2)+' — '+addonNames.join(', '):'$0.00')+'<br><strong>Estimated Total:</strong> $'+total.toFixed(2);
+      const note=estimate.querySelector('.estimate-note');if(note)note.textContent='Flat-rate House Cleaning estimate. No hourly billing. DASH will review the request and confirm the final scope and price before scheduling. No payment is taken through this form.';
+      estimate.classList.add('open');
+      if(typeof window.setStep==='function')window.setStep(3);
+      estimate.scrollIntoView({behavior:'smooth'});
+    }
+    window.__dashHouseCleaningCalculate=calculate;
+    return true;
+  }
+  window.__dashHouseCleaningCalculate=calculate;
+  function bind(){
+    const button=document.querySelector('#booking > .continue');
+    if(button&&!button.__hcFinalBound){
+      button.__hcFinalBound=true;
+      button.addEventListener('click',function(e){if(isCleaning()){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();calculate();}},true);
+    }
+    ['hcSize','hcDeepChoice'].forEach(id=>{const e=$(id);if(e&&!e.__hcPriceBound){e.__hcPriceBound=true;e.addEventListener('change',calculate);}});
+    document.querySelectorAll('input[name="hcAddon"]').forEach(e=>{if(!e.__hcPriceBound){e.__hcPriceBound=true;e.addEventListener('change',calculate);}});
+    const legacy=$('special');if(legacy)legacy.classList.add('hidden');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,0));
+  else setTimeout(bind,0);
+  [100,500,1200,2500,4000].forEach(ms=>setTimeout(bind,ms));
 })();
