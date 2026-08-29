@@ -11,10 +11,18 @@
     document.head.appendChild(style);
   }
 
+  function activate(button, section) {
+    document.querySelectorAll('.section').forEach(function (s) { s.classList.remove('active'); });
+    section.classList.add('active');
+    document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
+    button.classList.add('active');
+    try { history.replaceState(null, '', '#ownershipTransfer'); } catch (_) {}
+  }
+
   function addTabAndSection() {
     var tabs = document.querySelector('.tabs');
     var main = document.querySelector('main');
-    if (!tabs || !main) return;
+    if (!tabs || !main) return false;
 
     addStyles();
 
@@ -41,23 +49,27 @@
       button.dataset.ownerOtBound = '1';
       button.addEventListener('click', function (event) {
         event.preventDefault();
-        document.querySelectorAll('.section').forEach(function (s) { s.classList.remove('active'); });
-        section.classList.add('active');
-        document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
-        button.classList.add('active');
-        try { history.replaceState(null, '', '#ownershipTransfer'); } catch (_) {}
+        event.stopPropagation();
+        activate(button, section);
       });
     }
 
-    if (location.hash === '#ownershipTransfer') button.click();
+    if (location.hash === '#ownershipTransfer') activate(button, section);
+    return true;
+  }
+
+  function start() {
+    if (addTabAndSection()) return;
+    var attempts = 0;
+    var timer = setInterval(function () {
+      attempts += 1;
+      if (addTabAndSection() || attempts >= 20) clearInterval(timer);
+    }, 250);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addTabAndSection, { once: true });
+    document.addEventListener('DOMContentLoaded', start, { once: true });
   } else {
-    addTabAndSection();
+    start();
   }
 })();
-
-/* Cache-bust trigger: ownership-transfer module intentionally remains additive. */
-/* Safe update trigger for Owner Management tab installation. */
