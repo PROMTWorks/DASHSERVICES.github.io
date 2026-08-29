@@ -212,12 +212,60 @@
       }
     };
   }
-  function waitForFinalFix(){
-    installPrelaunchFlow();
-    installFinalEstimateFix();
+  var CLEANING_RATES={1:125,2:155,3:195,4:235,5:285};
+  function isCleaning(key){return key==='house-cleaning';}
+  function installCleaningCategory(){
+    if(el('houseCleaningCategory')||!el('automotive'))return;
+    var section=document.createElement('section');section.className='category';section.id='houseCleaningCategory';
+    section.innerHTML='<div class="category-head"><h2>House Cleaning</h2><p>Professional residential cleaning with simple flat-rate pricing. No hourly billing.</p></div><div class="services"><div class="service"><strong>Standard House Cleaning</strong><span>1 bedroom $125 • 2 bedrooms $155 • 3 bedrooms $195 • 4 bedrooms $235 • 5+ bedrooms $285</span><button type="button" onclick="openCleaningBooking()">Book Online</button></div></div>';
+    section.querySelector('.category-head').addEventListener('click',function(){section.classList.toggle('open');});
+    el('automotive').parentNode.insertBefore(section,el('automotive').nextSibling);
+    var select=el('service');if(select&&!Array.from(select.options).some(function(o){return o.value==='house-cleaning';}))select.add(new Option('House Cleaning','house-cleaning'));
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-  setTimeout(waitForFinalFix,800);
-  setTimeout(waitForFinalFix,1800);
-  setTimeout(waitForFinalFix,3000);
+  function setCleaningMode(){
+    setPropertyMode(true,'house-cleaning');
+    if(el('title'))el('title').textContent='House Cleaning Booking';
+    if(el('description'))el('description').textContent='Choose your home size, preferred date and time, then enter the cleaning location and contact information.';
+    var special=el('special'),label=el('specialLabel'),options=el('specialOptions');
+    if(special&&label&&options){special.classList.remove('hidden');label.textContent='Home Size — Flat Rate';options.innerHTML=Object.keys(CLEANING_RATES).map(function(k){var name=k==='5'?'5+ Bedrooms':k+' Bedroom'+(k==='1'?'':'s');return '<label><input type="radio" name="specialChoice" value="'+k+'" '+(k==='2'?'checked':'')+'> '+name+' — $'+CLEANING_RATES[k]+'</label>';}).join('');}
+  }
+  window.openCleaningBooking=function(){
+    var booking=el('booking'),service=el('service');if(!booking||!service)return;
+    if(el('automotive'))el('automotive').classList.remove('open');if(el('lawnProperty'))el('lawnProperty').classList.remove('open');
+    if(el('houseCleaningCategory'))el('houseCleaningCategory').classList.add('open');
+    booking.classList.add('open');service.value='house-cleaning';setCleaningMode();
+    ['estimate','review','contact'].forEach(function(id){if(el(id))el(id).classList.remove('open');});
+    for(var i=1;i<=5;i++){var p=el('p'+i);if(p)p.classList.toggle('active',i===2);}
+    if(booking.scrollIntoView)booking.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  function cleaningRate(){var c=document.querySelector('input[name="specialChoice"]:checked');return c?CLEANING_RATES[c.value]:null;}
+  function installCleaningEstimateFix(){
+    var button=document.querySelector('#booking > .continue');if(!button)return;
+    var old=button.onclick;button.onclick=function(event){
+      var service=el('service')?.value||'';if(!isCleaning(service))return old&&old.call(this,event);
+      if(event){event.preventDefault();event.stopPropagation();}
+      setCleaningMode();var rate=cleaningRate();if(!rate){alert('Please select the home size first.');return;}
+      if(typeof window.validateAddress==='function'&&!window.validateAddress())return;
+      if(el('laborPrice'))el('laborPrice').textContent='$'+rate.toFixed(2);
+      if(el('partsPrice'))el('partsPrice').textContent='$0.00';
+      if(el('totalPrice'))el('totalPrice').textContent='$'+rate.toFixed(2);
+      var estimate=el('estimate');if(estimate){var h=estimate.querySelector('h2');if(h)h.textContent='House Cleaning Flat-Rate Estimate';var badge=el('startingAtPrice');if(!badge){badge=document.createElement('div');badge.id='startingAtPrice';badge.style='font-size:13px;color:#475569;margin:-4px 0 12px;font-weight:700';if(h)h.insertAdjacentElement('afterend',badge);}badge.textContent='Flat rate based on home size • No hourly billing';estimate.classList.add('open');var next=estimate.querySelector('button.continue');if(next){next.textContent="I'm Interested";next.onclick=function(){if(typeof window.showContact==='function')window.showContact();else{var c=el('contact');if(c){c.classList.add('open');c.scrollIntoView({behavior:'smooth'});}}};}if(typeof setStep==='function')setStep(3);estimate.scrollIntoView({behavior:'smooth'});}
+    };
+  }
+  function installCleaningSubmissionFix(){
+    if(typeof window.submitRequest!=='function')return;
+    if(window.__dashCleaningSubmissionWrapped)return;window.__dashCleaningSubmissionWrapped=true;
+    var originalSubmit=window.submitRequest;
+    window.submitRequest=function(){
+      if(isCleaning(el('service')?.value||'')){
+        var choice=document.querySelector('input[name="specialChoice"]:checked');var notes=el('notes');var size=choice?(choice.value==='5'?'5+ bedrooms':choice.value+' bedroom'+(choice.value==='1'?'':'s')):'Home size not selected';if(notes)notes.value='House size: '+size+' | Flat rate: $'+(choice?CLEANING_RATES[choice.value]:0)+' | '+String(notes.value||'').trim();
+      }
+      return originalSubmit.apply(this,arguments);
+    };
+  }
+  function installCleaning(){installCleaningCategory();setTimeout(installCleaningEstimateFix,900);setTimeout(installCleaningEstimateFix,1900);setTimeout(installCleaningEstimateFix,3100);setTimeout(installCleaningSubmissionFix,1200);setTimeout(installCleaningSubmissionFix,2500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){install();installCleaning();});else{install();installCleaning();}
+  setTimeout(installPrelaunchFlow,800);
+  setTimeout(installPrelaunchFlow,1800);
+  setTimeout(installPrelaunchFlow,3000);
 })();
