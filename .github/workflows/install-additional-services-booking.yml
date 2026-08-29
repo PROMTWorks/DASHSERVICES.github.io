@@ -18,20 +18,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Add isolated booking module to customer pages
+      - name: Install booking module on customer booking page
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          tag = '<script src="additional-services-booking.js?v=20260829v1" defer></script>'
+          tag = '<script src="additional-services-booking.js?v=20260829v2" defer></script>'
           for name in ('book-service.html', 'all-services.html'):
               p = Path(name)
               s = p.read_text()
-              if tag not in s:
-                  marker = '</head>'
-                  if marker not in s:
-                      raise SystemExit(f'head marker not found in {name}')
-                  s = s.replace(marker, '\n' + tag + '\n' + marker, 1)
-                  p.write_text(s)
+              # Remove any older copy of this module tag, then add exactly one current copy.
+              import re
+              s = re.sub(r'\s*<script src="additional-services-booking\.js[^\"]*" defer></script>', '', s)
+              marker = '</head>'
+              if marker not in s:
+                  raise SystemExit(f'head marker not found in {name}')
+              s = s.replace(marker, '\n' + tag + '\n' + marker, 1)
+              p.write_text(s)
           PY
       - name: Commit only the page wiring
         run: |
@@ -39,5 +41,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add book-service.html all-services.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Add Garage Cleaning and Trash & Junk Removal booking access'
+          git commit -m 'Wire additional services into customer booking page'
           git push
