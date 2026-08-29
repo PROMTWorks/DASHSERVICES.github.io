@@ -153,5 +153,19 @@
       if(!el('lawnProperty'))installLawnCategory();
     },500);
   }
+  function installPrelaunchFlow(){
+    var estimateButton=document.querySelector('.estimate button.continue');
+    var reviewButton=document.querySelector('.review button.continue');
+    if(estimateButton)estimateButton.textContent='I\'m Interested';
+    if(reviewButton)reviewButton.textContent='I\'m Interested';
+    if(reviewButton)reviewButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
+    if(estimateButton)estimateButton.onclick=function(){if(typeof window.showContact==='function')window.showContact();};
+    var submit=document.querySelector('#contact button[onclick="submitRequest()"]');
+    if(submit)submit.textContent='Submit Interest';
+    var h=document.querySelector('#estimate h2');
+    if(h)h.textContent='Estimated Service Cost — Pre-Launch';
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+  setTimeout(installPrelaunchFlow,1200);
+  setTimeout(installPrelaunchFlow,2500);
 })();
