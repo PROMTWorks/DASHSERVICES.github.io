@@ -1,0 +1,31 @@
+name: Install DASH Dispatch Center
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject dispatch module into admin shell
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('admin-shell-clean.html')
+          s=p.read_text(encoding='utf-8')
+          marker="addScript(doc,'owner-equipment-utilization.js?v=20260822-1','dashOwnerEquipmentUtilization');"
+          inject=marker+"addScript(doc,'admin-dispatch-center.js?v=20260831-1','dashDispatchCenter');"
+          if "dashDispatchCenter" not in s and marker in s:
+              p.write_text(s.replace(marker,inject),encoding='utf-8')
+          PY
+      - name: Commit shell update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin-shell-clean.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Install DASH Dispatch Center in admin portal'
+          git push
