@@ -1,42 +1,14 @@
-(function(){
-  'use strict';
-  const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
-  function boot(){
-    if(!document.body||document.getElementById('dashDispatchButton')) return;
-    const client=window.supabase?.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}});
-    const aside=document.querySelector('aside'); if(!aside) return;
-    const group=document.createElement('div'); group.className='group'; group.textContent='Dispatch';
-    const btn=document.createElement('button'); btn.id='dashDispatchButton'; btn.textContent='Dispatch Center';
-    aside.append(group,btn);
-    const style=document.createElement('style'); style.textContent=`#dashDispatchOverlay{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:99990;display:none;padding:22px;overflow:auto}#dashDispatchOverlay.show{display:block}.dash-dbox{max-width:1400px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}.dash-dhead{padding:18px 22px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;align-items:center;gap:12px}.dash-dhead h2{margin:0}.dash-dbody{padding:20px}.dash-dstats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}.dash-dstat{border:1px solid #e2e7ed;border-radius:10px;padding:14px}.dash-dstat b{font-size:24px;display:block}.dash-dstat span{font-size:11px;color:#64748b;font-weight:700}.dash-dcols{display:grid;grid-template-columns:2fr 1fr;gap:16px}.dash-dpanel{border:1px solid #e2e7ed;border-radius:10px;overflow:hidden}.dash-dpanel h3{margin:0;padding:14px 16px;border-bottom:1px solid #e2e7ed;font-size:15px}.dash-dlist{padding:12px;display:grid;gap:10px}.dash-job{border:1px solid #e2e7ed;border-radius:9px;padding:13px}.dash-jobtop{display:flex;justify-content:space-between;gap:10px}.dash-job small{color:#64748b}.dash-chip{display:inline-block;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;background:#eef2f7;margin-left:5px}.dash-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.dash-actions button{border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:700;cursor:pointer}.dash-actions button:hover{background:#f8fafc}.dash-employee{display:flex;justify-content:space-between;gap:10px;border:1px solid #e2e7ed;border-radius:9px;padding:11px}.dash-empty{padding:30px;text-align:center;color:#64748b}.dash-close{border:0;background:#eef2f7;border-radius:7px;padding:8px 11px;font-weight:700;cursor:pointer}@media(max-width:900px){.dash-dstats{grid-template-columns:repeat(2,1fr)}.dash-dcols{grid-template-columns:1fr}}`; document.head.appendChild(style);
-    const ov=document.createElement('div'); ov.id='dashDispatchOverlay'; ov.innerHTML=`<div class="dash-dbox"><div class="dash-dhead"><div><h2>DASH Dispatch Center</h2><div style="color:#64748b;font-size:13px;margin-top:4px">Native DASH job dispatch — no Sonoran CAD required.</div></div><button class="dash-close" id="dashDispatchClose">Close</button></div><div class="dash-dbody"><div id="dashDispatchContent"><div class="dash-empty">Loading dispatch center…</div></div></div></div>`; document.body.appendChild(ov);
-    const content=ov.querySelector('#dashDispatchContent');
-    function esc(v){return String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;'}[m]||m));}
-    async function load(){
-      if(!client){content.innerHTML='<div class="dash-empty">Supabase is not available on this page.</div>';return;}
-      const {data:session}=await client.auth.getSession(); if(!session?.session){content.innerHTML='<div class="dash-empty">Your admin session is not available. Please sign in again.</div>';return;}
-      const [jobsRes,empsRes,assignRes,statusRes]=await Promise.all([
-        client.from('business_jobs').select('id,service_name,service_location,scheduled_start,scheduled_end,status,priority,customer_id').order('scheduled_start',{ascending:true}).limit(100),
-        client.from('employees').select('employee_id,first_name,last_name,position,employment_status').order('first_name',{ascending:true}),
-        client.from('dispatch_assignments').select('id,job_id,employee_id,dispatch_status,priority,assigned_at,updated_at').order('updated_at',{ascending:false}).limit(200),
-        client.from('dispatch_employee_status').select('employee_id,status,status_note,updated_at')
-      ]);
-      if(jobsRes.error?.code==='42P01'||assignRes.error?.code==='42P01'||statusRes.error?.code==='42P01'){content.innerHTML='<div class="dash-empty"><strong style="display:block;color:#334155;font-size:17px;margin-bottom:7px">Dispatch database setup is not applied yet.</strong>The DASH dispatch migration has been prepared in the repository. Once it is applied to Supabase, this center will become fully live.</div>';return;}
-      if(jobsRes.error){content.innerHTML='<div class="dash-empty">Unable to load jobs: '+esc(jobsRes.error.message)+'</div>';return;}
-      const jobs=jobsRes.data||[], emps=empsRes.data||[], assigns=assignRes.data||[], statuses=statusRes.data||[];
-      const amap=new Map(assigns.map(a=>[a.job_id,a])); const smap=new Map(statuses.map(s=>[s.employee_id,s])); const counts={unassigned:0,assigned:0,en_route:0,on_site:0,working:0,completed:0};
-      jobs.forEach(j=>{const a=amap.get(j.id); if(!a) counts.unassigned++; else counts[a.dispatch_status]=(counts[a.dispatch_status]||0)+1;});
-      content.innerHTML=`<div class="dash-dstats"><div class="dash-dstat"><b>${counts.unassigned}</b><span>UNASSIGNED</span></div><div class="dash-dstat"><b>${counts.assigned}</b><span>ASSIGNED</span></div><div class="dash-dstat"><b>${counts.en_route}</b><span>EN ROUTE</span></div><div class="dash-dstat"><b>${counts.on_site}</b><span>ON SITE</span></div><div class="dash-dstat"><b>${counts.working}</b><span>WORKING</span></div></div><div class="dash-dcols"><div class="dash-dpanel"><h3>Job Queue</h3><div class="dash-dlist" id="dashJobList"></div></div><div class="dash-dpanel"><h3>Employee Availability</h3><div class="dash-dlist" id="dashEmployeeList"></div></div></div>`;
-      const jl=content.querySelector('#dashJobList');
-      if(!jobs.length) jl.innerHTML='<div class="dash-empty">No jobs are currently in the job queue.</div>';
-      else jobs.forEach(j=>{const a=amap.get(j.id), emp=a?emps.find(e=>e.employee_id===a.employee_id):null; const el=document.createElement('div'); el.className='dash-job'; el.innerHTML=`<div class="dash-jobtop"><div><strong>${esc(j.service_name||'DASH Service')}</strong><br><small>${esc(j.service_location||'No location')}</small></div><div><span class="dash-chip">${esc(a?.dispatch_status||'unassigned').toUpperCase()}</span></div></div><div style="margin-top:7px;font-size:12px;color:#64748b">${j.scheduled_start?new Date(j.scheduled_start).toLocaleString(): 'Not scheduled'}${emp?' · '+esc(emp.first_name+' '+emp.last_name):''}</div><div class="dash-actions">${!a?`<button data-assign="${esc(j.id)}">Assign Employee</button>`:''}${a&&a.dispatch_status!=='completed'&&a.dispatch_status!=='cancelled'?['accepted','en_route','on_site','working','completed'].filter(s=>s!==a.dispatch_status).slice(0,2).map(s=>`<button data-status="${s}" data-aid="${a.id}">${s.replace('_',' ').toUpperCase()}</button>`).join(''):''}</div>`; jl.appendChild(el);});
-      const elist=content.querySelector('#dashEmployeeList');
-      if(!emps.length) elist.innerHTML='<div class="dash-empty">No employee records found.</div>';
-      else emps.forEach(e=>{const s=smap.get(e.employee_id); const row=document.createElement('div');row.className='dash-employee';row.innerHTML=`<div><strong>${esc(e.first_name+' '+e.last_name)}</strong><br><small>${esc(e.position||'Employee')}</small></div><span class="dash-chip">${esc(s?.status||'off_duty').replace('_',' ').toUpperCase()}</span>`;elist.appendChild(row);});
-      content.querySelectorAll('[data-status]').forEach(b=>b.onclick=async()=>{b.disabled=true;const r=await client.rpc('dispatch_update_assignment_status',{p_assignment_id:b.dataset.aid,p_status:b.dataset.status,p_note:null});if(r.error)alert(r.error.message);await load();});
-      content.querySelectorAll('[data-assign]').forEach(b=>b.onclick=async()=>{const active=emps.filter(e=>!['terminated','inactive'].includes(String(e.employment_status||'').toLowerCase()));if(!active.length){alert('No active employees are available to assign.');return;}const name=prompt('Enter the employee ID to assign this job:\n\n'+active.map(e=>e.employee_id+' — '+e.first_name+' '+e.last_name).join('\n'));if(!name)return;const emp=active.find(e=>e.employee_id.toLowerCase()===name.trim().toLowerCase());if(!emp){alert('Employee ID not found.');return;}const r=await client.from('dispatch_assignments').insert({job_id:b.dataset.assign,employee_id:emp.employee_id});if(r.error)alert(r.error.message);await load();});
-    }
-    btn.onclick=()=>{ov.classList.add('show');load()}; ov.querySelector('#dashDispatchClose').onclick=()=>ov.classList.remove('show'); ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('show')});
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300)); else setTimeout(boot,300); setTimeout(boot,1500);
+/* DASH Dispatch Center navigation. The full dispatch UI lives in dispatch-center.html. */
+(function(){'use strict';
+function boot(){
+  if(!document.body||document.getElementById('dashDispatchButton')) return;
+  const aside=document.querySelector('aside'); if(!aside) return;
+  const group=document.createElement('div'); group.className='group'; group.textContent='Dispatch';
+  const btn=document.createElement('button'); btn.id='dashDispatchButton'; btn.type='button'; btn.textContent='Dispatch Center'; btn.title='Open DASH Dispatch Center';
+  btn.onclick=function(){window.top.location.href='dispatch-center.html'};
+  const groups=aside.querySelectorAll('.group');
+  if(groups.length) aside.insertBefore(group,groups[0].nextSibling),aside.insertBefore(btn,group.nextSibling); else aside.append(group,btn);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300));else setTimeout(boot,300);
+setTimeout(boot,1200);setTimeout(boot,2500);
 })();
