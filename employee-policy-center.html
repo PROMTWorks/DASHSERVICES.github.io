@@ -62,8 +62,10 @@ async function acknowledge(policyId,b){
  const p=policies.find(x=>x.id===policyId);if(!p||!employeeId)return;
  if(!confirm('Please confirm that you have read and understand this policy.'))return;
  b.disabled=true;b.textContent='Saving…';
- const {error}=await db.from('employee_policy_acknowledgments').insert({policy_id:p.id,employee_id:employeeId,policy_version:p.version,acknowledged_at:new Date().toISOString()});
- if(error){b.disabled=false;b.textContent='I Have Read & Acknowledge';showError(error.message);return}
+ const {data,error}=await db.rpc('acknowledge_employee_policy',{p_policy_id:p.id});
+ if(error){b.disabled=false;b.textContent='I Have Read & Acknowledge';showError(error.message||'The acknowledgment could not be saved.');return}
+ if(!data){b.disabled=false;b.textContent='I Have Read & Acknowledge';showError('The acknowledgment could not be confirmed.');return}
+ $('error').classList.remove('show');
  await load();
 }
 function showError(message){$('error').textContent=message;$('error').classList.add('show')}
