@@ -1,4 +1,4 @@
-/* DASH MOBILE SERVICES admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings + Owner Management + Employee Onboarding + Owner Training Management. */
+/* DASH MOBILE SERVICES admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings + Owner Management + Employee Onboarding + Owner Training Management + Training Reset. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
@@ -58,6 +58,8 @@
       const group=document.createElement('div');group.className='group';group.textContent='Owner Controls';
       const b=document.createElement('button');b.id='dashOwnerManagementLink';b.type='button';b.textContent='Owner Management';b.onclick=()=>window.location.href='owner-management.html';
       aside.appendChild(group);aside.appendChild(b);
+      const reset=document.createElement('button');reset.id='dashTrainingResetLink';reset.type='button';reset.textContent='Reset Training Progress';reset.onclick=()=>window.location.href='admin-training-reset.html?v=20260904-1';
+      aside.appendChild(reset);
     }catch(e){console.error('DASH owner management link failed',e)}
   }
   function init(){addSignOut();loadWaitlist();loadSquare();loadBusinessSettings();addEmployeeOnboardingLink();addOwnerTrainingManagementLink();addOwnerManagementLink();}
