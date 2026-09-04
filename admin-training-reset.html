@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DASH MOBILE SERVICES | Reset Training Progress</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f5f8;color:#17202a}.wrap{max-width:1150px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.top h1{margin:0;font-size:27px}.muted{color:#64748b;font-size:13px}.panel{background:#fff;border:1px solid #e2e7ed;border-radius:12px;overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #e2e7ed;display:flex;justify-content:space-between;gap:12px;align-items:center}.head h2{margin:0;font-size:18px}.body{padding:20px}.notice{background:#fff7ed;border-left:4px solid #f59e0b;padding:14px;border-radius:8px;font-size:13px;margin-bottom:18px}.error,.success{display:none;padding:12px;border-radius:8px;margin-bottom:15px;font-size:13px}.error{background:#fef2f2;color:#991b1b}.success{background:#ecfdf5;color:#166534}.show{display:block}.row{border:1px solid #e2e7ed;border-radius:10px;padding:15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:15px}.row:last-child{margin-bottom:0}.row strong{display:block;margin-bottom:4px}.stats{font-size:12px;color:#64748b}.btn{border:0;border-radius:8px;padding:9px 12px;background:#111827;color:#fff;font-weight:700;cursor:pointer}.btn.light{background:#fff;color:#17202a;border:1px solid #d7dde5}.btn.danger{background:#991b1b}.btn:disabled{opacity:.55;cursor:not-allowed}.empty{text-align:center;padding:35px;color:#64748b}.modal{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.modalbox{background:#fff;width:min(500px,100%);border-radius:14px;padding:24px}.modalbox h2{margin-top:0}.modalbox p{color:#475569;font-size:14px;line-height:1.5}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}@media(max-width:650px){.top,.row{flex-direction:column;align-items:flex-start}.row .btn{width:100%}.actions{width:100%}.actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div><h1>Reset Training Progress</h1><div class="muted">Super Admin control — employee training only</div></div>
+    <button class="btn light" type="button" onclick="location.href='owner-training-management.html'">Back to Training Management</button>
+  </div>
+  <div id="error" class="error"></div><div id="success" class="success"></div>
+  <div class="notice"><b>Important:</b> Resetting an employee's training progress clears their completed/passed training results and Owner validation for the training records. It does <b>not</b> delete the employee, change their account, remove training assignments, or change policy acknowledgments/onboarding records.</div>
+  <section class="panel"><div class="head"><h2>Employees</h2><span id="count" class="muted">Loading…</span></div><div class="body"><div id="employees"></div></div></section>
+</main>
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modalbox"><h2 id="modalTitle">Reset training progress?</h2><p id="modalText"></p><div class="actions"><button class="btn light" type="button" onclick="closeModal()">Cancel</button><button id="confirmBtn" class="btn danger" type="button">Reset Training Progress</button></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const U='https://roywoofgypiyoobdcrwx.supabase.co',K='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',c=supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true}}),$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>\"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[x]));let employees=[],selected=null;
+function showMessage(id,text){$(id).textContent=text;$(id).classList.add('show');setTimeout(()=>$(id).classList.remove('show'),5000)}
+function closeModal(){selected=null;$('modal').classList.remove('show')}
+function openReset(e){selected=e;$('modalText').textContent='This will reset '+(e.name||'this employee')+' back to pending training status for all existing training records. They will need to complete the training again, including the Master Test.';$('modal').classList.add('show');$('confirmBtn').focus()}
+function render(){
+  $('count').textContent=employees.length+' employee'+(employees.length===1?'':'s');
+  if(!employees.length){$('employees').innerHTML='<div class="empty">No employee training records were found.</div>';return}
+  $('employees').innerHTML=employees.map(e=>'<div class="row"><div><strong>'+esc(e.name)+'</strong><div class="stats">Employee '+esc(e.number)+' • '+e.total+' training record'+(e.total===1?'':'s')+' • '+e.passed+' passed/completed • '+e.validated+' Owner-validated</div></div><button class="btn danger" type="button" onclick="openReset('+esc(JSON.stringify(e))+')">Reset Training Progress</button></div>').join('')
+}
+async function load(){
+  const {data:{session},error:se}=await c.auth.getSession();if(se||!session){location.replace('admin-entry.html');return}
+  const {data:role,error:re}=await c.rpc('current_employee_role');if(re)throw re;if(String(role||'').toLowerCase()!=='owner'){await c.auth.signOut();location.replace('admin-entry.html');return}
+  const {data,error}=await c.rpc('owner_get_employee_training_records');if(error)throw error;
+  const map=new Map();(data||[]).forEach(r=>{const id=r.employee_id;if(!map.has(id))map.set(id,{id,name:r.employee_name||r.employee_number||'Employee',number:r.employee_number||'—',total:0,passed:0,validated:0});const e=map.get(id);e.total++;if(['passed','completed'].includes(String(r.training_status||'').toLowerCase()))e.passed++;if(String(r.owner_validation_status||'').toUpperCase()==='VALIDATED')e.validated++});employees=[...map.values()].sort((a,b)=>a.name.localeCompare(b.name));render()
+}
+$('confirmBtn').onclick=async()=>{if(!selected)return;const e=selected;const btn=$('confirmBtn');btn.disabled=true;btn.textContent='Resetting…';try{const {data,error}=await c.rpc('owner_reset_employee_training_progress',{p_employee_id:e.id,p_notes:'Training progress reset by Super Admin.'});if(error)throw error;closeModal();showMessage('success',(e.name||'Employee')+' training progress was reset. '+Number(data||0)+' training record(s) returned to pending.');await load()}catch(err){showMessage('error',err.message||'Unable to reset training progress.')}finally{btn.disabled=false;btn.textContent='Reset Training Progress'}};
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});load().catch(e=>showMessage('error',e.message||'Unable to load training records.'));
+</script>
+</body>
+</html>
