@@ -31,6 +31,7 @@ function start(){
     load('./vehicle-database-expanded.js?v=20260819v12',function(){
       restrictions();
       var c=document.createElement('script');c.src='./google-maps-config.js?v=20260820';c.onload=setupServiceAreaMap;document.head.appendChild(c);
+      var h=document.createElement('script');h.src='./automotive-booking-hotfix.js?v=20260903v1';h.onload=function(){window.DASHAutomotiveBookingHotfixLoaded=true};document.head.appendChild(h);
       window.DASHVehicleDatabaseLoaded=true;
       document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
     });
