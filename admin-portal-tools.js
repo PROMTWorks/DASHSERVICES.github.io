@@ -1,4 +1,4 @@
-/* DASH MOBILE SERVICES admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings + Owner Management + Employee Onboarding. */
+/* DASH MOBILE SERVICES admin portal tools: sign out + dedicated Wait List loader + Square settings + Business Settings + Owner Management + Employee Onboarding + Owner Training Management. */
 (function(){
   const URL='https://roywoofgypiyoobdcrwx.supabase.co';
   const KEY='sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_';
@@ -35,6 +35,18 @@
     b.onclick=()=>window.location.href='admin-employee-onboarding.html';
     records.insertAdjacentElement('afterend',b);
   }
+  function addOwnerTrainingManagementLink(){
+    if(document.getElementById('dashOwnerTrainingManagementLink'))return;
+    const aside=document.querySelector('aside'); if(!aside)return;
+    const onboarding=document.getElementById('dashEmployeeOnboardingLink')||[...aside.querySelectorAll('button')].find(b=>b.textContent.trim()==='Employee Onboarding');
+    if(!onboarding)return;
+    const b=document.createElement('button');
+    b.id='dashOwnerTrainingManagementLink';
+    b.type='button';
+    b.textContent='Employee Training Management';
+    b.onclick=()=>window.location.href='owner-training-management.html';
+    onboarding.insertAdjacentElement('afterend',b);
+  }
   async function addOwnerManagementLink(){
     if(document.getElementById('dashOwnerManagementLink'))return;
     try{
@@ -48,6 +60,6 @@
       aside.appendChild(group);aside.appendChild(b);
     }catch(e){console.error('DASH owner management link failed',e)}
   }
-  function init(){addSignOut();loadWaitlist();loadSquare();loadBusinessSettings();addEmployeeOnboardingLink();addOwnerManagementLink();}
+  function init(){addSignOut();loadWaitlist();loadSquare();loadBusinessSettings();addEmployeeOnboardingLink();addOwnerTrainingManagementLink();addOwnerManagementLink();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
