@@ -19,7 +19,7 @@ function setupServiceAreaMap(){
     if(typeof google==='undefined'||!google.maps||!google.maps.Map) return;
     mapEl.innerHTML='';
     mapEl.classList.add('dash-google-map');
-    var map=new google.maps.Map(mapEl,{center:{lat:33.72,lng:-78.90},zoom:10,mapTypeId:'terrain',disableDefaultUI:true,zoomControl:true,fullscreenControl:true,gestureHandling:'cooperative',styles:[{featureType:'poi.business',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}]});
+    var map=new google.maps.Map(mapEl,{center:{lat:33.72,lng:-78.90},zoom:10,mapTypeId:'terrain',disableDefaultUI:true,zoomControl:true,fullscreenControl:true,zoomControl:true,gestureHandling:'cooperative',styles:[{featureType:'poi.business',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}]});
     var area=[{lat:33.96,lng:-79.12},{lat:33.90,lng:-78.72},{lat:33.62,lng:-78.54},{lat:33.43,lng:-78.70},{lat:33.40,lng:-79.02},{lat:33.56,lng:-79.20},{lat:33.78,lng:-79.25}];
     new google.maps.Polygon({paths:area,strokeColor:'#c62828',strokeOpacity:.9,strokeWeight:2,fillColor:'#c62828',fillOpacity:.12,map:map});
     [{position:{lat:33.6891,lng:-78.8867},title:'Myrtle Beach'},{position:{lat:33.836,lng:-79.0478},title:'Conway'}].forEach(function(item){new google.maps.Marker({position:item.position,map:map,title:item.title,label:{text:item.title,color:'#0f172a',fontWeight:'700',fontSize:'12px'}})});
@@ -32,6 +32,7 @@ function start(){
       restrictions();
       var c=document.createElement('script');c.src='./google-maps-config.js?v=20260820';c.onload=setupServiceAreaMap;document.head.appendChild(c);
       var h=document.createElement('script');h.src='./automotive-booking-hotfix.js?v=20260903v1';h.onload=function(){window.DASHAutomotiveBookingHotfixLoaded=true};document.head.appendChild(h);
+      var f=document.createElement('script');f.src='./get-estimate-final-fix.js?v=20260903v2';f.async=false;f.onload=function(){window.DASHFinalGetEstimateFixLoaded=true};document.head.appendChild(f);
       window.DASHVehicleDatabaseLoaded=true;
       document.dispatchEvent(new CustomEvent('dash:vehicle-database-ready'));
     });
