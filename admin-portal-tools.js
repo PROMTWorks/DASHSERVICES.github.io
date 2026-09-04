@@ -32,7 +32,7 @@
     b.id='dashEmployeeOnboardingLink';
     b.type='button';
     b.textContent='Employee Onboarding';
-    b.onclick=()=>window.location.href='admin-employee-onboarding.html';
+    b.onclick=()=>window.location.href='admin-employee-onboarding.html?v=20260904-1';
     records.insertAdjacentElement('afterend',b);
   }
   function addOwnerTrainingManagementLink(){
