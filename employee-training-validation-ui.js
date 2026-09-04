@@ -1,15 +1,14 @@
 /* DASH MOBILE SERVICES — Employee Training Validation UI */
 (function(){
 'use strict';
-var vRecords=[];
+var vRecords=[],db=null;
 function refreshRecords(){
-  if(!window.c||typeof window.c.rpc!=='function')return Promise.resolve();
-  return window.c.rpc('get_my_employee_training').then(function(res){
-    if(!res.error)vRecords=res.data||[];
-  }).catch(function(){});
+  if(!db&&window.supabase)db=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true}});
+  if(!db)return Promise.resolve();
+  return db.rpc('get_my_employee_training').then(function(res){if(!res.error)vRecords=res.data||[];}).catch(function(){});
 }
 function apply(){
-  if(typeof window.list!=='function'||typeof window.passedName!=='function'||typeof window.render!=='function')return;
+  if(typeof window.list!=='function'||typeof window.render!=='function'||typeof window.openModule!=='function')return;
   window.trainingRecord=function(name){return vRecords.find(function(x){return x.training_name===name;});};
   window.passedName=function(name){var r=window.trainingRecord(name);return !!(r&&['passed','completed'].includes(String(r.status||'').toLowerCase())&&String(r.owner_validation_status||'').toUpperCase()==='VALIDATED');};
   if(!window.__DASH_TRAINING_VALIDATION_RENDER){
