@@ -1,6 +1,8 @@
 /* DASH booking submission client + internal pricing engine. */
 (function(){
 'use strict';
+if(window.__DASH_BOOKING_SUBMIT_LOADED)return;
+window.__DASH_BOOKING_SUBMIT_LOADED=true;
 const ENDPOINT='https://roywoofgypiyoobdcrwx.supabase.co/functions/v1/create-service-request';
 const COSTS={ownerHourly:30.00,employeeHourly:10.00,employerBurdenRate:0.15,fuelCostPerMile:0.70,equipmentOverheadPerLaborHour:4.00,businessOverheadPerJob:3.00,targetProfitMargin:0.25,travelBaseFee:10.00};
 const LAWN={'lawn-mowing':{name:'Lawn Mowing',minutes:60,materials:2},'weed-removal':{name:'Weed Removal',minutes:60,materials:3},'mulch-installation':{name:'Mulch Installation',minutes:60,materials:55},'decorative-rock':{name:'Decorative Rock Installation',minutes:60,materials:65},'yard-cleanup':{name:'Yard Cleanup',minutes:90,materials:5},'trimming-edging':{name:'Trimming & Edging',minutes:45,materials:1},'seasonal-yard-cleanup':{name:'Seasonal Yard Cleanup',minutes:180,materials:8},'property-maintenance':{name:'Property Maintenance',minutes:60,materials:3}};
