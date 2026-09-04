@@ -2,6 +2,10 @@
 (function(){
 'use strict';
 var vRecords=[],db=null;
+function esc(value){
+  if(typeof window.esc==='function')return window.esc(value);
+  return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
+}
 function refreshRecords(){
   if(!db&&window.supabase)db=window.supabase.createClient('https://roywoofgypiyoobdcrwx.supabase.co','sb_publishable_5SKEbO1wFS4LVZ6IcpWfnA_UQffaKX_',{auth:{persistSession:true,autoRefreshToken:true}});
   if(!db)return Promise.resolve();
@@ -21,7 +25,7 @@ function apply(){
       document.getElementById('status').textContent=validated===all?'OWNER VALIDATED':awaiting?'AWAITING OWNER VALIDATION':'IN TRAINING';
       document.getElementById('modules').innerHTML=ms.map(function(m,i){
         var r=window.trainingRecord(m.title),testPassed=r&&['passed','completed'].includes(String(r.status||'').toLowerCase()),ok=window.passedName(m.title),prev=i===0||window.passedName(ms[i-1].title),state=ok?'OWNER VALIDATED':testPassed?'AWAITING OWNER VALIDATION':prev?'READY':'LOCKED',cls=ok?'ok':testPassed?'warn':'',button=ok?'Review':testPassed?'Awaiting Owner':'Start Training';
-        return '<div class="row"><div class="rowtop"><div><strong>Module '+(i+1)+': '+window.esc(m.title)+'</strong><div class="muted">'+(ok?'Training approved by Owner':testPassed?'Test passed — waiting for Owner validation':prev?'Ready to begin':'Locked until previous module is Owner-validated')+'</div></div><span class="pill '+cls+'">'+state+'</span></div><div style="margin-top:12px"><button class="btn '+(ok||testPassed?'light':'')+'" '+(!prev?'disabled':'')+' onclick="openModule('+i+')">'+button+'</button></div></div>';
+        return '<div class="row"><div class="rowtop"><div><strong>Module '+(i+1)+': '+esc(m.title)+'</strong><div class="muted">'+(ok?'Training approved by Owner':testPassed?'Test passed — waiting for Owner validation':prev?'Ready to begin':'Locked until previous module is Owner-validated')+'</div></div><span class="pill '+cls+'">'+state+'</span></div><div style="margin-top:12px"><button class="btn '+(ok||testPassed?'light':'')+'" '+(!prev?'disabled':'')+' onclick="openModule('+i+')">'+button+'</button></div></div>';
       }).join('');
     };
   }
